@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { loadData, completeOnboarding } from '@/app/lib/store';
 
 type Slide = { title: string; subtitle: string };
 
@@ -20,19 +21,19 @@ const slides: Slide[] = [
   },
 ];
 
-const KEY = 'rocket.onboardingDone';
-
 export default function OnboardingPage() {
   const [i, setI] = useState(0);
   const r = useRouter();
 
   useEffect(() => {
-    const done = typeof window !== 'undefined' && localStorage.getItem(KEY) === '1';
-    if (done) r.replace('/'); // si ya lo hizo, va directo al dashboard
+    const data = loadData();
+    if (data.onboardingDone) {
+      r.replace('/'); // si ya lo hizo, va directo al dashboard
+    }
   }, [r]);
 
   function finish() {
-    localStorage.setItem(KEY, '1');
+    completeOnboarding('Usuario');
     r.replace('/');
   }
 

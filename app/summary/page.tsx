@@ -1,9 +1,10 @@
 'use client'
 import { useMemo } from 'react';
-import { loadActivities } from '../lib/store';
+import { loadData } from '@/app/lib/store';
 
 export default function SummaryPage() {
-  const activities = loadActivities();
+  const data = loadData();
+  const activities = data.currentWeek.activities;
   const byDay = useMemo(() => {
     const map: Record<string, number> = {};
     activities.forEach(a => {

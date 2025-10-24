@@ -1,69 +1,129 @@
+// app/page.tsx - Dashboard principal
 'use client'
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-
-const ONB_KEY = 'rocket.onboardingDone';
+import CircularProgress from './components/CircularProgress';
+import InsightCard from './components/InsightCard';
+import { loadData, getWeekProgress, getImprovement } from './lib/store';
 
 export default function Home() {
   const router = useRouter();
+  const [loaded, setLoaded] = useState(false);
+  const [data, setData] = useState(() => loadData());
 
-  // Redirección automática al onboarding si el usuario nunca lo completó
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const done = localStorage.getItem(ONB_KEY) === '1';
-    if (!done) router.replace('/onboarding');
+    const userData = loadData();
+    
+    // Redirigir a onboarding si no lo completó
+    if (!userData.onboardingDone) {
+      router.replace('/onboarding');
+      return;
+    }
+    
+    setData(userData);
+    setLoaded(true);
   }, [router]);
 
-  // Vista principal del dashboard
+  if (!loaded) {
+    return (
+      <main className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="animate-pulse text-slate-400">Cargando...</div>
+      </main>
+    );
+  }
+
+  const progress = getWeekProgress();
+  const improvement = getImprovement();
+  const activeDays = data.currentWeek.activeDays.filter(Boolean).length;
+
+  // Insight inteligente basado en actividad
+  const getInsight = () => {
+    if (activeDays >= 5) return {
+      icon: '🚀',
+      title: '¡Despegue total!',
+      description: 'Estás en racha. Tu constancia es increíble.'
+    };
+    if (activeDays >= 3) return {
+      icon: '☀️',
+      title: 'Ritmo saludable',
+      description: 'Mantenés un flujo constante y sostenible.'
+    };
+    return {
+      icon: '🌱',
+      title: 'Empezando tu semana',
+      description: 'Cada día cuenta. Seguí avanzando a tu ritmo.'
+    };
+  };
+
+  const insight = getInsight();
+
   return (
-    <main className="min-h-screen bg-slate-50 p-6 flex flex-col items-center justify-center">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-md p-6 space-y-6 text-center">
-        <h1 className="text-2xl font-semibold">Tu progreso semanal</h1>
-        <div className="flex flex-col items-center justify-center">
-          <div className="w-32 h-32 rounded-full border-8 border-indigo-500 flex items-center justify-center">
-            <span className="text-2xl font-bold text-indigo-600">+15%</span>
-          </div>
-          <p className="text-slate-600 mt-2">Mejora respecto a la semana pasada</p>
+    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+      {/* Header */}
+      <header className="px-6 pt-8 pb-4 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-800">
+            ¡Hola, {data.name}!
+          </h1>
         </div>
+        <button className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
+          <span className="text-xl">👤</span>
+        </button>
+      </header>
 
+      <div className="px-6 space-y-6 pb-24">
+        {/* Progreso semanal */}
+        <section className="bg-white rounded-3xl shadow-sm p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-slate-800">Progreso Semanal</h2>
+            <Link href="/summary" className="text-sm font-medium text-indigo-600">
+              Ver resumen →
+            </Link>
+          </div>
+          
+          <div className="flex justify-center py-4">
+            <CircularProgress percentage={progress} />
+          </div>
+        </section>
+
+        {/* Stats */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="rounded-2xl bg-indigo-50 py-3">
-            <p className="text-sm text-slate-500">Días activos</p>
-            <p className="text-xl font-semibold text-indigo-700">4/7</p>
+          <div className="bg-white rounded-2xl shadow-sm p-5">
+            <p className="text-sm text-slate-500 mb-1">Días activos</p>
+            <p className="text-3xl font-bold text-indigo-600">{activeDays}/7</p>
           </div>
-          <div className="rounded-2xl bg-indigo-50 py-3">
-            <p className="text-sm text-slate-500">Minutos creativos</p>
-            <p className="text-xl font-semibold text-indigo-700">240</p>
+          
+          <div className="bg-white rounded-2xl shadow-sm p-5">
+            <p className="text-sm text-slate-500 mb-1">Minutos creativos</p>
+            <p className="text-3xl font-bold text-indigo-600">
+              {data.currentWeek.totalMinutes}
+            </p>
           </div>
         </div>
 
-        <div className="bg-indigo-50 rounded-2xl p-4">
-          <h2 className="font-semibold text-indigo-700 mb-1">Rocket Insights ✨</h2>
-          <p className="text-slate-700 text-sm">
-            Creaste más antes del mediodía. ¡Parece tu hora ideal ☀️!
-          </p>
-        </div>
+        {/* Mejora */}
+        {improvement !== 0 && (
+          <div className="bg-white rounded-2xl shadow-sm p-5">
+            <p className="text-sm text-slate-500 mb-1">Mejora</p>
+            <p className={`text-2xl font-bold ${improvement > 0 ? 'text-green-600' : 'text-orange-600'}`}>
+              {improvement > 0 ? '+' : ''}{improvement}%
+            </p>
+          </div>
+        )}
 
-        <div className="space-y-3">
-          <Link
-            href="/summary"
-            className="block w-full h-12 rounded-full bg-indigo-600 text-white font-medium flex items-center justify-center shadow-sm"
-          >
-            Ver resumen semanal
-          </Link>
-          <Link
-            href="/reflexion"
-            className="block w-full h-12 rounded-full bg-slate-100 text-slate-800 font-medium flex items-center justify-center shadow-sm"
-          >
-            Escribir reflexión del día
-          </Link>
-        </div>
+        {/* Rocket Insights */}
+        <InsightCard {...insight} />
 
-        <p className="text-xs text-slate-500 mt-6">
-          🚀 Rocket te ayuda a visualizar tu progreso real, sin culpa.
-        </p>
+        {/* CTA */}
+        <Link
+          href="/reflexion"
+          className="block w-full h-14 rounded-full bg-indigo-600 text-white font-medium flex items-center justify-center shadow-lg"
+        >
+          <span className="mr-2">+</span>
+          Registrar actividad
+        </Link>
       </div>
     </main>
   );
