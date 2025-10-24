@@ -1,5 +1,6 @@
 /* INSTRUCCIONES PARA CLAUDE VS CODE:
 Reemplazá app/page.tsx con este código completo
+UI rediseñada: centrada, minimalista, glassmorphism
 */
 
 'use client'
@@ -66,82 +67,72 @@ export default function Home() {
   const insight = getInsight();
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-      {/* Header */}
-      <header className="px-6 pt-8 pb-4 flex items-center justify-between animate-fadeIn">
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50">
+      {/* Header minimalista centrado */}
+      <header className="max-w-2xl mx-auto px-6 pt-12 pb-8 flex items-center justify-between animate-fadeIn">
         <div>
-          <h1 className="text-3xl font-bold text-slate-800">
-            ¡Hola, {data.name}!
+          <h1 className="text-2xl font-bold text-slate-800">
+            Hola, {data.name} 👋
           </h1>
+          <p className="text-sm text-slate-500 mt-1">
+            {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
+          </p>
         </div>
         <Link
           href="/perfil"
-          className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center hover:bg-amber-200"
+          className="w-11 h-11 rounded-2xl bg-white/70 backdrop-blur-sm shadow-sm flex items-center justify-center hover:bg-white transition-all"
         >
-          <span className="text-xl">👤</span>
+          <span className="text-lg">⚙️</span>
         </Link>
       </header>
 
-      <Link
-        href="/historial"
-        className="mx-6 mb-4 flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-700 font-medium"
-      >
-        📊 Ver historial completo
-      </Link>
-
-      <div className="px-6 space-y-6 pb-24">
-        {/* Progreso semanal */}
-        <section className="bg-white rounded-3xl shadow-sm p-6 animate-slideUp">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-slate-800">Progreso Semanal</h2>
-            <Link href="/summary" className="text-sm font-medium text-indigo-600 hover:text-indigo-700">
-              Ver resumen →
+      <div className="max-w-2xl mx-auto px-6 space-y-5 pb-24">
+        {/* Progreso principal - Card flotante */}
+        <section className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-8 animate-slideUp">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-lg font-semibold text-slate-800">Tu semana</h2>
+            <Link href="/historial" className="text-xs font-medium text-indigo-600 hover:text-indigo-700">
+              Historial →
             </Link>
           </div>
 
-          <div className="flex justify-center py-4">
+          <div className="flex justify-center mb-6">
             <CircularProgress percentage={progress} />
           </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center">
+              <p className="text-3xl font-bold text-indigo-600">{activeDays}/7</p>
+              <p className="text-sm text-slate-500 mt-1">Días activos</p>
+            </div>
+            <div className="text-center">
+              <p className="text-3xl font-bold text-indigo-600">{data.currentWeek.totalMinutes}</p>
+              <p className="text-sm text-slate-500 mt-1">Minutos</p>
+            </div>
+          </div>
+
+          {improvement !== 0 && (
+            <div className="mt-4 pt-4 border-t border-slate-100 text-center">
+              <p className={`text-lg font-bold ${improvement > 0 ? 'text-green-600' : 'text-orange-600'}`}>
+                {improvement > 0 ? '+' : ''}{improvement}% vs semana pasada
+              </p>
+            </div>
+          )}
         </section>
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-white rounded-2xl shadow-sm p-5 animate-slideUp" style={{animationDelay: '0.1s'}}>
-            <p className="text-sm text-slate-500 mb-1">Días activos</p>
-            <p className="text-3xl font-bold text-indigo-600">{activeDays}/7</p>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-sm p-5 animate-slideUp" style={{animationDelay: '0.15s'}}>
-            <p className="text-sm text-slate-500 mb-1">Minutos creativos</p>
-            <p className="text-3xl font-bold text-indigo-600">
-              {data.currentWeek.totalMinutes}
-            </p>
-          </div>
-        </div>
-
-        {/* Mejora */}
-        {improvement !== 0 && (
-          <div className="bg-white rounded-2xl shadow-sm p-5 animate-slideUp" style={{animationDelay: '0.2s'}}>
-            <p className="text-sm text-slate-500 mb-1">Mejora</p>
-            <p className={`text-2xl font-bold ${improvement > 0 ? 'text-green-600' : 'text-orange-600'}`}>
-              {improvement > 0 ? '+' : ''}{improvement}%
-            </p>
-          </div>
-        )}
-
         {/* Racha */}
-        <div className="animate-slideUp" style={{animationDelay: '0.25s'}}>
+        <div className="animate-slideUp" style={{animationDelay: '0.1s'}}>
           <StreakCard currentStreak={currentStreak} bestStreak={bestStreak} />
         </div>
 
         {/* Rocket Insights */}
-        <div className="animate-slideUp" style={{animationDelay: '0.3s'}}>
+        <div className="animate-slideUp" style={{animationDelay: '0.15s'}}>
           <InsightCard {...insight} />
         </div>
 
-        {/* Lista de actividades recientes O empty state */}
+        {/* Actividades O Empty state */}
         {data.currentWeek.activities.length > 0 ? (
-          <section className="bg-white rounded-3xl shadow-sm p-6 animate-slideUp" style={{animationDelay: '0.3s'}}>
+          <section className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-6 animate-slideUp" style={{animationDelay: '0.2s'}}>
             <button
               onClick={() => setShowActivities(!showActivities)}
               className="w-full flex items-center justify-between"
@@ -149,7 +140,7 @@ export default function Home() {
               <h2 className="text-lg font-semibold text-slate-800">
                 Actividades recientes
               </h2>
-              <span className="text-slate-400">{showActivities ? '−' : '+'}</span>
+              <span className="text-slate-400 text-xl">{showActivities ? '−' : '+'}</span>
             </button>
 
             {showActivities && (
@@ -158,7 +149,6 @@ export default function Home() {
                   const actualIndex = data.currentWeek.activities.length - 1 - i;
                   return (
                     <div key={i} className="flex items-start gap-3 pb-3 border-b border-slate-100 last:border-0">
-                      {/* Emoji de emoción */}
                       {act.emotion && (
                         <span className="text-2xl flex-shrink-0">{act.emotion}</span>
                       )}
@@ -175,7 +165,7 @@ export default function Home() {
                       </div>
                       <Link
                         href={`/editar?date=${act.date}&index=${actualIndex}`}
-                        className="text-indigo-600 text-xs hover:text-indigo-700"
+                        className="text-indigo-600 text-xs hover:text-indigo-700 font-medium"
                       >
                         Editar
                       </Link>
@@ -186,26 +176,19 @@ export default function Home() {
             )}
           </section>
         ) : (
-          <div className="bg-gradient-to-br from-slate-50 to-indigo-50 rounded-3xl shadow-sm p-8 text-center animate-slideUp" style={{animationDelay: '0.3s'}}>
+          <div className="bg-gradient-to-br from-slate-50/80 to-indigo-50/80 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-10 text-center animate-slideUp" style={{animationDelay: '0.2s'}}>
             <div className="text-6xl mb-4">🌱</div>
             <h3 className="text-xl font-semibold text-slate-800 mb-2">
-              Nada que registrar, pero hoy también cuenta
+              Empezá tu semana
             </h3>
             <p className="text-slate-600 mb-6">
-              A veces el descanso es parte del progreso.
+              Cada día es una oportunidad para avanzar.
             </p>
-            <Link
-              href="/reflexion"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-indigo-600 text-white font-medium hover:bg-indigo-700"
-            >
-              <span>+</span>
-              Registrar mi primer día
-            </Link>
           </div>
         )}
 
-        {/* Compartir progreso */}
-        <div className="animate-slideUp" style={{animationDelay: '0.38s'}}>
+        {/* Botones de acción - flotantes */}
+        <div className="space-y-3 animate-slideUp" style={{animationDelay: '0.25s'}}>
           <ShareButton
             name={data.name}
             progress={progress}
@@ -213,17 +196,15 @@ export default function Home() {
             minutes={data.currentWeek.totalMinutes}
             streak={currentStreak}
           />
-        </div>
 
-        {/* CTA */}
-        <Link
-          href="/reflexion"
-          className="block w-full h-14 rounded-full bg-indigo-600 text-white font-medium flex items-center justify-center shadow-lg hover:bg-indigo-700 hover:shadow-xl animate-scaleIn"
-          style={{animationDelay: '0.4s'}}
-        >
-          <span className="mr-2">+</span>
-          Registrar actividad
-        </Link>
+          <Link
+            href="/reflexion"
+            className="block w-full h-14 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-medium flex items-center justify-center shadow-lg hover:shadow-xl transition-all"
+          >
+            <span className="mr-2 text-xl">+</span>
+            Registrar actividad
+          </Link>
+        </div>
       </div>
     </main>
   );
