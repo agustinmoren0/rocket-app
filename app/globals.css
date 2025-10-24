@@ -74,3 +74,162 @@ button {
 button:active {
   transform: scale(0.97);
 }
+
+/* ============================================
+   MODO OSCURO MEJORADO - Profesional
+   ============================================ */
+
+:root {
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-hover: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --text-tertiary: #94a3b8;
+  --border: #e2e8f0;
+  --shadow: rgba(0, 0, 0, 0.05);
+  --indigo: #6366f1;
+  --indigo-hover: #4f46e5;
+  --indigo-light: #eef2ff;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #111111;
+  --bg-card: #1a1a1a;
+  --bg-hover: #252525;
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --text-tertiary: #71717a;
+  --border: #27272a;
+  --shadow: rgba(0, 0, 0, 0.3);
+  --indigo: #818cf8;
+  --indigo-hover: #6366f1;
+  --indigo-light: #1e1b4b;
+}
+
+/* Aplicar tema */
+body {
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+main {
+  background: var(--bg-primary) !important;
+}
+
+.bg-white {
+  background-color: var(--bg-card) !important;
+}
+
+.bg-slate-50 {
+  background-color: var(--bg-secondary) !important;
+}
+
+.bg-slate-100 {
+  background-color: var(--bg-hover) !important;
+}
+
+.bg-gradient-to-b {
+  background: var(--bg-primary) !important;
+}
+
+/* Textos */
+.text-slate-800,
+.text-slate-900 {
+  color: var(--text-primary) !important;
+}
+
+.text-slate-700 {
+  color: var(--text-primary) !important;
+  opacity: 0.95;
+}
+
+.text-slate-600 {
+  color: var(--text-secondary) !important;
+}
+
+.text-slate-500,
+.text-slate-400 {
+  color: var(--text-tertiary) !important;
+}
+
+/* Bordes */
+.border-slate-200,
+.border-slate-100 {
+  border-color: var(--border) !important;
+}
+
+/* Sombras */
+.shadow-sm,
+.shadow-md,
+.shadow-lg {
+  box-shadow: 0 2px 8px var(--shadow) !important;
+}
+
+/* Botones indigo */
+.bg-indigo-600 {
+  background-color: var(--indigo) !important;
+}
+
+.bg-indigo-600:hover {
+  background-color: var(--indigo-hover) !important;
+}
+
+.text-indigo-600 {
+  color: var(--indigo) !important;
+}
+
+.bg-indigo-50 {
+  background-color: var(--indigo-light) !important;
+}
+
+/* Hovers */
+.hover\:bg-slate-50:hover,
+.hover\:bg-slate-100:hover {
+  background-color: var(--bg-hover) !important;
+}
+
+.hover\:bg-amber-200:hover {
+  background-color: var(--bg-hover) !important;
+}
+
+/* Gradientes especiales en dark */
+[data-theme="dark"] .bg-gradient-to-br.from-orange-50 {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border);
+}
+
+[data-theme="dark"] .bg-gradient-to-br.from-amber-50 {
+  background: var(--bg-card) !important;
+  border: 1px solid var(--border);
+}
+
+[data-theme="dark"] .bg-gradient-to-br.from-indigo-500 {
+  background: linear-gradient(135deg, var(--indigo) 0%, #a855f7 100%) !important;
+}
+
+/* Inputs en dark mode */
+[data-theme="dark"] input,
+[data-theme="dark"] textarea {
+  background-color: var(--bg-secondary) !important;
+  border-color: var(--border) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] input:focus,
+[data-theme="dark"] textarea:focus {
+  border-color: var(--indigo) !important;
+}
+
+/* Transiciones suaves */
+body,
+main,
+.bg-white,
+.bg-slate-50,
+.bg-slate-100,
+input,
+textarea {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}

@@ -1,4 +1,7 @@
-// app/page.tsx - Dashboard con animaciones y edición
+/* INSTRUCCIONES PARA CLAUDE VS CODE:
+Reemplazá app/page.tsx con este código completo
+*/
+
 'use client'
 
 import { useEffect, useState } from 'react';
@@ -6,7 +9,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import CircularProgress from './components/CircularProgress';
 import InsightCard from './components/InsightCard';
-import { loadData, getWeekProgress, getImprovement } from './lib/store';
+import StreakCard from './components/StreakCard';
+import { loadData, getWeekProgress, getImprovement, getCurrentStreak, getBestStreak } from './lib/store';
 
 export default function Home() {
   const router = useRouter();
@@ -37,6 +41,8 @@ export default function Home() {
   const progress = getWeekProgress();
   const improvement = getImprovement();
   const activeDays = data.currentWeek.activeDays.filter(Boolean).length;
+  const currentStreak = getCurrentStreak();
+  const bestStreak = getBestStreak();
 
   const getInsight = () => {
     if (activeDays >= 5) return {
@@ -67,9 +73,12 @@ export default function Home() {
             ¡Hola, {data.name}!
           </h1>
         </div>
-        <button className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center hover:bg-amber-200">
+        <Link
+          href="/perfil"
+          className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center hover:bg-amber-200"
+        >
           <span className="text-xl">👤</span>
-        </button>
+        </Link>
       </header>
 
       <div className="px-6 space-y-6 pb-24">
@@ -112,14 +121,19 @@ export default function Home() {
           </div>
         )}
 
-        {/* Rocket Insights */}
+        {/* Racha */}
         <div className="animate-slideUp" style={{animationDelay: '0.25s'}}>
+          <StreakCard currentStreak={currentStreak} bestStreak={bestStreak} />
+        </div>
+
+        {/* Rocket Insights */}
+        <div className="animate-slideUp" style={{animationDelay: '0.3s'}}>
           <InsightCard {...insight} />
         </div>
 
         {/* Lista de actividades recientes */}
         {data.currentWeek.activities.length > 0 && (
-          <section className="bg-white rounded-3xl shadow-sm p-6 animate-slideUp" style={{animationDelay: '0.3s'}}>
+          <section className="bg-white rounded-3xl shadow-sm p-6 animate-slideUp" style={{animationDelay: '0.35s'}}>
             <button
               onClick={() => setShowActivities(!showActivities)}
               className="w-full flex items-center justify-between"
@@ -132,27 +146,30 @@ export default function Home() {
 
             {showActivities && (
               <div className="mt-4 space-y-3 animate-fadeIn">
-                {data.currentWeek.activities.slice(-5).reverse().map((act, i) => (
-                  <div key={i} className="flex items-start gap-3 pb-3 border-b border-slate-100 last:border-0">
-                    <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
-                      <span className="text-sm font-bold text-indigo-600">
-                        {act.minutes}m
-                      </span>
+                {data.currentWeek.activities.slice(-5).reverse().map((act, i) => {
+                  const actualIndex = data.currentWeek.activities.length - 1 - i;
+                  return (
+                    <div key={i} className="flex items-start gap-3 pb-3 border-b border-slate-100 last:border-0">
+                      <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
+                        <span className="text-sm font-bold text-indigo-600">
+                          {act.minutes}m
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-slate-800 line-clamp-2">{act.note}</p>
+                        <p className="text-xs text-slate-500 mt-1">
+                          {formatDate(act.date)}
+                        </p>
+                      </div>
+                      <Link
+                        href={`/editar?date=${act.date}&index=${actualIndex}`}
+                        className="text-indigo-600 text-xs hover:text-indigo-700"
+                      >
+                        Editar
+                      </Link>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-slate-800 line-clamp-2">{act.note}</p>
-                      <p className="text-xs text-slate-500 mt-1">
-                        {formatDate(act.date)}
-                      </p>
-                    </div>
-                    <Link
-                      href={`/editar?date=${act.date}&index=${i}`}
-                      className="text-indigo-600 text-xs hover:text-indigo-700"
-                    >
-                      Editar
-                    </Link>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </section>
@@ -162,7 +179,7 @@ export default function Home() {
         <Link
           href="/reflexion"
           className="block w-full h-14 rounded-full bg-indigo-600 text-white font-medium flex items-center justify-center shadow-lg hover:bg-indigo-700 hover:shadow-xl animate-scaleIn"
-          style={{animationDelay: '0.35s'}}
+          style={{animationDelay: '0.4s'}}
         >
           <span className="mr-2">+</span>
           Registrar actividad

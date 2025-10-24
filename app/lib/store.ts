@@ -18,6 +18,9 @@ export type UserData = {
   onboardingDone: boolean;
   currentWeek: WeekData;
   previousWeek?: WeekData;
+  currentStreak?: number;
+  bestStreak?: number;
+  lastActivityDate?: string;
 };
 
 const STORAGE_KEY = 'rocket.data';
@@ -97,6 +100,9 @@ export function addActivity(minutes: number, note: string): void {
   data.currentWeek.totalMinutes += minutes;
   data.currentWeek.activities.push({ date: today, minutes, note });
 
+  // Actualizar racha
+  updateStreak(data, today);
+
   saveData(data);
 
   console.log('✅ Actividad guardada:', { name: data.name, currentWeek: data.currentWeek });
@@ -127,4 +133,66 @@ export function completeOnboarding(name: string): void {
   data.name = name;
   data.onboardingDone = true;
   saveData(data);
+}
+
+// Actualizar racha (helper interno)
+function updateStreak(data: UserData, today: string): void {
+  const lastDate = data.lastActivityDate;
+
+  if (!lastDate) {
+    // Primera actividad
+    data.currentStreak = 1;
+    data.bestStreak = 1;
+    data.lastActivityDate = today;
+    return;
+  }
+
+  // Si ya registró hoy, no hacer nada
+  if (lastDate === today) {
+    return;
+  }
+
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+  if (lastDate === yesterdayStr) {
+    // Día consecutivo
+    data.currentStreak = (data.currentStreak || 0) + 1;
+    data.bestStreak = Math.max(data.bestStreak || 0, data.currentStreak);
+  } else {
+    // Se rompió la racha
+    data.currentStreak = 1;
+  }
+
+  data.lastActivityDate = today;
+}
+
+// Obtener racha actual
+export function getCurrentStreak(): number {
+  const data = loadData();
+
+  // Verificar si la racha sigue vigente
+  const today = new Date().toISOString().split('T')[0];
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+  const lastDate = data.lastActivityDate;
+
+  if (!lastDate) return 0;
+
+  // Si la última actividad fue hoy o ayer, la racha está vigente
+  if (lastDate === today || lastDate === yesterdayStr) {
+    return data.currentStreak || 0;
+  }
+
+  // Si no, la racha se rompió
+  return 0;
+}
+
+// Obtener mejor racha histórica
+export function getBestStreak(): number {
+  const data = loadData();
+  return data.bestStreak || 0;
 }
