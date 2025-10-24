@@ -84,20 +84,22 @@ export function saveData(data: UserData): void {
 export function addActivity(minutes: number, note: string): void {
   const data = loadData();
   const today = new Date().toISOString().split('T')[0];
-  
+
   // Calcular índice del día (0 = lunes, 6 = domingo)
   const weekStart = new Date(data.currentWeek.startDate);
   const todayDate = new Date(today);
   const dayIndex = Math.floor((todayDate.getTime() - weekStart.getTime()) / (1000 * 60 * 60 * 24));
-  
+
   if (dayIndex >= 0 && dayIndex < 7) {
     data.currentWeek.activeDays[dayIndex] = true;
   }
-  
+
   data.currentWeek.totalMinutes += minutes;
   data.currentWeek.activities.push({ date: today, minutes, note });
-  
+
   saveData(data);
+
+  console.log('✅ Actividad guardada:', { name: data.name, currentWeek: data.currentWeek });
 }
 
 // Calcular % de progreso semanal
