@@ -7,6 +7,7 @@
 
 import { useState } from 'react';
 import { generateProgressImage, shareProgress } from '../lib/shareImage';
+import { showToast } from './Toast';
 
 type Props = {
   name: string;
@@ -24,8 +25,9 @@ export default function ShareButton({ name, progress, activeDays, minutes, strea
     try {
       const imageUrl = await generateProgressImage(name, progress, activeDays, minutes, streak);
       await shareProgress(imageUrl);
+      showToast('Imagen generada correctamente', 'success');
     } catch (error) {
-      alert('Error al generar imagen');
+      showToast('Error al generar imagen', 'error');
     } finally {
       setLoading(false);
     }

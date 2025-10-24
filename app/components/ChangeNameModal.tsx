@@ -7,6 +7,7 @@
 
 import { useState } from 'react';
 import { loadData, saveData } from '../lib/store';
+import { showToast } from './Toast';
 
 type Props = {
   isOpen: boolean;
@@ -22,7 +23,7 @@ export default function ChangeNameModal({ isOpen, onClose, currentName }: Props)
   function handleSave() {
     const trimmed = name.trim();
     if (!trimmed) {
-      alert('Por favor, ingresá un nombre válido');
+      showToast('Por favor, ingresá un nombre válido', 'error');
       return;
     }
 
@@ -30,6 +31,7 @@ export default function ChangeNameModal({ isOpen, onClose, currentName }: Props)
     data.name = trimmed;
     saveData(data);
 
+    showToast('Nombre actualizado correctamente', 'success');
     window.location.reload(); // Recargar para actualizar nombre en toda la app
   }
 

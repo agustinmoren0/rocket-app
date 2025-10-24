@@ -139,9 +139,9 @@ export default function Home() {
           <InsightCard {...insight} />
         </div>
 
-        {/* Lista de actividades recientes */}
-        {data.currentWeek.activities.length > 0 && (
-          <section className="bg-white rounded-3xl shadow-sm p-6 animate-slideUp" style={{animationDelay: '0.35s'}}>
+        {/* Lista de actividades recientes O empty state */}
+        {data.currentWeek.activities.length > 0 ? (
+          <section className="bg-white rounded-3xl shadow-sm p-6 animate-slideUp" style={{animationDelay: '0.3s'}}>
             <button
               onClick={() => setShowActivities(!showActivities)}
               className="w-full flex items-center justify-between"
@@ -158,6 +158,10 @@ export default function Home() {
                   const actualIndex = data.currentWeek.activities.length - 1 - i;
                   return (
                     <div key={i} className="flex items-start gap-3 pb-3 border-b border-slate-100 last:border-0">
+                      {/* Emoji de emoción */}
+                      {act.emotion && (
+                        <span className="text-2xl flex-shrink-0">{act.emotion}</span>
+                      )}
                       <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center flex-shrink-0">
                         <span className="text-sm font-bold text-indigo-600">
                           {act.minutes}m
@@ -181,6 +185,23 @@ export default function Home() {
               </div>
             )}
           </section>
+        ) : (
+          <div className="bg-gradient-to-br from-slate-50 to-indigo-50 rounded-3xl shadow-sm p-8 text-center animate-slideUp" style={{animationDelay: '0.3s'}}>
+            <div className="text-6xl mb-4">🌱</div>
+            <h3 className="text-xl font-semibold text-slate-800 mb-2">
+              Nada que registrar, pero hoy también cuenta
+            </h3>
+            <p className="text-slate-600 mb-6">
+              A veces el descanso es parte del progreso.
+            </p>
+            <Link
+              href="/reflexion"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-indigo-600 text-white font-medium hover:bg-indigo-700"
+            >
+              <span>+</span>
+              Registrar mi primer día
+            </Link>
+          </div>
         )}
 
         {/* Compartir progreso */}

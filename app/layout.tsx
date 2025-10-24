@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import RegisterSW from "./register-sw"; // 👈 agregamos el registro del Service Worker
+import ToastContainer from "./components/Toast";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,6 +59,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <RegisterSW /> {/* 👈 se registra el service worker */}
+        <ToastContainer />
         {children}
       </body>
     </html>

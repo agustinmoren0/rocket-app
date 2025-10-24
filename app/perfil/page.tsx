@@ -11,6 +11,7 @@ import { loadData } from '../lib/store';
 import { useTheme } from '../hooks/useTheme';
 import InstallButton from '../components/InstallButton';
 import ChangeNameModal from '../components/ChangeNameModal';
+import { showToast } from '../components/Toast';
 import {
   requestNotificationPermission,
   scheduleReminder,
@@ -48,12 +49,14 @@ export default function PerfilPage() {
         setReminderEnabled(true);
         saveReminderPreference(true, 18);
         scheduleReminder(18, 0);
+        showToast('Recordatorios activados', 'success');
       } else {
-        alert('Necesitás activar los permisos de notificaciones en tu navegador');
+        showToast('Necesitás activar los permisos de notificaciones en tu navegador', 'error');
       }
     } else {
       setReminderEnabled(false);
       saveReminderPreference(false, 18);
+      showToast('Recordatorios desactivados', 'info');
     }
   }
 

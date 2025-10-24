@@ -4,6 +4,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { loadData, saveData } from '../lib/store';
+import { showToast } from '../components/Toast';
 
 function EditarContent() {
   const router = useRouter();
@@ -39,7 +40,7 @@ function EditarContent() {
 
     const mins = parseInt(minutes);
     if (isNaN(mins) || mins <= 0 || !note.trim()) {
-      alert('Por favor, completá todos los campos correctamente');
+      showToast('Por favor, completá todos los campos correctamente', 'error');
       return;
     }
 
@@ -58,6 +59,7 @@ function EditarContent() {
     data.currentWeek.totalMinutes = data.currentWeek.totalMinutes - oldMinutes + mins;
 
     saveData(data);
+    showToast('Actividad actualizada correctamente', 'success');
     window.location.href = '/';
   }
 
@@ -86,6 +88,7 @@ function EditarContent() {
     }
 
     saveData(data);
+    showToast('Actividad eliminada correctamente', 'success');
     window.location.href = '/';
   }
 

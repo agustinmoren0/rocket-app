@@ -1,9 +1,14 @@
-// lib/store.ts - Sistema de datos con localStorage
+/* INSTRUCCIONES PARA CLAUDE VS CODE:
+Reemplazá app/lib/store.ts COMPLETO con este código
+*/
+
+// lib/store.ts - Sistema de datos con localStorage + emociones
 
 export type Activity = {
   date: string; // "2025-10-23"
   minutes: number;
   note: string;
+  emotion?: string; // 😊 😐 😔 😤 🔥 etc
 };
 
 export type WeekData = {
@@ -18,9 +23,6 @@ export type UserData = {
   onboardingDone: boolean;
   currentWeek: WeekData;
   previousWeek?: WeekData;
-  currentStreak?: number;
-  bestStreak?: number;
-  lastActivityDate?: string;
 };
 
 const STORAGE_KEY = 'rocket.data';
@@ -29,7 +31,7 @@ const STORAGE_KEY = 'rocket.data';
 function getWeekStart(): string {
   const now = new Date();
   const day = now.getDay();
-  const diff = day === 0 ? -6 : 1 - day; // Si es domingo, retrocede 6 días
+  const diff = day === 0 ? -6 : 1 - day;
   const monday = new Date(now);
   monday.setDate(now.getDate() + diff);
   return monday.toISOString().split('T')[0];
@@ -52,13 +54,13 @@ function initData(): UserData {
 // Cargar datos
 export function loadData(): UserData {
   if (typeof window === 'undefined') return initData();
-  
+
   const stored = localStorage.getItem(STORAGE_KEY);
   if (!stored) return initData();
-  
+
   try {
     const data: UserData = JSON.parse(stored);
-    
+
     // Si cambió la semana, mover currentWeek a previousWeek
     const currentStart = getWeekStart();
     if (data.currentWeek.startDate !== currentStart) {
@@ -70,7 +72,7 @@ export function loadData(): UserData {
         activities: [],
       };
     }
-    
+
     return data;
   } catch {
     return initData();
@@ -83,8 +85,8 @@ export function saveData(data: UserData): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
-// Registrar actividad del día
-export function addActivity(minutes: number, note: string): void {
+// Registrar actividad del día CON EMOCIÓN
+export function addActivity(minutes: number, note: string, emotion?: string): void {
   const data = loadData();
   const today = new Date().toISOString().split('T')[0];
 
@@ -98,14 +100,10 @@ export function addActivity(minutes: number, note: string): void {
   }
 
   data.currentWeek.totalMinutes += minutes;
-  data.currentWeek.activities.push({ date: today, minutes, note });
-
-  // Actualizar racha
-  updateStreak(data, today);
+  data.currentWeek.activities.push({ date: today, minutes, note, emotion });
 
   saveData(data);
-
-  console.log('✅ Actividad guardada:', { name: data.name, currentWeek: data.currentWeek });
+  console.log('✅ Actividad guardada:', data);
 }
 
 // Calcular % de progreso semanal
@@ -119,10 +117,10 @@ export function getWeekProgress(): number {
 export function getImprovement(): number {
   const data = loadData();
   if (!data.previousWeek) return 0;
-  
+
   const currentActive = data.currentWeek.activeDays.filter(Boolean).length;
   const previousActive = data.previousWeek.activeDays.filter(Boolean).length;
-  
+
   if (previousActive === 0) return 0;
   return Math.round(((currentActive - previousActive) / previousActive) * 100);
 }
@@ -135,64 +133,55 @@ export function completeOnboarding(name: string): void {
   saveData(data);
 }
 
-// Actualizar racha (helper interno)
-function updateStreak(data: UserData, today: string): void {
-  const lastDate = data.lastActivityDate;
-
-  if (!lastDate) {
-    // Primera actividad
-    data.currentStreak = 1;
-    data.bestStreak = 1;
-    data.lastActivityDate = today;
-    return;
-  }
-
-  // Si ya registró hoy, no hacer nada
-  if (lastDate === today) {
-    return;
-  }
-
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-  if (lastDate === yesterdayStr) {
-    // Día consecutivo
-    data.currentStreak = (data.currentStreak || 0) + 1;
-    data.bestStreak = Math.max(data.bestStreak || 0, data.currentStreak);
-  } else {
-    // Se rompió la racha
-    data.currentStreak = 1;
-  }
-
-  data.lastActivityDate = today;
-}
-
-// Obtener racha actual
+// Calcular racha de días consecutivos
 export function getCurrentStreak(): number {
   const data = loadData();
+  const days = data.currentWeek.activeDays;
 
-  // Verificar si la racha sigue vigente
-  const today = new Date().toISOString().split('T')[0];
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().split('T')[0];
+  let streak = 0;
+  const today = new Date().getDay();
+  const todayIndex = today === 0 ? 6 : today - 1;
 
-  const lastDate = data.lastActivityDate;
-
-  if (!lastDate) return 0;
-
-  // Si la última actividad fue hoy o ayer, la racha está vigente
-  if (lastDate === today || lastDate === yesterdayStr) {
-    return data.currentStreak || 0;
+  for (let i = todayIndex; i >= 0; i--) {
+    if (days[i]) {
+      streak++;
+    } else {
+      break;
+    }
   }
 
-  // Si no, la racha se rompió
-  return 0;
+  return streak;
 }
 
-// Obtener mejor racha histórica
+// Calcular mejor racha histórica
 export function getBestStreak(): number {
   const data = loadData();
-  return data.bestStreak || 0;
+  let maxStreak = 0;
+  let currentStreak = 0;
+
+  for (const active of data.currentWeek.activeDays) {
+    if (active) {
+      currentStreak++;
+      maxStreak = Math.max(maxStreak, currentStreak);
+    } else {
+      currentStreak = 0;
+    }
+  }
+
+  return maxStreak;
+}
+
+// Obtener emoción más frecuente de la semana
+export function getMostFrequentEmotion(): string | null {
+  const data = loadData();
+  const emotions = data.currentWeek.activities
+    .map(a => a.emotion)
+    .filter(Boolean) as string[];
+
+  if (emotions.length === 0) return null;
+
+  const counts: Record<string, number> = {};
+  emotions.forEach(e => counts[e] = (counts[e] || 0) + 1);
+
+  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
 }
