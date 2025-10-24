@@ -81,6 +81,13 @@ export default function Home() {
         </Link>
       </header>
 
+      <Link
+        href="/historial"
+        className="mx-6 mb-4 flex items-center gap-2 text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+      >
+        📊 Ver historial completo
+      </Link>
+
       <div className="px-6 space-y-6 pb-24">
         {/* Progreso semanal */}
         <section className="bg-white rounded-3xl shadow-sm p-6 animate-slideUp">
