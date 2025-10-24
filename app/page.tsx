@@ -10,6 +10,7 @@ import Link from 'next/link';
 import CircularProgress from './components/CircularProgress';
 import InsightCard from './components/InsightCard';
 import StreakCard from './components/StreakCard';
+import ShareButton from './components/ShareButton';
 import { loadData, getWeekProgress, getImprovement, getCurrentStreak, getBestStreak } from './lib/store';
 
 export default function Home() {
@@ -181,6 +182,17 @@ export default function Home() {
             )}
           </section>
         )}
+
+        {/* Compartir progreso */}
+        <div className="animate-slideUp" style={{animationDelay: '0.38s'}}>
+          <ShareButton
+            name={data.name}
+            progress={progress}
+            activeDays={activeDays}
+            minutes={data.currentWeek.totalMinutes}
+            streak={currentStreak}
+          />
+        </div>
 
         {/* CTA */}
         <Link
