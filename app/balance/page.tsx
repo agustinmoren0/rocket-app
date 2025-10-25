@@ -45,6 +45,13 @@ export default function BalancePage() {
   const data = loadData();
   const breakdown = getCategoryBreakdown();
 
+  console.log('🔍 Balance Debug:', {
+    hasCategories: breakdown.length > 0,
+    breakdown,
+    totalActivities: data.currentWeek.activities.length,
+    activitiesWithCategory: data.currentWeek.activities.filter(a => a.category).length
+  });
+
   const chartData = breakdown.map(item => ({
     name: item.category,
     value: item.minutes,

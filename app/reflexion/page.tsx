@@ -20,14 +20,15 @@ export default function ReflexionPage() {
   const router = useRouter();
   const [selectedEmotion, setSelectedEmotion] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | ''>('');
-  const [minutes, setMinutes] = useState('');
+  const [timeValue, setTimeValue] = useState('');
+  const [timeUnit, setTimeUnit] = useState<'minutes' | 'hours'>('minutes');
   const [note, setNote] = useState('');
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    const mins = parseInt(minutes);
-    if (isNaN(mins) || mins <= 0) {
+    const value = parseFloat(timeValue);
+    if (isNaN(value) || value <= 0) {
       showToast('Por favor, ingresá un tiempo válido', 'error');
       return;
     }
@@ -37,8 +38,11 @@ export default function ReflexionPage() {
       return;
     }
 
+    // Convertir a minutos si está en horas
+    const minutes = timeUnit === 'hours' ? Math.round(value * 60) : Math.round(value);
+
     addActivity(
-      mins,
+      minutes,
       note,
       selectedEmotion || undefined,
       selectedCategory || undefined
@@ -55,13 +59,13 @@ export default function ReflexionPage() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-indigo-50 to-white px-6 py-10">
       <motion.header
-        initial={{ opacity: 0, y: -20 }}
+        initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         className="mb-8"
       >
         <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => router.back()}
           className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center mb-6 hover:bg-slate-50"
         >
@@ -76,57 +80,75 @@ export default function ReflexionPage() {
       </motion.header>
 
       <motion.form
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
         onSubmit={handleSubmit}
         className="space-y-6"
       >
-        {/* Minutos */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-        >
+        {/* Tiempo con selector */}
+        <div>
           <label className="block text-sm font-medium text-slate-700 mb-2">
             ¿Cuánto tiempo dedicaste?
           </label>
-          <motion.input
-            whileFocus={{ scale: 1.02 }}
-            type="number"
-            value={minutes}
-            onChange={(e) => setMinutes(e.target.value)}
-            placeholder="60"
-            className="w-full h-14 px-4 rounded-2xl bg-white border-2 border-slate-200 focus:border-indigo-500 focus:outline-none text-lg transition-all"
-            autoFocus
-          />
-        </motion.div>
+          <div className="flex gap-3">
+            <motion.input
+              whileFocus={{ scale: 1.01 }}
+              type="number"
+              step="0.5"
+              value={timeValue}
+              onChange={(e) => setTimeValue(e.target.value)}
+              placeholder={timeUnit === 'minutes' ? '60' : '1.5'}
+              className="flex-1 h-14 px-4 rounded-2xl bg-white border-2 border-slate-200 focus:border-indigo-500 focus:outline-none text-lg transition-colors"
+              autoFocus
+            />
+            <div className="flex rounded-2xl bg-slate-100 p-1">
+              <button
+                type="button"
+                onClick={() => setTimeUnit('minutes')}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                  timeUnit === 'minutes'
+                    ? 'bg-white text-slate-800 shadow-sm'
+                    : 'text-slate-600'
+                }`}
+              >
+                Min
+              </button>
+              <button
+                type="button"
+                onClick={() => setTimeUnit('hours')}
+                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
+                  timeUnit === 'hours'
+                    ? 'bg-white text-slate-800 shadow-sm'
+                    : 'text-slate-600'
+                }`}
+              >
+                Hs
+              </button>
+            </div>
+          </div>
+          <p className="text-xs text-slate-500 mt-2">
+            {timeUnit === 'minutes' ? 'O podés usar horas →' : '← O podés usar minutos'}
+          </p>
+        </div>
 
         {/* Nota */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.25 }}
-        >
+        <div>
           <label className="block text-sm font-medium text-slate-700 mb-2">
             ¿Qué hiciste?
           </label>
           <motion.textarea
-            whileFocus={{ scale: 1.02 }}
+            whileFocus={{ scale: 1.01 }}
             value={note}
             onChange={(e) => setNote(e.target.value)}
             placeholder="Ej: Escribí 500 palabras de mi novela..."
             rows={5}
-            className="w-full px-4 py-3 rounded-2xl bg-white border-2 border-slate-200 focus:border-indigo-500 focus:outline-none resize-none transition-all"
+            className="w-full px-4 py-3 rounded-2xl bg-white border-2 border-slate-200 focus:border-indigo-500 focus:outline-none resize-none transition-colors"
           />
-        </motion.div>
+        </div>
 
         {/* Categorías */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 }}
-        >
+        <div>
           <label className="block text-sm font-medium text-slate-700 mb-3">
             ¿A qué categoría pertenece? (opcional)
           </label>
@@ -135,11 +157,11 @@ export default function ReflexionPage() {
               <motion.button
                 key={category}
                 type="button"
-                initial={{ opacity: 0, scale: 0.8 }}
+                initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.35 + i * 0.05 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                transition={{ delay: 0.2 + i * 0.03 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => setSelectedCategory(
                   selectedCategory === category ? '' : category
                 )}
@@ -156,14 +178,10 @@ export default function ReflexionPage() {
               </motion.button>
             ))}
           </div>
-        </motion.div>
+        </div>
 
         {/* Emojis opcionales */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.7 }}
-        >
+        <div>
           <label className="block text-sm font-medium text-slate-500 mb-3">
             ¿Cómo te sentiste? (opcional)
           </label>
@@ -174,8 +192,8 @@ export default function ReflexionPage() {
                 type="button"
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.75 + i * 0.05 }}
-                whileHover={{ scale: 1.2, rotate: 5 }}
+                transition={{ delay: 0.5 + i * 0.03 }}
+                whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setSelectedEmotion(
                   selectedEmotion === emotion.emoji ? '' : emotion.emoji
@@ -194,17 +212,17 @@ export default function ReflexionPage() {
               </motion.button>
             ))}
           </div>
-        </motion.div>
+        </div>
 
         {/* Botón guardar */}
         <motion.button
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1 }}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
+          transition={{ delay: 0.7 }}
+          whileHover={{ scale: 1.01 }}
+          whileTap={{ scale: 0.99 }}
           type="submit"
-          className="w-full h-14 rounded-full bg-indigo-600 text-white font-medium shadow-lg hover:bg-indigo-700 transition-all"
+          className="w-full h-14 rounded-full bg-indigo-600 text-white font-medium shadow-lg hover:bg-indigo-700 transition-colors"
         >
           Guardar progreso
         </motion.button>

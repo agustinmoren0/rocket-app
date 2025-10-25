@@ -17,18 +17,18 @@ const containerVariants: Variants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1,
+      staggerChildren: 0.08,
     },
   },
 };
 
 const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 12 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.5,
+      duration: 0.3,
       ease: 'easeOut',
     },
   },
@@ -112,9 +112,9 @@ export default function Home() {
           className="max-w-xl mx-auto px-6 py-20 flex flex-col items-center justify-center min-h-screen"
         >
           <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
+            initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.2 }}
+            transition={{ delay: 0.1, duration: 0.4 }}
             className="mb-12"
           >
             <CircularProgress percentage={progress} />
@@ -123,7 +123,7 @@ export default function Home() {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.3 }}
             className="text-slate-600 text-center mb-12 max-w-sm"
           >
             {activeDays > 0
@@ -132,11 +132,11 @@ export default function Home() {
           </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            transition={{ delay: 0.4 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
             <Link
               href="/reflexion"
@@ -149,7 +149,7 @@ export default function Home() {
           <motion.button
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
+            transition={{ delay: 0.6 }}
             onClick={() => router.push('/perfil')}
             className="mt-8 text-sm text-slate-400 hover:text-slate-600"
           >
@@ -164,9 +164,9 @@ export default function Home() {
   return (
     <main className={`min-h-screen bg-gradient-to-br ${currentTheme.bg}`}>
       <motion.header
-        initial={{ opacity: 0, y: -20 }}
+        initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.3 }}
         className="max-w-2xl mx-auto px-6 pt-12 pb-8 flex items-center justify-between"
       >
         <div>
@@ -180,7 +180,7 @@ export default function Home() {
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           <Link
             href="/perfil"
-            className="w-11 h-11 rounded-2xl bg-white/70 backdrop-blur-sm shadow-sm flex items-center justify-center hover:bg-white transition-all"
+            className="w-11 h-11 rounded-2xl bg-white/70 backdrop-blur-sm shadow-sm flex items-center justify-center hover:bg-white transition-colors"
           >
             <span className="text-lg">⚙️</span>
           </Link>
@@ -196,7 +196,7 @@ export default function Home() {
         <motion.div className="flex-1" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
           <Link
             href="/balance"
-            className="h-12 rounded-2xl bg-white/70 backdrop-blur-sm shadow-sm flex items-center justify-center gap-2 text-sm font-medium text-slate-700 hover:bg-white transition-all"
+            className="h-12 rounded-2xl bg-white/70 backdrop-blur-sm shadow-sm flex items-center justify-center gap-2 text-sm font-medium text-slate-700 hover:bg-white transition-colors"
           >
             <span>📊</span>
             Tu Balance
@@ -205,7 +205,7 @@ export default function Home() {
         <motion.div className="flex-1" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
           <Link
             href="/historial"
-            className="h-12 rounded-2xl bg-white/70 backdrop-blur-sm shadow-sm flex items-center justify-center gap-2 text-sm font-medium text-slate-700 hover:bg-white transition-all"
+            className="h-12 rounded-2xl bg-white/70 backdrop-blur-sm shadow-sm flex items-center justify-center gap-2 text-sm font-medium text-slate-700 hover:bg-white transition-colors"
           >
             <span>📅</span>
             Historial
@@ -235,11 +235,11 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <motion.div whileHover={{ scale: 1.05 }} className="text-center">
+            <motion.div whileHover={{ scale: 1.02 }} className="text-center">
               <p className="text-3xl font-bold" style={{ color: currentTheme.primary }}>{activeDays}/7</p>
               <p className="text-sm text-slate-500 mt-1">Días activos</p>
             </motion.div>
-            <motion.div whileHover={{ scale: 1.05 }} className="text-center">
+            <motion.div whileHover={{ scale: 1.02 }} className="text-center">
               <p className="text-3xl font-bold" style={{ color: currentTheme.primary }}>{data.currentWeek.totalMinutes}</p>
               <p className="text-sm text-slate-500 mt-1">Minutos</p>
             </motion.div>
@@ -297,10 +297,10 @@ export default function Home() {
                   return (
                     <motion.div
                       key={i}
-                      initial={{ opacity: 0, x: -20 }}
+                      initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                      whileHover={{ x: 4 }}
+                      transition={{ delay: i * 0.03 }}
+                      whileHover={{ x: 2 }}
                       className="flex items-start gap-3 pb-3 border-b border-slate-100 last:border-0"
                     >
                       {act.emotion && (
@@ -335,13 +335,7 @@ export default function Home() {
             variants={itemVariants}
             className="bg-gradient-to-br from-slate-50/80 to-indigo-50/80 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-10 text-center"
           >
-            <motion.div
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-              className="text-6xl mb-4"
-            >
-              🌱
-            </motion.div>
+            <div className="text-6xl mb-4">🌱</div>
             <h3 className="text-xl font-semibold text-slate-800 mb-2">
               Empezá tu semana
             </h3>
@@ -360,10 +354,10 @@ export default function Home() {
             streak={currentStreak}
           />
 
-          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+          <motion.div whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
             <Link
               href="/reflexion"
-              className={`block w-full h-14 rounded-full bg-gradient-to-r ${currentTheme.gradient} text-white font-medium flex items-center justify-center shadow-lg hover:shadow-xl transition-all`}
+              className={`block w-full h-14 rounded-full bg-gradient-to-r ${currentTheme.gradient} text-white font-medium flex items-center justify-center shadow-lg hover:shadow-xl transition-shadow`}
             >
               <span className="mr-2 text-xl">+</span>
               Registrar actividad
