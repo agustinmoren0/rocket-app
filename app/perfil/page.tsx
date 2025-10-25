@@ -189,11 +189,10 @@ export default function PerfilPage() {
                     h-20 rounded-2xl flex flex-col items-center justify-center gap-2
                     transition-all
                     ${isSelected
-                      ? 'ring-2 ring-offset-2 bg-white shadow-lg'
+                      ? 'ring-2 ring-offset-2 bg-white shadow-lg ring-indigo-600'
                       : 'bg-slate-50 hover:bg-white'
                     }
                   `}
-                  style={isSelected ? { ringColor: theme.primary } : {}}
                 >
                   <span className="text-3xl">{theme.emoji}</span>
                   <span className="text-sm font-medium text-slate-700">{theme.name}</span>
