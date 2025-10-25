@@ -338,3 +338,16 @@ export function getCategoryBreakdown(): { category: Category; minutes: number; p
     }))
     .sort((a, b) => b.minutes - a.minutes);
 }
+
+// Cambiar nombre de usuario
+export function setUserName(name: string) {
+  const data = loadData();
+  data.name = name;
+  saveData(data);
+}
+
+// Borrar todos los datos
+export function clearAllData() {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(STORAGE_KEY);
+}
