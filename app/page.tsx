@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, type Variants } from 'framer-motion';
 import CircularProgress from './components/CircularProgress';
 import InsightCard from './components/InsightCard';
 import StreakCard from './components/StreakCard';
@@ -11,7 +11,7 @@ import ShareButton from './components/ShareButton';
 import { loadData, getWeekProgress, getImprovement, getCurrentStreak, getBestStreak } from './lib/store';
 import { celebrateStreak } from './lib/confetti';
 
-const containerVariants = {
+const containerVariants: Variants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -21,15 +21,14 @@ const containerVariants = {
   },
 };
 
-const itemVariants = {
+const itemVariants: Variants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      type: 'spring',
-      stiffness: 100,
-      damping: 12,
+      duration: 0.5,
+      ease: 'easeOut',
     },
   },
 };
@@ -39,7 +38,6 @@ export default function Home() {
   const [loaded, setLoaded] = useState(false);
   const [data, setData] = useState(() => loadData());
   const [showActivities, setShowActivities] = useState(false);
-  const [previousStreak, setPreviousStreak] = useState(0);
 
   useEffect(() => {
     const userData = loadData();
@@ -61,7 +59,6 @@ export default function Home() {
     }
 
     localStorage.setItem('rocket.lastStreak', currentStreak.toString());
-    setPreviousStreak(savedStreak);
   }, [router]);
 
   if (!loaded) {
