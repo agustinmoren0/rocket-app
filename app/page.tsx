@@ -102,7 +102,7 @@ export default function Home() {
 
   const insight = getInsight();
 
-  // MODO ZEN: UI ultra minimalista
+  // MODO ZEN
   if (data.zenMode) {
     return (
       <main className={`min-h-screen bg-gradient-to-br ${currentTheme.bg}`}>
@@ -163,7 +163,7 @@ export default function Home() {
     );
   }
 
-  // MODO NORMAL: UI completa
+  // MODO NORMAL
   return (
     <main className={`min-h-screen bg-gradient-to-br ${currentTheme.bg}`}>
       <motion.header
@@ -183,7 +183,7 @@ export default function Home() {
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           <Link
             href="/perfil"
-            className="w-11 h-11 rounded-2xl bg-white/70 backdrop-blur-sm shadow-sm flex items-center justify-center hover:bg-white transition-colors"
+            className={`w-11 h-11 rounded-2xl ${currentTheme.bgCard} backdrop-blur-sm shadow-sm flex items-center justify-center ${currentTheme.bgHover} transition-colors`}
           >
             <span className="text-lg">⚙️</span>
           </Link>
@@ -193,22 +193,22 @@ export default function Home() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
+        transition={{ delay: 0.1 }}
         className="max-w-2xl mx-auto px-6 mb-6 flex gap-3"
       >
-        <motion.div className="flex-1" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+        <motion.div className="flex-1" whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
           <Link
             href="/balance"
-            className="h-12 rounded-2xl bg-white/70 backdrop-blur-sm shadow-sm flex items-center justify-center gap-2 text-sm font-medium text-slate-700 hover:bg-white transition-colors"
+            className={`h-12 rounded-2xl ${currentTheme.bgCard} backdrop-blur-sm shadow-sm flex items-center justify-center gap-2 text-sm font-medium text-slate-700 ${currentTheme.bgHover} transition-colors`}
           >
             <span>📊</span>
             Tu Balance
           </Link>
         </motion.div>
-        <motion.div className="flex-1" whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+        <motion.div className="flex-1" whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.99 }}>
           <Link
             href="/historial"
-            className="h-12 rounded-2xl bg-white/70 backdrop-blur-sm shadow-sm flex items-center justify-center gap-2 text-sm font-medium text-slate-700 hover:bg-white transition-colors"
+            className={`h-12 rounded-2xl ${currentTheme.bgCard} backdrop-blur-sm shadow-sm flex items-center justify-center gap-2 text-sm font-medium text-slate-700 ${currentTheme.bgHover} transition-colors`}
           >
             <span>📅</span>
             Historial
@@ -224,11 +224,11 @@ export default function Home() {
       >
         <motion.section
           variants={itemVariants}
-          className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-8"
+          className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl shadow-lg border ${currentTheme.border} p-8`}
         >
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold text-slate-800">Tu semana</h2>
-            <Link href="/historial" className="text-xs font-medium text-slate-600 hover:text-slate-800">
+            <Link href="/historial" className={`text-xs font-medium ${currentTheme.accent} hover:opacity-80`}>
               Historial →
             </Link>
           </div>
@@ -272,7 +272,7 @@ export default function Home() {
         {data.currentWeek.activities.length > 0 ? (
           <motion.section
             variants={itemVariants}
-            className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-6"
+            className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl shadow-lg border ${currentTheme.border} p-6`}
           >
             <button
               onClick={() => setShowActivities(!showActivities)}
@@ -304,12 +304,12 @@ export default function Home() {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.03 }}
                       whileHover={{ x: 2 }}
-                      className="flex items-start gap-3 pb-3 border-b border-slate-100 last:border-0"
+                      className={`flex items-start gap-3 pb-3 border-b ${currentTheme.border} last:border-0`}
                     >
                       {act.emotion && (
                         <span className="text-2xl flex-shrink-0">{act.emotion}</span>
                       )}
-                      <div className="w-12 h-12 rounded-xl bg-slate-50 flex items-center justify-center flex-shrink-0">
+                      <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${currentTheme.gradientSubtle} flex items-center justify-center flex-shrink-0`}>
                         <span className="text-sm font-bold" style={{ color: currentTheme.primary }}>
                           {act.minutes}m
                         </span>
@@ -322,8 +322,7 @@ export default function Home() {
                       </div>
                       <Link
                         href={`/editar?date=${act.date}&index=${actualIndex}`}
-                        className="text-xs hover:opacity-80 font-medium"
-                        style={{ color: currentTheme.primary }}
+                        className={`text-xs font-medium ${currentTheme.accent} hover:opacity-80`}
                       >
                         Editar
                       </Link>
@@ -336,7 +335,7 @@ export default function Home() {
         ) : (
           <motion.div
             variants={itemVariants}
-            className="bg-gradient-to-br from-slate-50/80 to-indigo-50/80 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-10 text-center"
+            className={`bg-gradient-to-br ${currentTheme.gradientSubtle} backdrop-blur-xl rounded-3xl shadow-lg border ${currentTheme.border} p-10 text-center`}
           >
             <div className="text-6xl mb-4">🌱</div>
             <h3 className="text-xl font-semibold text-slate-800 mb-2">
