@@ -158,10 +158,7 @@ export default function OnboardingPage() {
               onKeyDown={(e) => e.key === 'Enter' && handleFinish()}
               placeholder="Tu nombre"
               autoFocus
-              className="w-full h-12 px-4 rounded-2xl bg-white/80 border-2 border-slate-200 focus:border-opacity-0 transition-all"
-              style={{
-                focusBorderColor: currentTheme.primary
-              }}
+              className="w-full h-12 px-4 rounded-2xl bg-white/80 border-2 border-slate-200 focus:outline-none transition-all"
             />
 
             <motion.button
