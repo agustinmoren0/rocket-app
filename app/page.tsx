@@ -8,7 +8,7 @@ import CircularProgress from './components/CircularProgress';
 import InsightCard from './components/InsightCard';
 import StreakCard from './components/StreakCard';
 import ShareButton from './components/ShareButton';
-import { loadData, getWeekProgress, getImprovement, getCurrentStreak, getBestStreak } from './lib/store';
+import { loadData, getWeekProgress, getImprovement, getCurrentStreak, getBestStreak, toggleZenMode } from './lib/store';
 import { celebrateStreak } from './lib/confetti';
 import { useTheme } from './hooks/useTheme';
 
@@ -150,7 +150,10 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
-            onClick={() => router.push('/perfil')}
+            onClick={() => {
+              toggleZenMode();
+              setTimeout(() => window.location.href = '/', 100);
+            }}
             className="mt-8 text-sm text-slate-400 hover:text-slate-600"
           >
             Salir del modo Zen

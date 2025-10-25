@@ -11,31 +11,31 @@ const containerVariants: Variants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.15,
+      staggerChildren: 0.1,
     },
   },
 };
 
 const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 30 },
+  hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
-      duration: 0.6,
+      duration: 0.4,
       ease: 'easeOut',
     },
   },
 };
 
 const categoryItemVariants: Variants = {
-  hidden: { opacity: 0, x: -20 },
+  hidden: { opacity: 0, x: -10 },
   visible: (i: number) => ({
     opacity: 1,
     x: 0,
     transition: {
-      delay: i * 0.1,
-      duration: 0.5,
+      delay: i * 0.05,
+      duration: 0.3,
     },
   }),
 };
@@ -46,10 +46,14 @@ export default function BalancePage() {
   const breakdown = getCategoryBreakdown();
 
   console.log('🔍 Balance Debug:', {
-    hasCategories: breakdown.length > 0,
     breakdown,
     totalActivities: data.currentWeek.activities.length,
-    activitiesWithCategory: data.currentWeek.activities.filter(a => a.category).length
+    activitiesWithCategory: data.currentWeek.activities.filter(a => a.category).length,
+    activities: data.currentWeek.activities.map(a => ({
+      note: a.note.substring(0, 30),
+      category: a.category,
+      minutes: a.minutes
+    }))
   });
 
   const chartData = breakdown.map(item => ({
@@ -68,9 +72,9 @@ export default function BalancePage() {
       className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50"
     >
       <motion.header
-        initial={{ opacity: 0, y: -20 }}
+        initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.3 }}
         className="max-w-2xl mx-auto px-6 pt-12 pb-8 flex items-center justify-between"
       >
         <div>
@@ -80,8 +84,8 @@ export default function BalancePage() {
           </p>
         </div>
         <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => router.back()}
           className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center hover:bg-slate-50"
         >
@@ -107,9 +111,9 @@ export default function BalancePage() {
               </h2>
 
               <motion.div
-                initial={{ scale: 0.8, opacity: 0 }}
+                initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.3, duration: 0.8, ease: 'easeOut' }}
+                transition={{ delay: 0.2, duration: 0.5 }}
                 className="h-80"
               >
                 <ResponsiveContainer width="100%" height="100%">
@@ -123,7 +127,7 @@ export default function BalancePage() {
                       paddingAngle={2}
                       dataKey="value"
                       animationBegin={0}
-                      animationDuration={1200}
+                      animationDuration={800}
                       animationEasing="ease-out"
                     >
                       {breakdown.map((entry, index) => (
@@ -146,7 +150,7 @@ export default function BalancePage() {
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.8 }}
+                transition={{ delay: 0.5 }}
                 className="text-center text-sm text-slate-500 mt-4"
               >
                 Total: {data.currentWeek.totalMinutes} minutos
@@ -170,14 +174,14 @@ export default function BalancePage() {
                     variants={categoryItemVariants}
                     initial="hidden"
                     animate="visible"
-                    whileHover={{ scale: 1.02, x: 4 }}
+                    whileHover={{ scale: 1.01, x: 2 }}
                     className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 hover:bg-slate-100 transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-3">
                       <motion.div
                         initial={{ scale: 0 }}
                         animate={{ scale: 1 }}
-                        transition={{ delay: 0.5 + i * 0.1, type: 'spring' }}
+                        transition={{ delay: 0.3 + i * 0.05, type: 'spring', stiffness: 400 }}
                         className="w-4 h-4 rounded-full"
                         style={{ backgroundColor: item.color }}
                       />
@@ -187,9 +191,9 @@ export default function BalancePage() {
                     </div>
                     <div className="text-right">
                       <motion.p
-                        initial={{ opacity: 0, x: 20 }}
+                        initial={{ opacity: 0, x: 10 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.6 + i * 0.1 }}
+                        transition={{ delay: 0.4 + i * 0.05 }}
                         className="font-bold text-slate-800"
                       >
                         {item.percentage}%
@@ -197,7 +201,7 @@ export default function BalancePage() {
                       <motion.p
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        transition={{ delay: 0.7 + i * 0.1 }}
+                        transition={{ delay: 0.5 + i * 0.05 }}
                         className="text-xs text-slate-500"
                       >
                         {item.minutes} min
@@ -214,13 +218,7 @@ export default function BalancePage() {
               className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-3xl p-6"
             >
               <div className="flex items-start gap-3">
-                <motion.span
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ repeat: Infinity, duration: 3, repeatDelay: 2 }}
-                  className="text-3xl"
-                >
-                  💡
-                </motion.span>
+                <span className="text-3xl">💡</span>
                 <div>
                   <h3 className="font-semibold text-slate-800 mb-2">
                     Insight de la semana
@@ -228,7 +226,7 @@ export default function BalancePage() {
                   <motion.p
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ delay: 1 }}
+                    transition={{ delay: 0.8 }}
                     className="text-sm text-slate-700"
                   >
                     {getBalanceInsight(breakdown)}
@@ -240,25 +238,19 @@ export default function BalancePage() {
         ) : (
           // Empty state
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
+            transition={{ duration: 0.4 }}
             className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-10 text-center"
           >
-            <motion.div
-              animate={{ scale: [1, 1.1, 1] }}
-              transition={{ repeat: Infinity, duration: 2 }}
-              className="text-6xl mb-4"
-            >
-              📊
-            </motion.div>
+            <div className="text-6xl mb-4">📊</div>
             <h3 className="text-xl font-semibold text-slate-800 mb-2">
               Empezá a categorizar
             </h3>
             <p className="text-slate-600 mb-6">
               Cuando registres actividades con categorías, verás tu balance aquí.
             </p>
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Link
                 href="/reflexion"
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-indigo-600 text-white font-medium hover:bg-indigo-700"
