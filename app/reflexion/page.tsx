@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { addActivity, CATEGORIES, type Category } from '../lib/store';
 import { showToast } from '../components/Toast';
 import { celebrateSave } from '../lib/confetti';
+import { useTheme } from '../hooks/useTheme';
 
 const emotions = [
   { emoji: '🔥', label: 'En fuego' },
@@ -18,6 +19,7 @@ const emotions = [
 
 export default function ReflexionPage() {
   const router = useRouter();
+  const { currentTheme } = useTheme();
   const [selectedEmotion, setSelectedEmotion] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<Category | ''>('');
   const [timeValue, setTimeValue] = useState('');
@@ -61,7 +63,7 @@ export default function ReflexionPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-indigo-50 to-white px-6 py-10">
+    <main className={`min-h-screen bg-gradient-to-b ${currentTheme.bg} px-6 py-10`}>
       <motion.header
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -71,7 +73,7 @@ export default function ReflexionPage() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => router.back()}
-          className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center mb-6 hover:bg-slate-50"
+          className={`w-10 h-10 rounded-full ${currentTheme.bgCard} shadow-sm flex items-center justify-center mb-6 ${currentTheme.bgHover}`}
         >
           ←
         </motion.button>
@@ -103,16 +105,17 @@ export default function ReflexionPage() {
               value={timeValue}
               onChange={(e) => setTimeValue(e.target.value)}
               placeholder={timeUnit === 'minutes' ? '60' : '1.5'}
-              className="flex-1 h-14 px-4 rounded-2xl bg-white border-2 border-slate-200 focus:border-indigo-500 focus:outline-none text-lg transition-colors"
+              className={`flex-1 h-14 px-4 rounded-2xl ${currentTheme.bgCard} border-2 ${currentTheme.border} focus:outline-none text-lg transition-colors`}
+              style={{ borderColor: currentTheme.primary }}
               autoFocus
             />
-            <div className="flex rounded-2xl bg-slate-100 p-1">
+            <div className={`flex rounded-2xl ${currentTheme.bgHover} p-1`}>
               <button
                 type="button"
                 onClick={() => setTimeUnit('minutes')}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                   timeUnit === 'minutes'
-                    ? 'bg-white text-slate-800 shadow-sm'
+                    ? `${currentTheme.bgCard} text-slate-800 shadow-sm`
                     : 'text-slate-600'
                 }`}
               >
@@ -123,7 +126,7 @@ export default function ReflexionPage() {
                 onClick={() => setTimeUnit('hours')}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                   timeUnit === 'hours'
-                    ? 'bg-white text-slate-800 shadow-sm'
+                    ? `${currentTheme.bgCard} text-slate-800 shadow-sm`
                     : 'text-slate-600'
                 }`}
               >
@@ -158,10 +161,14 @@ export default function ReflexionPage() {
                   h-16 rounded-2xl flex items-center justify-center text-sm font-medium
                   transition-all
                   ${selectedCategory === category
-                    ? 'bg-indigo-600 text-white ring-2 ring-indigo-500'
-                    : 'bg-white text-slate-700 hover:bg-slate-50 border-2 border-slate-200'
+                    ? `text-white transition-all border-2`
+                    : `${currentTheme.bgCard} text-slate-700 ${currentTheme.bgHover} border-2 ${currentTheme.border}`
                   }
                 `}
+                style={selectedCategory === category ? {
+                  backgroundImage: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
+                  borderColor: currentTheme.primary,
+                } : {}}
               >
                 {category}
               </motion.button>
@@ -180,7 +187,8 @@ export default function ReflexionPage() {
             onChange={(e) => setNote(e.target.value)}
             placeholder="Ej: Escribí 500 palabras de mi novela..."
             rows={4}
-            className="w-full px-4 py-3 rounded-2xl bg-white border-2 border-slate-200 focus:border-indigo-500 focus:outline-none resize-none transition-colors"
+            className={`w-full px-4 py-3 rounded-2xl ${currentTheme.bgCard} border-2 ${currentTheme.border} focus:outline-none resize-none transition-colors`}
+            style={{ borderColor: currentTheme.primary }}
           />
           <p className="text-xs text-slate-500 mt-2">
             {selectedCategory
@@ -211,10 +219,15 @@ export default function ReflexionPage() {
                   w-14 h-14 rounded-xl flex items-center justify-center text-2xl
                   transition-all
                   ${selectedEmotion === emotion.emoji
-                    ? 'bg-indigo-100 ring-2 ring-indigo-500'
-                    : 'bg-slate-50 hover:bg-slate-100'
+                    ? `ring-2 transition-all`
+                    : `${currentTheme.bgHover} hover:opacity-80`
                   }
                 `}
+                style={selectedEmotion === emotion.emoji ? {
+                  backgroundColor: currentTheme.primary + '20',
+                  borderColor: currentTheme.primary,
+                  boxShadow: `0 0 0 2px ${currentTheme.primary}`,
+                } : {}}
                 title={emotion.label}
               >
                 {emotion.emoji}
@@ -231,7 +244,7 @@ export default function ReflexionPage() {
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.99 }}
           type="submit"
-          className="w-full h-14 rounded-full bg-indigo-600 text-white font-medium shadow-lg hover:bg-indigo-700 transition-colors"
+          className={`w-full h-14 rounded-full bg-gradient-to-r ${currentTheme.gradient} text-white font-medium shadow-lg hover:shadow-xl transition-shadow`}
         >
           Guardar progreso
         </motion.button>

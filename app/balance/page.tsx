@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, type Variants } from 'framer-motion';
 import { loadData, getCategoryBreakdown } from '../lib/store';
+import { useTheme } from '../hooks/useTheme';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 const containerVariants: Variants = {
@@ -30,6 +31,7 @@ const itemVariants: Variants = {
 
 export default function BalancePage() {
   const router = useRouter();
+  const { currentTheme } = useTheme();
   const data = loadData();
   const breakdown = getCategoryBreakdown();
 
@@ -44,7 +46,7 @@ export default function BalancePage() {
   const activitiesWithoutCategory = data.currentWeek.activities.filter(a => !a.category).length;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50">
+    <main className={`min-h-screen bg-gradient-to-br ${currentTheme.bg}`}>
       <motion.header
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -61,7 +63,7 @@ export default function BalancePage() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => router.back()}
-          className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center hover:bg-slate-50"
+          className={`w-10 h-10 rounded-full ${currentTheme.bgCard} shadow-sm flex items-center justify-center ${currentTheme.bgHover}`}
         >
           ✕
         </motion.button>
@@ -78,7 +80,7 @@ export default function BalancePage() {
             {/* Gráfico */}
             <motion.section
               variants={itemVariants}
-              className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-8"
+              className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl shadow-lg border ${currentTheme.border} p-8`}
             >
               <h2 className="text-lg font-semibold text-slate-800 mb-6 text-center">
                 Distribución esta semana
@@ -134,7 +136,7 @@ export default function BalancePage() {
             {/* Desglose */}
             <motion.section
               variants={itemVariants}
-              className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-6"
+              className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl shadow-lg border ${currentTheme.border} p-6`}
             >
               <h3 className="text-lg font-semibold text-slate-800 mb-4">
                 Desglose por categoría
@@ -148,7 +150,7 @@ export default function BalancePage() {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: 0.3 + i * 0.05 }}
                     whileHover={{ scale: 1.01, x: 2 }}
-                    className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 hover:bg-slate-100 transition-colors"
+                    className={`flex items-center justify-between p-4 rounded-2xl ${currentTheme.bgHover} transition-colors`}
                   >
                     <div className="flex items-center gap-3">
                       <div
@@ -176,7 +178,7 @@ export default function BalancePage() {
             {activitiesWithoutCategory > 0 && (
               <motion.section
                 variants={itemVariants}
-                className="bg-amber-50 rounded-2xl p-4"
+                className={`${currentTheme.bgCard} rounded-2xl p-4 border ${currentTheme.border}`}
               >
                 <p className="text-sm text-amber-800">
                   💡 Tenés {activitiesWithoutCategory} {activitiesWithoutCategory === 1 ? 'actividad' : 'actividades'} sin categoría.
@@ -193,7 +195,7 @@ export default function BalancePage() {
             transition={{ duration: 0.4 }}
             className="space-y-6"
           >
-            <div className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-10 text-center">
+            <div className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl shadow-lg border ${currentTheme.border} p-10 text-center`}>
               <div className="text-6xl mb-4">📊</div>
               <h3 className="text-xl font-semibold text-slate-800 mb-2">
                 Agregá categorías para ver tu balance
@@ -208,7 +210,7 @@ export default function BalancePage() {
               <div className="flex flex-col gap-3 max-w-xs mx-auto">
                 <Link
                   href="/reflexion"
-                  className="px-6 py-3 rounded-full bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors"
+                  className={`px-6 py-3 rounded-full bg-gradient-to-r ${currentTheme.gradient} text-white font-medium shadow-lg hover:shadow-xl transition-shadow`}
                 >
                   Registrar con categoría
                 </Link>
@@ -222,19 +224,19 @@ export default function BalancePage() {
             </div>
 
             {/* Resumen sin categorías */}
-            <div className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-6">
+            <div className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl shadow-lg border ${currentTheme.border} p-6`}>
               <h3 className="text-lg font-semibold text-slate-800 mb-4">
                 Resumen de la semana
               </h3>
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-indigo-600">
+                  <p className="text-3xl font-bold" style={{ color: currentTheme.primary }}>
                     {data.currentWeek.activities.length}
                   </p>
                   <p className="text-sm text-slate-500 mt-1">Actividades</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-3xl font-bold text-indigo-600">
+                  <p className="text-3xl font-bold" style={{ color: currentTheme.primary }}>
                     {data.currentWeek.totalMinutes}
                   </p>
                   <p className="text-sm text-slate-500 mt-1">Minutos</p>
@@ -248,7 +250,7 @@ export default function BalancePage() {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.4 }}
-            className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-10 text-center"
+            className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl shadow-lg border ${currentTheme.border} p-10 text-center`}
           >
             <div className="text-6xl mb-4">🌱</div>
             <h3 className="text-xl font-semibold text-slate-800 mb-2">
@@ -259,7 +261,7 @@ export default function BalancePage() {
             </p>
             <Link
               href="/reflexion"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-colors"
+              className={`inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r ${currentTheme.gradient} text-white font-medium shadow-lg hover:shadow-xl transition-shadow`}
             >
               <span>+</span>
               Registrar actividad

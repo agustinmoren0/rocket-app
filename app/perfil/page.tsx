@@ -35,7 +35,7 @@ const itemVariants: Variants = {
 
 export default function PerfilPage() {
   const router = useRouter();
-  const { theme } = useTheme();
+  const { currentTheme } = useTheme();
 
   const [data, setData] = useState<any>(null);
   const [showNameModal, setShowNameModal] = useState(false);
@@ -83,21 +83,21 @@ export default function PerfilPage() {
   // Mostrar loading hasta que carguen los datos
   if (!data) {
     return (
-      <main className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <main className={`min-h-screen bg-gradient-to-br ${currentTheme.bg} flex items-center justify-center`}>
         <div className="animate-pulse text-slate-400">Cargando...</div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <main className={`min-h-screen bg-gradient-to-br ${currentTheme.bg}`}>
       <header className="px-6 pt-10 pb-6 flex items-center justify-between animate-fadeIn">
         <h1 className="text-2xl font-bold text-slate-800">
           Perfil y Configuración
         </h1>
         <button
           onClick={() => router.back()}
-          className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center hover:bg-slate-50"
+          className={`w-10 h-10 rounded-full ${currentTheme.bgCard} shadow-sm flex items-center justify-center ${currentTheme.bgHover}`}
         >
           ✕
         </button>
@@ -105,9 +105,9 @@ export default function PerfilPage() {
 
       <div className="px-6 space-y-6 pb-12">
         {/* Usuario */}
-        <section className="bg-white rounded-3xl shadow-sm p-6 animate-slideUp">
+        <section className={`${currentTheme.bgCard} rounded-3xl shadow-sm p-6 animate-slideUp border ${currentTheme.border}`}>
           <div className="flex flex-col items-center text-center">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mb-4">
+            <div className={`w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mb-4`} style={{backgroundImage: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`}}>
               <span className="text-4xl">👤</span>
             </div>
             <h2 className="text-2xl font-bold text-slate-800 mb-1">
@@ -117,7 +117,8 @@ export default function PerfilPage() {
 
             <button
               onClick={() => setShowNameModal(true)}
-              className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
+              className="text-sm font-medium"
+              style={{ color: currentTheme.primary }}
             >
               Cambiar nombre
             </button>
@@ -126,15 +127,15 @@ export default function PerfilPage() {
 
         {/* Notificaciones */}
         {notificationSupported && (
-          <section className="bg-white rounded-3xl shadow-sm p-6 animate-slideUp" style={{animationDelay: '0.12s'}}>
+          <section className={`${currentTheme.bgCard} rounded-3xl shadow-sm p-6 animate-slideUp border ${currentTheme.border}`} style={{animationDelay: '0.12s'}}>
             <h3 className="font-semibold text-slate-800 mb-4">Notificaciones</h3>
 
             <button
               onClick={handleToggleReminder}
-              className="w-full flex items-center justify-between p-4 rounded-2xl bg-slate-50 hover:bg-slate-100"
+              className={`w-full flex items-center justify-between p-4 rounded-2xl ${currentTheme.bgHover}`}
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{backgroundColor: currentTheme.primary + '20'}}>
                   🔔
                 </div>
                 <div className="text-left">
@@ -145,9 +146,8 @@ export default function PerfilPage() {
                 </div>
               </div>
               <div
-                className={`w-12 h-7 rounded-full transition-colors ${
-                  reminderEnabled ? 'bg-indigo-600' : 'bg-slate-300'
-                } relative`}
+                className={`w-12 h-7 rounded-full transition-colors relative`}
+                style={{backgroundColor: reminderEnabled ? currentTheme.primary : '#cbd5e1'}}
               >
                 <div
                   className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-transform ${
@@ -162,7 +162,7 @@ export default function PerfilPage() {
         {/* Selector de Tema */}
         <motion.section
           variants={itemVariants}
-          className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-6"
+          className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl shadow-lg border ${currentTheme.border} p-6`}
         >
           <h2 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
             <span>🎨</span>
@@ -190,10 +190,11 @@ export default function PerfilPage() {
                     h-20 rounded-2xl flex flex-col items-center justify-center gap-2
                     transition-all
                     ${isSelected
-                      ? 'ring-2 ring-offset-2 bg-white shadow-lg ring-indigo-600'
-                      : 'bg-slate-50 hover:bg-white'
+                      ? `ring-2 ring-offset-2 ${currentTheme.bgCard} shadow-lg`
+                      : `${currentTheme.bgHover}`
                     }
                   `}
+                  style={isSelected ? { borderColor: currentTheme.primary, boxShadow: `0 0 0 2px ${currentTheme.primary}` } : {}}
                 >
                   <span className="text-3xl">{theme.emoji}</span>
                   <span className="text-sm font-medium text-slate-700">{theme.name}</span>
@@ -206,7 +207,7 @@ export default function PerfilPage() {
         {/* Modo Zen */}
         <motion.section
           variants={itemVariants}
-          className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-6"
+          className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl shadow-lg border ${currentTheme.border} p-6`}
         >
           <div className="flex items-start justify-between">
             <div className="flex-1">
@@ -233,8 +234,8 @@ export default function PerfilPage() {
               }}
               className={`
                 w-14 h-8 rounded-full flex items-center transition-all
-                ${data.zenMode ? 'bg-indigo-600' : 'bg-slate-300'}
               `}
+              style={{backgroundColor: data.zenMode ? currentTheme.primary : '#cbd5e1'}}
             >
               <motion.div
                 animate={{ x: data.zenMode ? 24 : 2 }}
@@ -248,7 +249,7 @@ export default function PerfilPage() {
         {/* Actualizar PWA */}
         <motion.section
           variants={itemVariants}
-          className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-6"
+          className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl shadow-lg border ${currentTheme.border} p-6`}
         >
           <div className="flex items-start justify-between mb-3">
             <div className="flex-1">
@@ -271,7 +272,7 @@ export default function PerfilPage() {
                 await forceUpdatePWA();
               }
             }}
-            className="w-full h-12 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium transition-all flex items-center justify-center gap-2"
+            className={`w-full h-12 rounded-2xl ${currentTheme.bgHover} text-slate-800 font-medium transition-all flex items-center justify-center gap-2`}
           >
             <span>↻</span>
             Buscar actualizaciones
@@ -283,12 +284,12 @@ export default function PerfilPage() {
         </motion.section>
 
         {/* Aplicación */}
-        <section className="bg-white rounded-3xl shadow-sm p-6 animate-slideUp" style={{animationDelay: '0.15s'}}>
+        <section className={`${currentTheme.bgCard} rounded-3xl shadow-sm p-6 animate-slideUp border ${currentTheme.border}`} style={{animationDelay: '0.15s'}}>
           <h3 className="font-semibold text-slate-800 mb-4">Aplicación</h3>
 
           <InstallButton />
 
-          <button className="w-full flex items-center gap-3 p-4 rounded-2xl bg-slate-50 hover:bg-slate-100 mt-3">
+          <button className={`w-full flex items-center gap-3 p-4 rounded-2xl ${currentTheme.bgHover} mt-3`}>
             <span className="text-2xl">ℹ️</span>
             <div className="flex-1 text-left">
               <p className="font-medium text-slate-800">Acerca de Rocket</p>
@@ -298,12 +299,12 @@ export default function PerfilPage() {
         </section>
 
         {/* Cuenta */}
-        <section className="bg-white rounded-3xl shadow-sm p-6 animate-slideUp" style={{animationDelay: '0.2s'}}>
+        <section className={`${currentTheme.bgCard} rounded-3xl shadow-sm p-6 animate-slideUp border ${currentTheme.border}`} style={{animationDelay: '0.2s'}}>
           <h3 className="font-semibold text-slate-800 mb-4">Cuenta</h3>
 
           <button
             onClick={handleClearData}
-            className="w-full flex items-center gap-3 p-4 rounded-2xl bg-red-50 hover:bg-red-100"
+            className={`w-full flex items-center gap-3 p-4 rounded-2xl bg-red-50 hover:bg-red-100`}
           >
             <span className="text-2xl">🗑️</span>
             <div className="flex-1 text-left">
@@ -316,7 +317,7 @@ export default function PerfilPage() {
         {/* Volver */}
         <button
           onClick={() => router.back()}
-          className="w-full h-14 rounded-full bg-indigo-600 text-white font-medium shadow-lg hover:bg-indigo-700"
+          className={`w-full h-14 rounded-full bg-gradient-to-r ${currentTheme.gradient} text-white font-medium shadow-lg hover:shadow-xl transition-shadow`}
         >
           Volver al inicio
         </button>

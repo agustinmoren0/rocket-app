@@ -7,9 +7,11 @@
 
 import { useRouter } from 'next/navigation';
 import { loadData } from '../lib/store';
+import { useTheme } from '../hooks/useTheme';
 
 export default function HistorialPage() {
   const router = useRouter();
+  const { currentTheme } = useTheme();
   const data = loadData();
 
   const weeks = [
@@ -29,14 +31,14 @@ export default function HistorialPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
+    <main className={`min-h-screen bg-gradient-to-br ${currentTheme.bg}`}>
       <header className="px-6 pt-10 pb-6 flex items-center justify-between animate-fadeIn">
         <h1 className="text-2xl font-bold text-slate-800">
           Historial
         </h1>
         <button
           onClick={() => router.back()}
-          className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center hover:bg-slate-50"
+          className={`w-10 h-10 rounded-full ${currentTheme.bgCard} shadow-sm flex items-center justify-center ${currentTheme.bgHover}`}
         >
           ✕
         </button>
@@ -50,7 +52,7 @@ export default function HistorialPage() {
           return (
             <div
               key={i}
-              className="bg-white rounded-3xl shadow-sm p-6 animate-slideUp"
+              className={`${currentTheme.bgCard} rounded-3xl shadow-sm p-6 animate-slideUp border ${currentTheme.border}`}
               style={{animationDelay: `${i * 0.1}s`}}
             >
               <div className="flex items-center justify-between mb-4">
@@ -61,7 +63,7 @@ export default function HistorialPage() {
                   </p>
                 </div>
                 {week.isActive && (
-                  <span className="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-medium">
+                  <span className="px-3 py-1 rounded-full text-xs font-medium" style={{backgroundColor: currentTheme.primary + '20', color: currentTheme.primary}}>
                     En curso
                   </span>
                 )}
@@ -69,24 +71,24 @@ export default function HistorialPage() {
 
               <div className="grid grid-cols-3 gap-4 mb-4">
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-indigo-600">{progress}%</p>
+                  <p className="text-2xl font-bold" style={{color: currentTheme.primary}}>{progress}%</p>
                   <p className="text-xs text-slate-500">Completado</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-indigo-600">{activeDays}/7</p>
+                  <p className="text-2xl font-bold" style={{color: currentTheme.primary}}>{activeDays}/7</p>
                   <p className="text-xs text-slate-500">Días activos</p>
                 </div>
                 <div className="text-center">
-                  <p className="text-2xl font-bold text-indigo-600">{week.data.totalMinutes}</p>
+                  <p className="text-2xl font-bold" style={{color: currentTheme.primary}}>{week.data.totalMinutes}</p>
                   <p className="text-xs text-slate-500">Minutos</p>
                 </div>
               </div>
 
               {/* Mini gráfico de burbujas */}
-              <div className="flex justify-around items-end h-16 px-2 bg-slate-50 rounded-2xl py-2">
+              <div className={`flex justify-around items-end h-16 px-2 ${currentTheme.bgHover} rounded-2xl py-2`}>
                 {week.data.activeDays.map((active, j) => (
                   <div key={j} className="flex flex-col items-center gap-1">
-                    <div className={`w-8 h-8 rounded-full ${active ? 'bg-indigo-600' : 'bg-slate-200'}`} />
+                    <div className={`w-8 h-8 rounded-full`} style={{backgroundColor: active ? currentTheme.primary : '#e2e8f0'}} />
                     <span className="text-xs text-slate-400">
                       {['L','M','X','J','V','S','D'][j]}
                     </span>
