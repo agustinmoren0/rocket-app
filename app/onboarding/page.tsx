@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { setOnboardingDone, setUserName } from '../lib/store';
+import { completeOnboarding, setUserName } from '../lib/store';
 import { useTheme } from '../hooks/useTheme';
 
 const steps = [
@@ -46,7 +46,7 @@ export default function OnboardingPage() {
     if (!name.trim()) return;
 
     setUserName(name.trim());
-    setOnboardingDone();
+    completeOnboarding();
     router.replace('/');
   }
 
