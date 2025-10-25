@@ -15,7 +15,6 @@ export default function PerfilPage() {
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState(data.name);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [updateKey, setUpdateKey] = useState(0);
 
   function handleSaveName() {
     if (!newName.trim()) return;
@@ -27,21 +26,19 @@ export default function PerfilPage() {
 
   function handleThemeChange(newTheme: Theme) {
     setTheme(newTheme);
-    setUpdateKey(prev => prev + 1);
-    setTimeout(() => {
-      setData(loadData());
-    }, 10);
     showToast(`Tema ${THEMES[newTheme].name} activado`, 'success');
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
   }
 
   function handleToggleZen() {
     const wasZen = data.zenMode;
     toggleZenMode();
-    setUpdateKey(prev => prev + 1);
-    setTimeout(() => {
-      setData(loadData());
-    }, 10);
     showToast(wasZen ? 'Modo Zen desactivado' : 'Modo Zen activado', 'success');
+    setTimeout(() => {
+      window.location.reload();
+    }, 500);
   }
 
   function handleDeleteData() {
@@ -128,7 +125,7 @@ export default function PerfilPage() {
             <h3 className="text-base font-semibold text-slate-900">Tema de colores</h3>
           </div>
 
-          <div key={updateKey} className="grid grid-cols-5 gap-3">
+          <div className="grid grid-cols-5 gap-3">
             {(Object.keys(THEMES) as Theme[]).map((themeKey) => {
               const theme = THEMES[themeKey];
               const isActive = themeKey === activeTheme;
@@ -177,7 +174,6 @@ export default function PerfilPage() {
               </p>
             </div>
             <button
-              key={updateKey}
               onClick={handleToggleZen}
               className={`relative w-11 h-6 rounded-full transition-colors ${
                 data.zenMode ? currentTheme.button : 'bg-slate-300'

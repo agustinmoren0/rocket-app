@@ -47,10 +47,13 @@ function EditarContent() {
       return;
     }
 
-    if (!note.trim()) {
-      showToast('Por favor, ingresá una descripción', 'error');
+    // Categoría es OBLIGATORIA
+    if (!category) {
+      showToast('Por favor, elegí una categoría', 'error');
       return;
     }
+
+    // Nota es opcional (no validar)
 
     const data = loadData();
     const actIndex = parseInt(index!);
