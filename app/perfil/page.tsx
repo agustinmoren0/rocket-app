@@ -1,203 +1,151 @@
-/* INSTRUCCIONES PARA CLAUDE VS CODE:
-Reemplazá app/perfil/page.tsx con este código
-Solo cambió: agregamos estado loading para evitar hydration mismatch
-*/
-
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, type Variants } from 'framer-motion';
-import { loadData, setTheme, toggleZenMode, THEMES, type Theme } from '../lib/store';
-import { useTheme } from '../hooks/useTheme';
-import { forceUpdatePWA } from '../lib/pwa';
-import InstallButton from '../components/InstallButton';
-import ChangeNameModal from '../components/ChangeNameModal';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { loadData, setUserName, setTheme, toggleZenMode, clearAllData, type Theme, THEMES } from '../lib/store';
 import { showToast } from '../components/Toast';
-import {
-  requestNotificationPermission,
-  scheduleReminder,
-  saveReminderPreference,
-  loadReminderPreference
-} from '../lib/notifications';
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      ease: 'easeOut',
-    },
-  },
-};
+import { useTheme } from '../hooks/useTheme';
 
 export default function PerfilPage() {
   const router = useRouter();
-  const { currentTheme } = useTheme();
+  const { currentTheme, theme: activeTheme } = useTheme();
+  const [data, setData] = useState(() => loadData());
+  const [editingName, setEditingName] = useState(false);
+  const [newName, setNewName] = useState(data.name);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  const [data, setData] = useState<any>(null);
-  const [showNameModal, setShowNameModal] = useState(false);
-  const [reminderEnabled, setReminderEnabled] = useState(false);
-  const [notificationSupported, setNotificationSupported] = useState(true);
-
-  useEffect(() => {
-    // Cargar datos del usuario
+  function handleSaveName() {
+    if (!newName.trim()) return;
+    setUserName(newName.trim());
     setData(loadData());
-
-    // Verificar soporte de notificaciones
-    if (!('Notification' in window)) {
-      setNotificationSupported(false);
-    }
-
-    // Cargar preferencia guardada
-    const pref = loadReminderPreference();
-    setReminderEnabled(pref.enabled);
-  }, []);
-
-  async function handleToggleReminder() {
-    if (!reminderEnabled) {
-      const granted = await requestNotificationPermission();
-      if (granted) {
-        setReminderEnabled(true);
-        saveReminderPreference(true, 18);
-        scheduleReminder(18, 0);
-        showToast('Recordatorios activados', 'success');
-      } else {
-        showToast('Necesitás activar los permisos de notificaciones en tu navegador', 'error');
-      }
-    } else {
-      setReminderEnabled(false);
-      saveReminderPreference(false, 18);
-      showToast('Recordatorios desactivados', 'info');
-    }
+    setEditingName(false);
+    showToast('Nombre actualizado', 'success');
   }
 
-  function handleClearData() {
-    if (!confirm('¿Estás seguro? Se borrarán todos tus datos.')) return;
-    localStorage.clear();
-    window.location.href = '/onboarding';
+  function handleThemeChange(newTheme: Theme) {
+    setTheme(newTheme);
+    showToast(`Tema ${THEMES[newTheme].name} activado`, 'success');
   }
 
-  // Mostrar loading hasta que carguen los datos
-  if (!data) {
-    return (
-      <main className={`min-h-screen bg-gradient-to-br ${currentTheme.bg} flex items-center justify-center`}>
-        <div className="animate-pulse text-slate-400">Cargando...</div>
-      </main>
-    );
+  function handleToggleZen() {
+    toggleZenMode();
+    setData(loadData());
+    showToast(data.zenMode ? 'Modo Zen desactivado' : 'Modo Zen activado', 'success');
+  }
+
+  function handleDeleteData() {
+    clearAllData();
+    showToast('Datos eliminados', 'success');
+    setTimeout(() => router.replace('/onboarding'), 1000);
   }
 
   return (
     <main className={`min-h-screen bg-gradient-to-br ${currentTheme.bg}`}>
-      <header className="px-6 pt-10 pb-6 flex items-center justify-between animate-fadeIn">
-        <h1 className="text-2xl font-bold text-slate-800">
-          Perfil y Configuración
+      {/* Header */}
+      <motion.header
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="max-w-2xl mx-auto px-6 pt-8 pb-6 flex items-center justify-between"
+      >
+        <h1 className="text-xl font-semibold text-slate-900 tracking-tight">
+          Configuración
         </h1>
-        <button
+        <motion.button
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => router.back()}
-          className={`w-10 h-10 rounded-full ${currentTheme.bgCard} shadow-sm flex items-center justify-center ${currentTheme.bgHover}`}
+          className={`w-10 h-10 rounded-xl ${currentTheme.bgCard} shadow-sm flex items-center justify-center ${currentTheme.bgHover} transition-all`}
         >
           ✕
-        </button>
-      </header>
+        </motion.button>
+      </motion.header>
 
-      <div className="px-6 space-y-6 pb-12">
-        {/* Usuario */}
-        <section className={`${currentTheme.bgCard} rounded-3xl shadow-sm p-6 animate-slideUp border ${currentTheme.border}`}>
-          <div className="flex flex-col items-center text-center">
-            <div className={`w-24 h-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mb-4`} style={{backgroundImage: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`}}>
-              <span className="text-4xl">👤</span>
-            </div>
-            <h2 className="text-2xl font-bold text-slate-800 mb-1">
-              {data.name}
-            </h2>
-            <p className="text-sm text-slate-500 mb-3">Usuario Creativo</p>
-
-            <button
-              onClick={() => setShowNameModal(true)}
-              className="text-sm font-medium"
-              style={{ color: currentTheme.primary }}
-            >
-              Cambiar nombre
-            </button>
-          </div>
-        </section>
-
-        {/* Notificaciones */}
-        {notificationSupported && (
-          <section className={`${currentTheme.bgCard} rounded-3xl shadow-sm p-6 animate-slideUp border ${currentTheme.border}`} style={{animationDelay: '0.12s'}}>
-            <h3 className="font-semibold text-slate-800 mb-4">Notificaciones</h3>
-
-            <button
-              onClick={handleToggleReminder}
-              className={`w-full flex items-center justify-between p-4 rounded-2xl ${currentTheme.bgHover}`}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{backgroundColor: currentTheme.primary + '20'}}>
-                  🔔
-                </div>
-                <div className="text-left">
-                  <p className="font-medium text-slate-800">Recordatorio diario</p>
-                  <p className="text-sm text-slate-500">
-                    {reminderEnabled ? 'Todos los días a las 6pm' : 'Desactivado'}
-                  </p>
-                </div>
-              </div>
-              <div
-                className={`w-12 h-7 rounded-full transition-colors relative`}
-                style={{backgroundColor: reminderEnabled ? currentTheme.primary : '#cbd5e1'}}
-              >
-                <div
-                  className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-transform ${
-                    reminderEnabled ? 'translate-x-6' : 'translate-x-1'
-                  }`}
-                />
-              </div>
-            </button>
-          </section>
-        )}
-
-        {/* Selector de Tema */}
+      <div className="max-w-2xl mx-auto px-6 space-y-4 pb-24">
+        {/* Perfil */}
         <motion.section
-          variants={itemVariants}
-          className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl shadow-lg border ${currentTheme.border} p-6`}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className={`${currentTheme.bgCard} backdrop-blur-xl rounded-2xl shadow-sm border ${currentTheme.border} p-6`}
         >
-          <h2 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-            <span>🎨</span>
-            Tema de colores
-          </h2>
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center text-2xl">
+              {data.name.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1">
+              {editingName ? (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
+                    className="flex-1 h-9 px-3 rounded-xl bg-white border-2 border-slate-200 focus:outline-none text-sm"
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleSaveName}
+                    className={`px-4 h-9 rounded-xl ${currentTheme.button} text-white text-sm font-medium`}
+                  >
+                    ✓
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <h2 className="text-lg font-semibold text-slate-900">{data.name}</h2>
+                  <button
+                    onClick={() => setEditingName(true)}
+                    className={`text-xs ${currentTheme.accent} hover:opacity-70 transition-opacity mt-0.5`}
+                  >
+                    Cambiar nombre
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </motion.section>
 
-          <div className="grid grid-cols-2 gap-3">
+        {/* Temas */}
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className={`${currentTheme.bgCard} backdrop-blur-xl rounded-2xl shadow-sm border ${currentTheme.border} p-6`}
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-lg">🎨</span>
+            <h3 className="text-base font-semibold text-slate-900">Tema de colores</h3>
+          </div>
+
+          <div className="grid grid-cols-5 gap-3">
             {(Object.keys(THEMES) as Theme[]).map((themeKey) => {
               const theme = THEMES[themeKey];
-              const isSelected = data.theme === themeKey;
+              const isActive = themeKey === activeTheme;
 
               return (
                 <motion.button
                   key={themeKey}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  onClick={() => {
-                    setTheme(themeKey);
-                    const newData = loadData();
-                    setData(newData);
-                    showToast(`Tema ${theme.name} activado`, 'success');
-                    window.location.reload();
-                  }}
-                  className={`
-                    h-20 rounded-2xl flex flex-col items-center justify-center gap-2
-                    transition-all
-                    ${isSelected
-                      ? `ring-2 ring-offset-2 ${currentTheme.bgCard} shadow-lg`
-                      : `${currentTheme.bgHover}`
-                    }
-                  `}
-                  style={isSelected ? { borderColor: currentTheme.primary, boxShadow: `0 0 0 2px ${currentTheme.primary}` } : {}}
+                  onClick={() => handleThemeChange(themeKey)}
+                  className="flex flex-col items-center gap-2"
                 >
-                  <span className="text-3xl">{theme.emoji}</span>
-                  <span className="text-sm font-medium text-slate-700">{theme.name}</span>
+                  <div
+                    className={`w-12 h-12 rounded-full flex items-center justify-center text-xl transition-all ${
+                      isActive ? 'ring-2 ring-offset-2' : ''
+                    }`}
+                    style={{
+                      background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})`,
+                      ringColor: theme.primary
+                    }}
+                  >
+                    {theme.emoji}
+                  </div>
+                  <p className={`text-xs font-medium ${isActive ? currentTheme.accent : 'text-slate-600'}`}>
+                    {theme.name}
+                  </p>
                 </motion.button>
               );
             })}
@@ -206,129 +154,146 @@ export default function PerfilPage() {
 
         {/* Modo Zen */}
         <motion.section
-          variants={itemVariants}
-          className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl shadow-lg border ${currentTheme.border} p-6`}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className={`${currentTheme.bgCard} backdrop-blur-xl rounded-2xl shadow-sm border ${currentTheme.border} p-6`}
         >
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <h2 className="text-lg font-semibold text-slate-800 mb-1 flex items-center gap-2">
-                <span>🧘</span>
-                Modo Zen
-              </h2>
-              <p className="text-sm text-slate-600">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-lg">🧘</span>
+                <h3 className="text-base font-semibold text-slate-900">Modo Zen</h3>
+              </div>
+              <p className="text-xs text-slate-600 leading-relaxed">
                 Interfaz ultra minimalista. Solo progreso y acción.
               </p>
             </div>
-
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => {
-                toggleZenMode();
-                const newData = loadData();
-                setData(newData);
-                showToast(
-                  newData.zenMode ? 'Modo Zen activado 🧘' : 'Modo normal activado',
-                  'success'
-                );
-                setTimeout(() => window.location.href = '/', 500);
-              }}
-              className={`
-                w-14 h-8 rounded-full flex items-center transition-all
-              `}
-              style={{backgroundColor: data.zenMode ? currentTheme.primary : '#cbd5e1'}}
+            <button
+              onClick={handleToggleZen}
+              className={`relative w-11 h-6 rounded-full transition-colors ${
+                data.zenMode ? currentTheme.button : 'bg-slate-300'
+              }`}
             >
               <motion.div
-                animate={{ x: data.zenMode ? 24 : 2 }}
+                animate={{ x: data.zenMode ? 22 : 2 }}
                 transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-                className="w-6 h-6 bg-white rounded-full shadow-md"
+                className="absolute top-1 w-4 h-4 rounded-full bg-white"
               />
-            </motion.button>
+            </button>
           </div>
         </motion.section>
 
-        {/* Actualizar PWA */}
+        {/* Actualizar */}
         <motion.section
-          variants={itemVariants}
-          className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl shadow-lg border ${currentTheme.border} p-6`}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25 }}
+          className={`${currentTheme.bgCard} backdrop-blur-xl rounded-2xl shadow-sm border ${currentTheme.border} p-6`}
         >
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex-1">
-              <h2 className="text-lg font-semibold text-slate-800 mb-1 flex items-center gap-2">
-                <span>🔄</span>
-                Actualizar app
-              </h2>
-              <p className="text-sm text-slate-600">
-                Si instalaste Rocket como PWA, usá esto para obtener la última versión.
-              </p>
-            </div>
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-lg">🔄</span>
+            <h3 className="text-base font-semibold text-slate-900">Actualizar app</h3>
           </div>
-
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={async () => {
-              if (confirm('¿Actualizar Rocket a la última versión?\n\nTu progreso se mantendrá intacto.')) {
-                showToast('Actualizando...', 'info');
-                await forceUpdatePWA();
-              }
-            }}
-            className={`w-full h-12 rounded-2xl ${currentTheme.bgHover} text-slate-800 font-medium transition-all flex items-center justify-center gap-2`}
+          <p className="text-xs text-slate-600 mb-4 leading-relaxed">
+            Si instalaste HABIKA como PWA, usá esto para obtener la última versión.
+          </p>
+          <button
+            onClick={() => window.location.reload()}
+            className={`w-full h-10 rounded-xl ${currentTheme.bgCardSecondary} hover:opacity-80 transition-opacity text-sm font-medium text-slate-700`}
           >
-            <span>↻</span>
             Buscar actualizaciones
-          </motion.button>
-
-          <p className="text-xs text-slate-500 mt-3 text-center">
-            Versión actual: 0.1.0 · Última actualización: {new Date().toLocaleDateString()}
+          </button>
+          <p className="text-xs text-slate-500 text-center mt-3">
+            Versión 1.0.0 · Última actualización: {new Date().toLocaleDateString('es-ES')}
           </p>
         </motion.section>
 
         {/* Aplicación */}
-        <section className={`${currentTheme.bgCard} rounded-3xl shadow-sm p-6 animate-slideUp border ${currentTheme.border}`} style={{animationDelay: '0.15s'}}>
-          <h3 className="font-semibold text-slate-800 mb-4">Aplicación</h3>
-
-          <InstallButton />
-
-          <button className={`w-full flex items-center gap-3 p-4 rounded-2xl ${currentTheme.bgHover} mt-3`}>
-            <span className="text-2xl">ℹ️</span>
-            <div className="flex-1 text-left">
-              <p className="font-medium text-slate-800">Acerca de Rocket</p>
-              <p className="text-sm text-slate-500">Versión 1.0.0 MVP</p>
-            </div>
-          </button>
-        </section>
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className={`${currentTheme.bgCard} backdrop-blur-xl rounded-2xl shadow-sm border ${currentTheme.border} p-6`}
+        >
+          <h3 className="text-base font-semibold text-slate-900 mb-3">Aplicación</h3>
+          <div className="space-y-2">
+            <button className={`w-full flex items-center gap-3 p-3 rounded-xl ${currentTheme.bgHover} transition-colors text-left`}>
+              <span className="text-xl">📱</span>
+              <div>
+                <p className="text-sm font-medium text-slate-900">Agregar a pantalla de inicio</p>
+                <p className="text-xs text-slate-600">Usá HABIKA como app nativa</p>
+              </div>
+            </button>
+            <button className={`w-full flex items-center gap-3 p-3 rounded-xl ${currentTheme.bgHover} transition-colors text-left`}>
+              <span className="text-xl">ℹ️</span>
+              <div>
+                <p className="text-sm font-medium text-slate-900">Acerca de HABIKA</p>
+                <p className="text-xs text-slate-600">Versión 1.0.0 MVP</p>
+              </div>
+            </button>
+          </div>
+        </motion.section>
 
         {/* Cuenta */}
-        <section className={`${currentTheme.bgCard} rounded-3xl shadow-sm p-6 animate-slideUp border ${currentTheme.border}`} style={{animationDelay: '0.2s'}}>
-          <h3 className="font-semibold text-slate-800 mb-4">Cuenta</h3>
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35 }}
+          className={`${currentTheme.bgCard} backdrop-blur-xl rounded-2xl shadow-sm border ${currentTheme.border} p-6`}
+        >
+          <h3 className="text-base font-semibold text-slate-900 mb-3">Cuenta</h3>
 
-          <button
-            onClick={handleClearData}
-            className={`w-full flex items-center gap-3 p-4 rounded-2xl bg-red-50 hover:bg-red-100`}
-          >
-            <span className="text-2xl">🗑️</span>
-            <div className="flex-1 text-left">
-              <p className="font-medium text-red-600">Borrar todos mis datos</p>
-              <p className="text-sm text-red-500">Esta acción no se puede deshacer</p>
+          {showDeleteConfirm ? (
+            <div className={`${currentTheme.bgCardSecondary} rounded-xl p-4`}>
+              <p className="text-sm font-medium text-slate-900 mb-3">
+                ¿Estás seguro? Esta acción no se puede deshacer.
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  className="flex-1 h-9 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-900 text-sm font-medium transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleDeleteData}
+                  className="flex-1 h-9 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-medium transition-colors"
+                >
+                  Sí, borrar
+                </button>
+              </div>
             </div>
-          </button>
-        </section>
+          ) : (
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="w-full flex items-center gap-3 p-3 rounded-xl bg-red-50 hover:bg-red-100 transition-colors text-left"
+            >
+              <span className="text-xl">🗑️</span>
+              <div>
+                <p className="text-sm font-medium text-red-600">Borrar todos mis datos</p>
+                <p className="text-xs text-red-500">Esta acción no se puede deshacer</p>
+              </div>
+            </button>
+          )}
+        </motion.section>
 
         {/* Volver */}
-        <button
-          onClick={() => router.back()}
-          className={`w-full h-14 rounded-full bg-gradient-to-r ${currentTheme.gradient} text-white font-medium shadow-lg hover:shadow-xl transition-shadow`}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          whileHover={{ scale: 1.005 }}
+          whileTap={{ scale: 0.995 }}
         >
-          Volver al inicio
-        </button>
+          <Link
+            href="/"
+            className={`block w-full h-12 rounded-2xl ${currentTheme.button} text-white font-medium flex items-center justify-center shadow-md hover:shadow-lg transition-all`}
+          >
+            Volver al inicio
+          </Link>
+        </motion.div>
       </div>
-
-      {/* Modal cambiar nombre */}
-      <ChangeNameModal
-        isOpen={showNameModal}
-        onClose={() => setShowNameModal(false)}
-        currentName={data.name}
-      />
     </main>
   );
 }
