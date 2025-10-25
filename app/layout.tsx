@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import RegisterSW from "./register-sw"; // 👈 agregamos el registro del Service Worker
+import RegisterSW from "./register-sw";
 import ToastContainer from "./components/Toast";
+import PageTransition from "./components/PageTransition";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,35 +16,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Rocket",
-  description: "Tu reflejo de progreso creativo.",
+  title: "Rocket - Tu progreso real",
+  description: "Visualizá tu progreso sin tareas, sin culpa",
   manifest: "/manifest.json",
   themeColor: "#6366f1",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
     title: "Rocket",
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-    viewportFit: "cover",
-  },
 };
-
-function PWAMeta() {
-  return (
-    <>
-      <meta name="apple-mobile-web-app-capable" content="yes" />
-      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-      <meta name="apple-mobile-web-app-title" content="Rocket" />
-      <meta name="mobile-web-app-capable" content="yes" />
-      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover" />
-    </>
-  );
-}
 
 export default function RootLayout({
   children,
@@ -51,16 +33,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <head>
-        <PWAMeta />
-      </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <RegisterSW /> {/* 👈 se registra el service worker */}
+    <html lang="es">
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <PageTransition>
+          {children}
+        </PageTransition>
         <ToastContainer />
-        {children}
+        <RegisterSW />
       </body>
     </html>
   );
