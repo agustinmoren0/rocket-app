@@ -33,17 +33,21 @@ export default function ReflexionPage() {
       return;
     }
 
-    if (!note.trim()) {
-      showToast('Por favor, contanos qué lograste', 'error');
+    // Nota es opcional SI hay categoría
+    if (!note.trim() && !selectedCategory) {
+      showToast('Por favor, elegí una categoría o describí qué hiciste', 'error');
       return;
     }
 
     // Convertir a minutos si está en horas
     const minutes = timeUnit === 'hours' ? Math.round(value * 60) : Math.round(value);
 
+    // Si no hay nota, usar categoría como nota
+    const finalNote = note.trim() || (selectedCategory ? `Actividad de ${selectedCategory}` : '');
+
     addActivity(
       minutes,
-      note,
+      finalNote,
       selectedEmotion || undefined,
       selectedCategory || undefined
     );
@@ -132,25 +136,10 @@ export default function ReflexionPage() {
           </p>
         </div>
 
-        {/* Nota */}
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
-            ¿Qué hiciste?
-          </label>
-          <motion.textarea
-            whileFocus={{ scale: 1.01 }}
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Ej: Escribí 500 palabras de mi novela..."
-            rows={5}
-            className="w-full px-4 py-3 rounded-2xl bg-white border-2 border-slate-200 focus:border-indigo-500 focus:outline-none resize-none transition-colors"
-          />
-        </div>
-
         {/* Categorías */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-3">
-            ¿A qué categoría pertenece? (opcional)
+            ¿A qué categoría pertenece?
           </label>
           <div className="grid grid-cols-2 gap-3">
             {CATEGORIES.map((category, i) => (
@@ -159,7 +148,7 @@ export default function ReflexionPage() {
                 type="button"
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.2 + i * 0.03 }}
+                transition={{ delay: 0.15 + i * 0.02 }}
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setSelectedCategory(
@@ -180,10 +169,30 @@ export default function ReflexionPage() {
           </div>
         </div>
 
+        {/* Nota OPCIONAL */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-2">
+            ¿Qué hiciste? <span className="text-slate-400 text-xs">(opcional)</span>
+          </label>
+          <motion.textarea
+            whileFocus={{ scale: 1.01 }}
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="Ej: Escribí 500 palabras de mi novela..."
+            rows={4}
+            className="w-full px-4 py-3 rounded-2xl bg-white border-2 border-slate-200 focus:border-indigo-500 focus:outline-none resize-none transition-colors"
+          />
+          <p className="text-xs text-slate-500 mt-2">
+            {selectedCategory
+              ? 'Tenés categoría elegida, podés dejar esto vacío'
+              : 'Si no elegís categoría, escribí qué hiciste'}
+          </p>
+        </div>
+
         {/* Emojis opcionales */}
         <div>
           <label className="block text-sm font-medium text-slate-500 mb-3">
-            ¿Cómo te sentiste? (opcional)
+            ¿Cómo te sentiste? <span className="text-xs">(opcional)</span>
           </label>
           <div className="flex gap-2 flex-wrap">
             {emotions.map((emotion, i) => (
@@ -192,7 +201,7 @@ export default function ReflexionPage() {
                 type="button"
                 initial={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.5 + i * 0.03 }}
+                transition={{ delay: 0.4 + i * 0.02 }}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 onClick={() => setSelectedEmotion(
@@ -218,7 +227,7 @@ export default function ReflexionPage() {
         <motion.button
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
+          transition={{ delay: 0.6 }}
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.99 }}
           type="submit"
