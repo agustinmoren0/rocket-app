@@ -244,7 +244,7 @@ export default function ReflexionPage() {
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.99 }}
           type="submit"
-          className={`w-full h-14 rounded-full bg-gradient-to-r ${currentTheme.gradient} text-white font-medium shadow-lg hover:shadow-xl transition-shadow`}
+          className={`w-full h-14 rounded-2xl ${currentTheme.button} text-white font-medium shadow-md hover:shadow-lg transition-all duration-200`}
         >
           Guardar progreso
         </motion.button>
