@@ -1,29 +1,25 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import RegisterSW from "./register-sw";
 import ToastContainer from "./components/Toast";
 import PageTransition from "./components/PageTransition";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Rocket - Tu progreso real",
+  title: "HABIKA - Tu progreso real",
   description: "Visualizá tu progreso sin tareas, sin culpa",
   manifest: "/manifest.json",
-  themeColor: "#6366f1",
+  themeColor: "#8b5cf6",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Rocket",
+    title: "HABIKA",
   },
 };
 
@@ -34,7 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="es">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+      <body className={`${inter.variable} font-sans antialiased`}>
         <PageTransition>
           {children}
         </PageTransition>

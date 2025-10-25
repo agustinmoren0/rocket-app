@@ -1,11 +1,11 @@
 {
-  "name": "Rocket",
-  "short_name": "Rocket",
+  "name": "HABIKA",
+  "short_name": "HABIKA",
   "description": "Tu progreso real, sin tareas, sin culpa",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#6366f1",
+  "theme_color": "#8b5cf6",
   "orientation": "portrait-primary",
   "scope": "/"
 }
