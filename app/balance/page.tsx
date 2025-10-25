@@ -44,12 +44,7 @@ export default function BalancePage() {
   const activitiesWithoutCategory = data.currentWeek.activities.filter(a => !a.category).length;
 
   return (
-    <motion.main
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50"
-    >
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50">
       <motion.header
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -272,6 +267,6 @@ export default function BalancePage() {
           </motion.div>
         )}
       </div>
-    </motion.main>
+    </main>
   );
 }
