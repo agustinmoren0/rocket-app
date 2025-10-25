@@ -123,39 +123,6 @@ export default function PerfilPage() {
           </div>
         </section>
 
-        {/* Apariencia */}
-        <section className="bg-white rounded-3xl shadow-sm p-6 animate-slideUp" style={{animationDelay: '0.1s'}}>
-          <h3 className="font-semibold text-slate-800 mb-4">Apariencia</h3>
-
-          <button
-            onClick={toggleTheme}
-            className="w-full flex items-center justify-between p-4 rounded-2xl bg-slate-50 hover:bg-slate-100"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                {theme === 'dark' ? '🌙' : '☀️'}
-              </div>
-              <div className="text-left">
-                <p className="font-medium text-slate-800">Tema</p>
-                <p className="text-sm text-slate-500">
-                  {theme === 'dark' ? 'Oscuro' : 'Claro'}
-                </p>
-              </div>
-            </div>
-            <div
-              className={`w-12 h-7 rounded-full transition-colors ${
-                theme === 'dark' ? 'bg-indigo-600' : 'bg-slate-300'
-              } relative`}
-            >
-              <div
-                className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-transform ${
-                  theme === 'dark' ? 'translate-x-6' : 'translate-x-1'
-                }`}
-              />
-            </div>
-          </button>
-        </section>
-
         {/* Notificaciones */}
         {notificationSupported && (
           <section className="bg-white rounded-3xl shadow-sm p-6 animate-slideUp" style={{animationDelay: '0.12s'}}>
