@@ -34,7 +34,7 @@ const itemVariants: Variants = {
 
 export default function PerfilPage() {
   const router = useRouter();
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
 
   const [data, setData] = useState<any>(null);
   const [showNameModal, setShowNameModal] = useState(false);
