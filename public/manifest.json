@@ -1,41 +1,11 @@
 {
-  "name": "Rocket - Tu progreso creativo",
+  "name": "Rocket",
   "short_name": "Rocket",
-  "description": "Visualizá tu progreso creativo sin culpa",
+  "description": "Tu progreso real, sin tareas, sin culpa",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f8fafc",
+  "background_color": "#ffffff",
   "theme_color": "#6366f1",
-  "orientation": "portrait",
-  "scope": "/",
-  "icons": [
-    {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
-  "categories": ["productivity", "lifestyle"],
-  "screenshots": [],
-  "shortcuts": [
-    {
-      "name": "Registrar actividad",
-      "short_name": "Registrar",
-      "description": "Agregar actividad del día",
-      "url": "/reflexion",
-      "icons": [
-        {
-          "src": "/icon-192.png",
-          "sizes": "192x192"
-        }
-      ]
-    }
-  ]
+  "orientation": "portrait-primary",
+  "scope": "/"
 }

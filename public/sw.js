@@ -1,9 +1,7 @@
-const CACHE_NAME = 'rocket-v1.0.0';
+const CACHE_NAME = 'rocket-v1.0.1';
 const urlsToCache = [
   '/',
-  '/manifest.json',
-  '/icon-192.png',
-  '/icon-512.png',
+  '/manifest.json'
 ];
 
 // Instalar service worker
@@ -13,7 +11,6 @@ self.addEventListener('install', (event) => {
       return cache.addAll(urlsToCache);
     })
   );
-  // Forzar activación inmediata
   self.skipWaiting();
 });
 
@@ -30,16 +27,14 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
-  // Tomar control inmediatamente
   return self.clients.claim();
 });
 
-// Estrategia: Network First, Cache Fallback
+// Network First, Cache Fallback
 self.addEventListener('fetch', (event) => {
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Guardar en cache si es exitoso
         if (response && response.status === 200) {
           const responseToCache = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
@@ -49,13 +44,11 @@ self.addEventListener('fetch', (event) => {
         return response;
       })
       .catch(() => {
-        // Si falla, usar cache
         return caches.match(event.request);
       })
   );
 });
 
-// Notificar al cliente cuando hay actualización
 self.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') {
     self.skipWaiting();
