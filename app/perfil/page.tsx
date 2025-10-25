@@ -133,12 +133,10 @@ export default function PerfilPage() {
                   className="flex flex-col items-center gap-2"
                 >
                   <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center text-xl transition-all ${
-                      isActive ? 'ring-2 ring-offset-2' : ''
-                    }`}
+                    className={`w-12 h-12 rounded-full flex items-center justify-center text-xl transition-all`}
                     style={{
                       background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})`,
-                      ringColor: theme.primary
+                      boxShadow: isActive ? `0 0 0 2px white, 0 0 0 4px ${theme.primary}` : 'none'
                     }}
                   >
                     {theme.emoji}
