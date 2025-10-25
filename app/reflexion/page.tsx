@@ -35,11 +35,13 @@ export default function ReflexionPage() {
       return;
     }
 
-    // Nota es opcional SI hay categoría
-    if (!note.trim() && !selectedCategory) {
-      showToast('Por favor, elegí una categoría o describí qué hiciste', 'error');
+    // Categoría es OBLIGATORIA
+    if (!selectedCategory) {
+      showToast('Por favor, elegí una categoría', 'error');
       return;
     }
+
+    // Nota es opcional
 
     // Convertir a minutos si está en horas
     const minutes = timeUnit === 'hours' ? Math.round(value * 60) : Math.round(value);
