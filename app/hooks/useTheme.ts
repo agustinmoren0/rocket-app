@@ -1,39 +1,21 @@
-// app/hooks/useTheme.ts - Hook para manejar tema oscuro/claro
-import { useState, useEffect } from 'react';
+'use client'
 
-type Theme = 'light' | 'dark';
+import { useEffect, useState } from 'react';
+import { loadData, THEMES, type Theme } from '../lib/store';
 
 export function useTheme() {
-  const [theme, setTheme] = useState<Theme>('light');
+  const [theme, setThemeState] = useState<Theme>('lavender');
 
   useEffect(() => {
-    // Cargar tema guardado o usar preferencia del sistema
-    const savedTheme = localStorage.getItem('rocket.theme') as Theme;
-    if (savedTheme) {
-      setTheme(savedTheme);
-      applyTheme(savedTheme);
-    } else {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const initialTheme = prefersDark ? 'dark' : 'light';
-      setTheme(initialTheme);
-      applyTheme(initialTheme);
-    }
+    const data = loadData();
+    setThemeState(data.theme);
   }, []);
 
-  function toggleTheme() {
-    const newTheme = theme === 'light' ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('rocket.theme', newTheme);
-    applyTheme(newTheme);
-  }
+  const currentTheme = THEMES[theme];
 
-  function applyTheme(newTheme: Theme) {
-    if (newTheme === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    } else {
-      document.documentElement.removeAttribute('data-theme');
-    }
-  }
-
-  return { theme, toggleTheme };
+  return {
+    theme,
+    currentTheme,
+    isDark: false, // Para futura implementación
+  };
 }
