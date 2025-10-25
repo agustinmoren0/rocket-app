@@ -26,13 +26,16 @@ export default function PerfilPage() {
 
   function handleThemeChange(newTheme: Theme) {
     setTheme(newTheme);
+    setData(loadData());
     showToast(`Tema ${THEMES[newTheme].name} activado`, 'success');
   }
 
   function handleToggleZen() {
+    const wasZen = data.zenMode;
     toggleZenMode();
-    setData(loadData());
-    showToast(data.zenMode ? 'Modo Zen desactivado' : 'Modo Zen activado', 'success');
+    const newData = loadData();
+    setData(newData);
+    showToast(wasZen ? 'Modo Zen desactivado' : 'Modo Zen activado', 'success');
   }
 
   function handleDeleteData() {
@@ -216,11 +219,30 @@ export default function PerfilPage() {
         >
           <h3 className="text-base font-semibold text-slate-900 mb-3">Aplicación</h3>
           <div className="space-y-2">
-            <button className={`w-full flex items-center gap-3 p-3 rounded-xl ${currentTheme.bgHover} transition-colors text-left`}>
-              <span className="text-xl">📱</span>
+            <button
+              onClick={() => {
+                if (window.matchMedia('(display-mode: standalone)').matches) {
+                  showToast('HABIKA ya está instalada', 'success');
+                } else {
+                  showToast('Usá el menú de tu navegador para instalar', 'info');
+                }
+              }}
+              className={`w-full flex items-center gap-3 p-3 rounded-xl ${currentTheme.bgHover} transition-colors text-left`}
+            >
+              <span className="text-xl">
+                {typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches ? '✅' : '📱'}
+              </span>
               <div>
-                <p className="text-sm font-medium text-slate-900">Agregar a pantalla de inicio</p>
-                <p className="text-xs text-slate-600">Usá HABIKA como app nativa</p>
+                <p className="text-sm font-medium text-slate-900">
+                  {typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches
+                    ? 'HABIKA está instalada'
+                    : 'Agregar a pantalla de inicio'}
+                </p>
+                <p className="text-xs text-slate-600">
+                  {typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches
+                    ? 'Ya estás usando HABIKA como app'
+                    : 'Usá HABIKA como app nativa'}
+                </p>
               </div>
             </button>
             <button className={`w-full flex items-center gap-3 p-3 rounded-xl ${currentTheme.bgHover} transition-colors text-left`}>

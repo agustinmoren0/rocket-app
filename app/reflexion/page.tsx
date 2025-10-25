@@ -185,7 +185,9 @@ export default function ReflexionPage() {
             whileFocus={{ scale: 1.01 }}
             value={note}
             onChange={(e) => setNote(e.target.value)}
-            placeholder="Ej: Escribí 500 palabras de mi novela..."
+            placeholder={selectedCategory
+              ? "Opcional: describí qué hiciste..."
+              : "Ej: Escribí 500 palabras de mi novela..."}
             rows={4}
             className={`w-full px-4 py-3 rounded-2xl ${currentTheme.bgCard} border-2 ${currentTheme.border} focus:outline-none resize-none transition-colors`}
             style={{ borderColor: currentTheme.primary }}
