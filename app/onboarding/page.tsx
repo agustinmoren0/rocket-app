@@ -45,8 +45,7 @@ export default function OnboardingPage() {
   function handleFinish() {
     if (!name.trim()) return;
 
-    setUserName(name.trim());
-    completeOnboarding();
+    completeOnboarding(name.trim());
     router.replace('/');
   }
 
