@@ -86,6 +86,24 @@ export default function Home() {
         </Link>
       </header>
 
+      {/* Quick links */}
+      <div className="max-w-2xl mx-auto px-6 mb-6 flex gap-3 animate-fadeIn">
+        <Link
+          href="/balance"
+          className="flex-1 h-12 rounded-2xl bg-white/70 backdrop-blur-sm shadow-sm flex items-center justify-center gap-2 text-sm font-medium text-slate-700 hover:bg-white transition-all"
+        >
+          <span>📊</span>
+          Tu Balance
+        </Link>
+        <Link
+          href="/historial"
+          className="flex-1 h-12 rounded-2xl bg-white/70 backdrop-blur-sm shadow-sm flex items-center justify-center gap-2 text-sm font-medium text-slate-700 hover:bg-white transition-all"
+        >
+          <span>📅</span>
+          Historial
+        </Link>
+      </div>
+
       <div className="max-w-2xl mx-auto px-6 space-y-5 pb-24">
         {/* Progreso principal - Card flotante */}
         <section className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-8 animate-slideUp">

@@ -1,12 +1,8 @@
-/* INSTRUCCIONES PARA CLAUDE VS CODE:
-Reemplazá app/reflexion/page.tsx con este código
-*/
-
 'use client'
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { addActivity } from '../lib/store';
+import { addActivity, CATEGORIES, type Category } from '../lib/store';
 import { showToast } from '../components/Toast';
 
 const emotions = [
@@ -21,6 +17,7 @@ const emotions = [
 export default function ReflexionPage() {
   const router = useRouter();
   const [selectedEmotion, setSelectedEmotion] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<Category | ''>('');
   const [minutes, setMinutes] = useState('');
   const [note, setNote] = useState('');
 
@@ -38,8 +35,12 @@ export default function ReflexionPage() {
       return;
     }
 
-    // Guardar con o sin emoción (opcional)
-    addActivity(mins, note, selectedEmotion || undefined);
+    addActivity(
+      mins,
+      note,
+      selectedEmotion || undefined,
+      selectedCategory || undefined
+    );
     showToast('¡Progreso guardado! 🚀', 'success');
 
     setTimeout(() => {
@@ -94,6 +95,34 @@ export default function ReflexionPage() {
           />
         </div>
 
+        {/* Categorías */}
+        <div>
+          <label className="block text-sm font-medium text-slate-700 mb-3">
+            ¿A qué categoría pertenece? (opcional)
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            {CATEGORIES.map((category) => (
+              <button
+                key={category}
+                type="button"
+                onClick={() => setSelectedCategory(
+                  selectedCategory === category ? '' : category
+                )}
+                className={`
+                  h-16 rounded-2xl flex items-center justify-center text-sm font-medium
+                  transition-all
+                  ${selectedCategory === category
+                    ? 'bg-indigo-600 text-white ring-2 ring-indigo-500 scale-105'
+                    : 'bg-white text-slate-700 hover:bg-slate-50 border-2 border-slate-200'
+                  }
+                `}
+              >
+                {category}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Emojis opcionales */}
         <div>
           <label className="block text-sm font-medium text-slate-500 mb-3">
@@ -121,16 +150,6 @@ export default function ReflexionPage() {
               </button>
             ))}
           </div>
-        </div>
-
-        {/* Sugerencias */}
-        <div className="bg-amber-50 rounded-2xl p-4">
-          <p className="text-sm text-amber-900 mb-2 font-medium">💡 Ideas:</p>
-          <ul className="text-sm text-amber-800 space-y-1">
-            <li>• Trabajaste en un proyecto personal</li>
-            <li>• Aprendiste algo nuevo</li>
-            <li>• Hiciste ejercicio o meditaste</li>
-          </ul>
         </div>
 
         {/* Botón guardar */}
