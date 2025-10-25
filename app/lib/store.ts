@@ -1,4 +1,4 @@
-// lib/store.ts - Sistema de datos con localStorage + emociones + categorías
+// lib/store.ts - Sistema de datos con localStorage + emociones + categorías + temas
 
 export type Category = '🎨 Creatividad' | '💼 Trabajo' | '📚 Aprendizaje' | '💪 Energía' | '🧘 Equilibrio' | '👥 Social' | '🎮 Ocio';
 
@@ -11,6 +11,43 @@ export const CATEGORIES: Category[] = [
   '👥 Social',
   '🎮 Ocio',
 ];
+
+export type Theme = 'ocean' | 'forest' | 'sunset' | 'lavender';
+
+export const THEMES = {
+  ocean: {
+    name: 'Océano',
+    emoji: '🌊',
+    primary: '#0ea5e9',
+    secondary: '#06b6d4',
+    gradient: 'from-sky-400 to-cyan-500',
+    bg: 'from-sky-50 via-white to-cyan-50',
+  },
+  forest: {
+    name: 'Bosque',
+    emoji: '🌲',
+    primary: '#10b981',
+    secondary: '#059669',
+    gradient: 'from-emerald-400 to-green-500',
+    bg: 'from-emerald-50 via-white to-green-50',
+  },
+  sunset: {
+    name: 'Atardecer',
+    emoji: '🌅',
+    primary: '#f59e0b',
+    secondary: '#ef4444',
+    gradient: 'from-orange-400 to-red-500',
+    bg: 'from-orange-50 via-white to-red-50',
+  },
+  lavender: {
+    name: 'Lavanda',
+    emoji: '💜',
+    primary: '#8b5cf6',
+    secondary: '#6366f1',
+    gradient: 'from-violet-400 to-indigo-500',
+    bg: 'from-violet-50 via-white to-indigo-50',
+  },
+};
 
 export type Activity = {
   date: string;
@@ -32,6 +69,8 @@ export type UserData = {
   onboardingDone: boolean;
   currentWeek: WeekData;
   previousWeek?: WeekData;
+  theme: Theme;
+  zenMode: boolean;
 };
 
 const STORAGE_KEY = 'rocket.data';
@@ -49,6 +88,8 @@ function initData(): UserData {
   return {
     name: 'Usuario',
     onboardingDone: false,
+    theme: 'lavender',
+    zenMode: false,
     currentWeek: {
       startDate: getWeekStart(),
       activeDays: [false, false, false, false, false, false, false],
@@ -66,6 +107,10 @@ export function loadData(): UserData {
 
   try {
     const data: UserData = JSON.parse(stored);
+
+    // Migración: agregar theme y zenMode si no existen
+    if (!data.theme) data.theme = 'lavender';
+    if (data.zenMode === undefined) data.zenMode = false;
 
     const currentStart = getWeekStart();
     if (data.currentWeek.startDate !== currentStart) {
@@ -104,6 +149,18 @@ export function addActivity(minutes: number, note: string, emotion?: string, cat
   data.currentWeek.totalMinutes += minutes;
   data.currentWeek.activities.push({ date: today, minutes, note, emotion, category });
 
+  saveData(data);
+}
+
+export function setTheme(theme: Theme): void {
+  const data = loadData();
+  data.theme = theme;
+  saveData(data);
+}
+
+export function toggleZenMode(): void {
+  const data = loadData();
+  data.zenMode = !data.zenMode;
   saveData(data);
 }
 
@@ -181,7 +238,6 @@ export function getMostFrequentEmotion(): string | null {
   return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
 }
 
-// Nuevas funciones para categorías
 export function getCategoryBreakdown(): { category: Category; minutes: number; percentage: number; color: string }[] {
   const data = loadData();
   const activitiesWithCategory = data.currentWeek.activities.filter(a => a.category);
