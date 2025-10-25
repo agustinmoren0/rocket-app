@@ -7,7 +7,8 @@ Solo cambió: agregamos estado loading para evitar hydration mismatch
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { loadData } from '../lib/store';
+import { motion, type Variants } from 'framer-motion';
+import { loadData, setTheme, toggleZenMode, THEMES, type Theme } from '../lib/store';
 import { useTheme } from '../hooks/useTheme';
 import InstallButton from '../components/InstallButton';
 import ChangeNameModal from '../components/ChangeNameModal';
@@ -18,6 +19,18 @@ import {
   saveReminderPreference,
   loadReminderPreference
 } from '../lib/notifications';
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: 'easeOut',
+    },
+  },
+};
 
 export default function PerfilPage() {
   const router = useRouter();
@@ -177,6 +190,93 @@ export default function PerfilPage() {
             </button>
           </section>
         )}
+
+        {/* Selector de Tema */}
+        <motion.section
+          variants={itemVariants}
+          className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-6"
+        >
+          <h2 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+            <span>🎨</span>
+            Tema de colores
+          </h2>
+
+          <div className="grid grid-cols-2 gap-3">
+            {(Object.keys(THEMES) as Theme[]).map((themeKey) => {
+              const theme = THEMES[themeKey];
+              const isSelected = data.theme === themeKey;
+
+              return (
+                <motion.button
+                  key={themeKey}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => {
+                    setTheme(themeKey);
+                    const newData = loadData();
+                    setData(newData);
+                    showToast(`Tema ${theme.name} activado`, 'success');
+                    window.location.reload();
+                  }}
+                  className={`
+                    h-20 rounded-2xl flex flex-col items-center justify-center gap-2
+                    transition-all
+                    ${isSelected
+                      ? 'ring-2 ring-offset-2 bg-white shadow-lg'
+                      : 'bg-slate-50 hover:bg-white'
+                    }
+                  `}
+                  style={isSelected ? { ringColor: theme.primary } : {}}
+                >
+                  <span className="text-3xl">{theme.emoji}</span>
+                  <span className="text-sm font-medium text-slate-700">{theme.name}</span>
+                </motion.button>
+              );
+            })}
+          </div>
+        </motion.section>
+
+        {/* Modo Zen */}
+        <motion.section
+          variants={itemVariants}
+          className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-6"
+        >
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <h2 className="text-lg font-semibold text-slate-800 mb-1 flex items-center gap-2">
+                <span>🧘</span>
+                Modo Zen
+              </h2>
+              <p className="text-sm text-slate-600">
+                Interfaz ultra minimalista. Solo progreso y acción.
+              </p>
+            </div>
+
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => {
+                toggleZenMode();
+                const newData = loadData();
+                setData(newData);
+                showToast(
+                  newData.zenMode ? 'Modo Zen activado 🧘' : 'Modo normal activado',
+                  'success'
+                );
+                setTimeout(() => window.location.href = '/', 500);
+              }}
+              className={`
+                w-14 h-8 rounded-full flex items-center transition-all
+                ${data.zenMode ? 'bg-indigo-600' : 'bg-slate-300'}
+              `}
+            >
+              <motion.div
+                animate={{ x: data.zenMode ? 24 : 2 }}
+                transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                className="w-6 h-6 bg-white rounded-full shadow-md"
+              />
+            </motion.button>
+          </div>
+        </motion.section>
 
         {/* Aplicación */}
         <section className="bg-white rounded-3xl shadow-sm p-6 animate-slideUp" style={{animationDelay: '0.15s'}}>
