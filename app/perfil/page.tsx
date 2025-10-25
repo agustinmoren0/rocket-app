@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { motion, type Variants } from 'framer-motion';
 import { loadData, setTheme, toggleZenMode, THEMES, type Theme } from '../lib/store';
 import { useTheme } from '../hooks/useTheme';
+import { forceUpdatePWA } from '../lib/pwa';
 import InstallButton from '../components/InstallButton';
 import ChangeNameModal from '../components/ChangeNameModal';
 import { showToast } from '../components/Toast';
@@ -242,6 +243,43 @@ export default function PerfilPage() {
               />
             </motion.button>
           </div>
+        </motion.section>
+
+        {/* Actualizar PWA */}
+        <motion.section
+          variants={itemVariants}
+          className="bg-white/70 backdrop-blur-xl rounded-3xl shadow-lg border border-white/20 p-6"
+        >
+          <div className="flex items-start justify-between mb-3">
+            <div className="flex-1">
+              <h2 className="text-lg font-semibold text-slate-800 mb-1 flex items-center gap-2">
+                <span>🔄</span>
+                Actualizar app
+              </h2>
+              <p className="text-sm text-slate-600">
+                Si instalaste Rocket como PWA, usá esto para obtener la última versión.
+              </p>
+            </div>
+          </div>
+
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={async () => {
+              if (confirm('¿Actualizar Rocket a la última versión?\n\nTu progreso se mantendrá intacto.')) {
+                showToast('Actualizando...', 'info');
+                await forceUpdatePWA();
+              }
+            }}
+            className="w-full h-12 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-medium transition-all flex items-center justify-center gap-2"
+          >
+            <span>↻</span>
+            Buscar actualizaciones
+          </motion.button>
+
+          <p className="text-xs text-slate-500 mt-3 text-center">
+            Versión actual: 0.1.0 · Última actualización: {new Date().toLocaleDateString()}
+          </p>
         </motion.section>
 
         {/* Aplicación */}
