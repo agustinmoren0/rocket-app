@@ -29,9 +29,9 @@ export default function EditarHabitoPage() {
       setHabit(found);
       setFormData({
         name: found.name,
-        targetValue: found.targetValue || found.minutes,
-        targetUnit: found.targetUnit || 'min',
-        targetPeriod: found.targetPeriod || 'por día',
+        targetValue: found.minutes,
+        targetUnit: 'min',
+        targetPeriod: 'por día',
         frequency: found.frequency || 'daily',
       });
     }
@@ -42,7 +42,12 @@ export default function EditarHabitoPage() {
     const habits = getCustomHabits();
     const updatedHabits = habits.map(h =>
       h.id === params.id
-        ? { ...h, ...formData, minutes: formData.targetUnit === 'hs' ? formData.targetValue * 60 : formData.targetValue }
+        ? {
+            ...h,
+            name: formData.name,
+            minutes: formData.targetUnit === 'hs' ? formData.targetValue * 60 : formData.targetValue,
+            frequency: formData.frequency
+          }
         : h
     );
     localStorage.setItem('habika_custom_habits', JSON.stringify(updatedHabits));
