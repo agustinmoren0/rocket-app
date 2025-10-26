@@ -6,16 +6,38 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../hooks/useTheme';
 import { saveCustomHabit } from '../lib/store';
 import habitsData from '../../data/habits.json';
+import {
+  Activity, Apple, Book, Brain, Calendar, Camera,
+  Coffee, Dumbbell, Flame, Heart, Home, Laptop,
+  Moon, Music, Paintbrush, Smartphone, Sun, Target,
+  Trophy, Users, Zap, Droplet, Wind, Mountain
+} from 'lucide-react';
 
-// Iconos disponibles (usar emoji o librería de iconos después)
 const HABIT_ICONS = [
-  '🏃', '🚴', '🧘', '💪', '🏋️', '⚽', '🏀', '🎾', '🏊', '🧗',
-  '📚', '✍️', '🎨', '🎵', '🎮', '📖', '🧠', '💡', '🔬', '🎓',
-  '💼', '💻', '📱', '🖥️', '⌨️', '🖱️', '📊', '📈', '📉', '🗂️',
-  '🍎', '🥗', '🥑', '🍊', '🥕', '🥦', '🍇', '🥤', '☕', '🍵',
-  '😴', '🛌', '⏰', '🌙', '☀️', '🌅', '🌄', '🌃', '🌆', '🌇',
-  '🧹', '🧽', '🧺', '🧼', '🪥', '🚿', '🛁', '🧴', '💊', '🏥',
-  '💰', '💵', '💳', '🏦', '📱', '🎯', '🎪', '🎭', '🎬', '📷',
+  { icon: Activity, name: 'Activity' },
+  { icon: Dumbbell, name: 'Dumbbell' },
+  { icon: Brain, name: 'Brain' },
+  { icon: Book, name: 'Book' },
+  { icon: Apple, name: 'Apple' },
+  { icon: Coffee, name: 'Coffee' },
+  { icon: Heart, name: 'Heart' },
+  { icon: Moon, name: 'Moon' },
+  { icon: Sun, name: 'Sun' },
+  { icon: Music, name: 'Music' },
+  { icon: Paintbrush, name: 'Paintbrush' },
+  { icon: Target, name: 'Target' },
+  { icon: Trophy, name: 'Trophy' },
+  { icon: Flame, name: 'Flame' },
+  { icon: Zap, name: 'Zap' },
+  { icon: Droplet, name: 'Droplet' },
+  { icon: Wind, name: 'Wind' },
+  { icon: Mountain, name: 'Mountain' },
+  { icon: Users, name: 'Users' },
+  { icon: Calendar, name: 'Calendar' },
+  { icon: Camera, name: 'Camera' },
+  { icon: Laptop, name: 'Laptop' },
+  { icon: Smartphone, name: 'Smartphone' },
+  { icon: Home, name: 'Home' },
 ];
 
 const HABIT_COLORS = [
@@ -32,21 +54,18 @@ export default function BibliotecaPage() {
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [showRepeatPicker, setShowRepeatPicker] = useState(false);
-  const [showReminderPicker, setShowReminderPicker] = useState(false);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
 
   const [formData, setFormData] = useState({
     name: '',
-    icon: '🧘',
+    icon: 'Activity',
     color: '#3b82f6',
     targetValue: 20,
     targetUnit: 'min' as 'min' | 'hs',
     targetPeriod: 'por día',
     frequency: 'daily' as 'daily' | 'weekly' | '3x-week' | 'flexible',
     days: [0, 1, 2, 3, 4, 5, 6],
-    reminderEnabled: false,
-    reminderTime: '6:30',
     startDate: new Date().toISOString().split('T')[0],
     endType: 'never' as 'never' | 'date' | 'streak' | 'times' | 'total',
     endValue: null as string | number | null,
@@ -65,12 +84,10 @@ export default function BibliotecaPage() {
   };
 
   const handleSaveHabit = () => {
-    // Convertir horas a minutos si es necesario
     const minutes = formData.targetUnit === 'hs'
       ? formData.targetValue * 60
       : formData.targetValue;
 
-    // Guardar el hábito personalizado
     saveCustomHabit({
       name: formData.name,
       description: selectedHabit?.description || '',
@@ -82,6 +99,8 @@ export default function BibliotecaPage() {
     setSelectedHabit(null);
     router.push('/mis-habitos');
   };
+
+  const SelectedIcon = HABIT_ICONS.find(i => i.name === formData.icon)?.icon || Activity;
 
   return (
     <main className={`min-h-screen ${currentTheme.bg} p-6`}>
@@ -165,10 +184,10 @@ export default function BibliotecaPage() {
                   <div className="flex items-center gap-4">
                     <button
                       onClick={() => setShowIconPicker(!showIconPicker)}
-                      className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl"
+                      className="w-16 h-16 rounded-2xl flex items-center justify-center"
                       style={{ backgroundColor: formData.color + '20' }}
                     >
-                      {formData.icon}
+                      <SelectedIcon size={32} style={{ color: formData.color }} />
                     </button>
                     <input
                       type="text"
@@ -183,18 +202,21 @@ export default function BibliotecaPage() {
                   {showIconPicker && (
                     <div className="p-4 bg-slate-50 rounded-xl">
                       <div className="grid grid-cols-8 gap-2 mb-4">
-                        {HABIT_ICONS.map((icon, i) => (
-                          <button
-                            key={i}
-                            onClick={() => {
-                              setFormData({...formData, icon});
-                              setShowIconPicker(false);
-                            }}
-                            className="w-10 h-10 text-2xl hover:bg-white rounded-lg"
-                          >
-                            {icon}
-                          </button>
-                        ))}
+                        {HABIT_ICONS.map((item, i) => {
+                          const IconComponent = item.icon;
+                          return (
+                            <button
+                              key={i}
+                              onClick={() => {
+                                setFormData({...formData, icon: item.name});
+                                setShowIconPicker(false);
+                              }}
+                              className="w-10 h-10 hover:bg-white rounded-lg flex items-center justify-center"
+                            >
+                              <IconComponent size={20} className="text-slate-700" />
+                            </button>
+                          );
+                        })}
                       </div>
                       <div className="flex gap-2">
                         {HABIT_COLORS.map((color, i) => (
@@ -222,6 +244,52 @@ export default function BibliotecaPage() {
                     <span>→</span>
                   </button>
 
+                  {showRepeatPicker && (
+                    <div className="p-4 bg-slate-50 rounded-xl space-y-3">
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setFormData({...formData, frequency: 'daily', days: [0,1,2,3,4,5,6]})}
+                          className={`flex-1 py-2 rounded-lg text-sm font-medium ${formData.frequency === 'daily' ? 'bg-indigo-500 text-white' : 'bg-white'}`}
+                        >
+                          Diario
+                        </button>
+                        <button
+                          onClick={() => setFormData({...formData, frequency: 'weekly'})}
+                          className={`flex-1 py-2 rounded-lg text-sm font-medium ${formData.frequency === 'weekly' ? 'bg-indigo-500 text-white' : 'bg-white'}`}
+                        >
+                          Semanal
+                        </button>
+                      </div>
+
+                      {formData.frequency !== 'daily' && (
+                        <>
+                          <p className="text-xs text-slate-600">¿En qué días?</p>
+                          <div className="grid grid-cols-7 gap-2">
+                            {['D', 'L', 'M', 'X', 'J', 'V', 'S'].map((day, i) => (
+                              <button
+                                key={i}
+                                onClick={() => {
+                                  const newDays = [...(formData.days || [])];
+                                  if (newDays.includes(i)) {
+                                    newDays.splice(newDays.indexOf(i), 1);
+                                  } else {
+                                    newDays.push(i);
+                                  }
+                                  setFormData({...formData, days: newDays});
+                                }}
+                                className={`w-10 h-10 rounded-full text-sm font-medium ${
+                                  formData.days?.includes(i) ? 'bg-indigo-500 text-white' : 'bg-white'
+                                }`}
+                              >
+                                {day}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+
                   {/* Objetivo */}
                   <button
                     onClick={() => setShowTimePicker(!showTimePicker)}
@@ -237,43 +305,104 @@ export default function BibliotecaPage() {
 
                   {/* Time Picker */}
                   {showTimePicker && (
-                    <div className="flex gap-2 p-4 bg-slate-50 rounded-xl">
-                      <select value={formData.targetValue} onChange={(e) => setFormData({...formData, targetValue: parseInt(e.target.value)})} className="flex-1 text-center text-lg bg-transparent">
-                        {[...Array(100)].map((_, i) => <option key={i} value={i+1}>{i+1}</option>)}
-                      </select>
-                      <select value={formData.targetUnit} onChange={(e) => setFormData({...formData, targetUnit: e.target.value as 'min' | 'hs'})} className="flex-1 text-center text-lg bg-transparent">
-                        <option value="min">min</option>
-                        <option value="hs">hs</option>
-                      </select>
-                      <select value={formData.targetPeriod} onChange={(e) => setFormData({...formData, targetPeriod: e.target.value})} className="flex-1 text-center text-lg bg-transparent">
-                        <option value="por día">por día</option>
-                        <option value="por semana">por semana</option>
-                        <option value="por mes">por mes</option>
-                      </select>
+                    <div className="p-4 bg-slate-50 rounded-xl">
+                      <div className="flex items-center justify-center gap-2">
+                        {/* Value wheel */}
+                        <div className="relative h-32 w-20 overflow-hidden">
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div className="h-10 w-full bg-indigo-50 rounded-lg border-2 border-indigo-200" />
+                          </div>
+                          <select
+                            value={formData.targetValue}
+                            onChange={(e) => setFormData({...formData, targetValue: parseInt(e.target.value)})}
+                            className="absolute inset-0 opacity-100 text-center text-xl font-medium bg-transparent border-0 appearance-none cursor-pointer"
+                            style={{
+                              WebkitAppearance: 'none',
+                              height: '128px',
+                              padding: '40px 0'
+                            }}
+                          >
+                            {[...Array(100)].map((_, i) => (
+                              <option key={i} value={i + 1}>{i + 1}</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Unit wheel */}
+                        <div className="relative h-32 w-20 overflow-hidden">
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div className="h-10 w-full bg-indigo-50 rounded-lg border-2 border-indigo-200" />
+                          </div>
+                          <select
+                            value={formData.targetUnit}
+                            onChange={(e) => setFormData({...formData, targetUnit: e.target.value as 'min' | 'hs'})}
+                            className="absolute inset-0 opacity-100 text-center text-xl font-medium bg-transparent border-0 appearance-none cursor-pointer"
+                            style={{
+                              WebkitAppearance: 'none',
+                              height: '128px',
+                              padding: '40px 0'
+                            }}
+                          >
+                            <option value="min">min</option>
+                            <option value="hs">hs</option>
+                          </select>
+                        </div>
+
+                        {/* Period wheel */}
+                        <div className="relative h-32 w-28 overflow-hidden">
+                          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div className="h-10 w-full bg-indigo-50 rounded-lg border-2 border-indigo-200" />
+                          </div>
+                          <select
+                            value={formData.targetPeriod}
+                            onChange={(e) => setFormData({...formData, targetPeriod: e.target.value})}
+                            className="absolute inset-0 opacity-100 text-center text-lg font-medium bg-transparent border-0 appearance-none cursor-pointer"
+                            style={{
+                              WebkitAppearance: 'none',
+                              height: '128px',
+                              padding: '40px 0'
+                            }}
+                          >
+                            <option value="por día">por día</option>
+                            <option value="por semana">por semana</option>
+                            <option value="por mes">por mes</option>
+                            <option value="por año">por año</option>
+                          </select>
+                        </div>
+                      </div>
                     </div>
                   )}
 
                   {/* Recordatorio */}
-                  <button
-                    onClick={() => setShowReminderPicker(!showReminderPicker)}
-                    className="w-full flex items-center gap-3 p-4 bg-slate-50 rounded-xl"
-                  >
+                  <button className="w-full flex items-center gap-3 p-4 bg-slate-100 rounded-xl opacity-50 cursor-not-allowed">
                     <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">🔔</div>
                     <div className="flex-1 text-left">
                       <p className="text-xs text-slate-500 uppercase">RECORDATORIO</p>
-                      <p className="font-medium">{formData.reminderEnabled ? formData.reminderTime : 'En cualquier momento'}</p>
+                      <p className="font-medium text-slate-400">Próximamente</p>
+                    </div>
+                  </button>
+
+                  {/* Fecha inicio */}
+                  <button
+                    onClick={() => setShowStartDatePicker(!showStartDatePicker)}
+                    className="w-full flex items-center gap-3 p-4 bg-slate-50 rounded-xl"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">📅</div>
+                    <div className="flex-1 text-left">
+                      <p className="text-xs text-slate-500 uppercase">FECHA DE INICIO</p>
+                      <p className="font-medium">{new Date(formData.startDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
                     </div>
                     <span>→</span>
                   </button>
 
-                  {/* Fecha inicio */}
-                  <button className="w-full flex items-center gap-3 p-4 bg-slate-50 rounded-xl">
-                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">📅</div>
-                    <div className="flex-1 text-left">
-                      <p className="text-xs text-slate-500 uppercase">FECHA DE INICIO</p>
-                      <p className="font-medium">Hoy</p>
-                    </div>
-                  </button>
+                  {showStartDatePicker && (
+                    <input
+                      type="date"
+                      value={formData.startDate}
+                      onChange={(e) => setFormData({...formData, startDate: e.target.value})}
+                      className="w-full p-3 bg-white rounded-lg border border-slate-200"
+                    />
+                  )}
 
                   {/* Fecha fin */}
                   <button
@@ -290,20 +419,60 @@ export default function BibliotecaPage() {
 
                   {/* End Date Picker */}
                   {showEndDatePicker && (
-                    <div className="space-y-2">
-                      {['never', 'date', 'streak', 'times', 'total'].map((type) => (
-                        <button
-                          key={type}
-                          onClick={() => setFormData({...formData, endType: type as any})}
-                          className={`w-full p-3 rounded-lg text-left ${formData.endType === type ? 'bg-indigo-50 text-indigo-600 font-medium' : 'bg-white'}`}
-                        >
-                          {type === 'never' ? 'Nunca' :
-                           type === 'date' ? 'En una fecha' :
-                           type === 'streak' ? 'Por rachas consecutivas' :
-                           type === 'times' ? 'Por número de veces' :
-                           'Por cantidad total'}
-                        </button>
-                      ))}
+                    <div className="space-y-2 p-4 bg-slate-50 rounded-xl">
+                      <button
+                        onClick={() => setFormData({...formData, endType: 'never', endValue: null})}
+                        className={`w-full p-3 rounded-lg text-left ${formData.endType === 'never' ? 'bg-indigo-500 text-white' : 'bg-white'}`}
+                      >
+                        Nunca
+                      </button>
+
+                      <button
+                        onClick={() => setFormData({...formData, endType: 'date'})}
+                        className={`w-full p-3 rounded-lg text-left ${formData.endType === 'date' ? 'bg-indigo-500 text-white' : 'bg-white'}`}
+                      >
+                        En una fecha
+                      </button>
+                      {formData.endType === 'date' && (
+                        <input
+                          type="date"
+                          value={formData.endValue as string || ''}
+                          onChange={(e) => setFormData({...formData, endValue: e.target.value})}
+                          className="w-full p-3 rounded-lg border"
+                        />
+                      )}
+
+                      <button
+                        onClick={() => setFormData({...formData, endType: 'streak'})}
+                        className={`w-full p-3 rounded-lg text-left ${formData.endType === 'streak' ? 'bg-indigo-500 text-white' : 'bg-white'}`}
+                      >
+                        Por rachas consecutivas
+                      </button>
+                      {formData.endType === 'streak' && (
+                        <input
+                          type="number"
+                          value={formData.endValue as number || ''}
+                          onChange={(e) => setFormData({...formData, endValue: parseInt(e.target.value)})}
+                          placeholder="Ej: 30 días"
+                          className="w-full p-3 rounded-lg border"
+                        />
+                      )}
+
+                      <button
+                        onClick={() => setFormData({...formData, endType: 'times'})}
+                        className={`w-full p-3 rounded-lg text-left ${formData.endType === 'times' ? 'bg-indigo-500 text-white' : 'bg-white'}`}
+                      >
+                        Por número de veces
+                      </button>
+                      {formData.endType === 'times' && (
+                        <input
+                          type="number"
+                          value={formData.endValue as number || ''}
+                          onChange={(e) => setFormData({...formData, endValue: parseInt(e.target.value)})}
+                          placeholder="Ej: 100 veces"
+                          className="w-full p-3 rounded-lg border"
+                        />
+                      )}
                     </div>
                   )}
                 </div>

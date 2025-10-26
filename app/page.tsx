@@ -373,6 +373,16 @@ export default function Home() {
                 Explorar hábitos
               </Link>
             </motion.div>
+
+            <motion.div whileHover={{ scale: 1.005 }} whileTap={{ scale: 0.995 }}>
+              <Link
+                href="/mis-habitos"
+                className="block w-full h-12 rounded-2xl bg-white text-slate-700 font-medium flex items-center justify-center shadow-md hover:shadow-lg transition-all border border-slate-200"
+              >
+                <span className="mr-2 text-lg">📊</span>
+                Mis hábitos
+              </Link>
+            </motion.div>
           </div>
         </motion.div>
       </motion.div>
