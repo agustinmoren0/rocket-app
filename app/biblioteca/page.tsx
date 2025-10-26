@@ -7,37 +7,120 @@ import { useTheme } from '../hooks/useTheme';
 import { saveCustomHabit } from '../lib/store';
 import habitsData from '../../data/habits.json';
 import {
-  Activity, Apple, Book, Brain, Calendar, Camera,
-  Coffee, Dumbbell, Flame, Heart, Home, Laptop,
-  Moon, Music, Paintbrush, Smartphone, Sun, Target,
-  Trophy, Users, Zap, Droplet, Wind, Mountain
+  // Ejercicio & Fitness
+  Activity, Dumbbell, Bike, PersonStanding, Footprints, Heart, HeartPulse,
+  // Comida & Nutrición
+  Apple, Coffee, UtensilsCrossed, Salad, Wine, CupSoda, IceCream,
+  // Aprendizaje & Trabajo
+  Book, BookOpen, GraduationCap, Brain, Lightbulb, Laptop, Briefcase, Target,
+  // Creatividad & Arte
+  Paintbrush, Music, Camera, Pen, Palette, Mic, Film, Image,
+  // Naturaleza & Bienestar
+  Sun, Moon, Cloud, Flower, Leaf, TreePine, Mountain, Waves,
+  // Casa & Rutina
+  Home, Bed, Shower, Trash, BedDouble, Clock, AlarmClock,
+  // Social & Comunicación
+  Users, MessageCircle, Phone, Mail, ThumbsUp, Smile, PartyPopper,
+  // Salud & Medicina
+  Pill, Syringe, Stethoscope, Thermometer, BandAid, HeartHandshake,
+  // Dinero & Finanzas
+  DollarSign, PiggyBank, TrendingUp, Wallet, CreditCard, Receipt,
+  // Hobbies & Entretenimiento
+  Gamepad2, Tv, Radio, Drama, Puzzle, Trophy, Medal, Award,
+  // Tecnología
+  Smartphone, TabletSmartphone, Monitor, Wifi, Battery, Zap,
+  // Transporte
+  Car, Train, Plane, Bus, Ship,
+  // Símbolos & Marcas
+  Star, Flame, Sparkles, Gem, CheckCircle, XCircle, AlertCircle,
+  // Tiempo & Calendario
+  Calendar, CalendarDays, Timer, Hourglass, Watch, Sunrise, Sunset,
+  // Emociones & Estados
+  Frown, Meh, HeartIcon, BrainCircuit, Eye, Ear,
+  // Varios
+  Droplet, Wind, Thermometer, Umbrella, Glasses, BookMarked, CircleDot
 } from 'lucide-react';
 
 const HABIT_ICONS = [
-  { icon: Activity, name: 'Activity' },
-  { icon: Dumbbell, name: 'Dumbbell' },
-  { icon: Brain, name: 'Brain' },
-  { icon: Book, name: 'Book' },
-  { icon: Apple, name: 'Apple' },
-  { icon: Coffee, name: 'Coffee' },
-  { icon: Heart, name: 'Heart' },
-  { icon: Moon, name: 'Moon' },
-  { icon: Sun, name: 'Sun' },
-  { icon: Music, name: 'Music' },
-  { icon: Paintbrush, name: 'Paintbrush' },
-  { icon: Target, name: 'Target' },
-  { icon: Trophy, name: 'Trophy' },
-  { icon: Flame, name: 'Flame' },
-  { icon: Zap, name: 'Zap' },
-  { icon: Droplet, name: 'Droplet' },
-  { icon: Wind, name: 'Wind' },
-  { icon: Mountain, name: 'Mountain' },
-  { icon: Users, name: 'Users' },
-  { icon: Calendar, name: 'Calendar' },
-  { icon: Camera, name: 'Camera' },
-  { icon: Laptop, name: 'Laptop' },
-  { icon: Smartphone, name: 'Smartphone' },
-  { icon: Home, name: 'Home' },
+  // Ejercicio & Fitness
+  { icon: Activity, name: 'Activity', category: 'Ejercicio' },
+  { icon: Dumbbell, name: 'Dumbbell', category: 'Ejercicio' },
+  { icon: Bike, name: 'Bike', category: 'Ejercicio' },
+  { icon: PersonStanding, name: 'PersonStanding', category: 'Ejercicio' },
+  { icon: Footprints, name: 'Footprints', category: 'Ejercicio' },
+  { icon: Heart, name: 'Heart', category: 'Ejercicio' },
+  { icon: HeartPulse, name: 'HeartPulse', category: 'Ejercicio' },
+
+  // Comida & Nutrición
+  { icon: Apple, name: 'Apple', category: 'Nutrición' },
+  { icon: Coffee, name: 'Coffee', category: 'Nutrición' },
+  { icon: UtensilsCrossed, name: 'UtensilsCrossed', category: 'Nutrición' },
+  { icon: Salad, name: 'Salad', category: 'Nutrición' },
+  { icon: Wine, name: 'Wine', category: 'Nutrición' },
+  { icon: CupSoda, name: 'CupSoda', category: 'Nutrición' },
+
+  // Aprendizaje
+  { icon: Book, name: 'Book', category: 'Aprendizaje' },
+  { icon: BookOpen, name: 'BookOpen', category: 'Aprendizaje' },
+  { icon: GraduationCap, name: 'GraduationCap', category: 'Aprendizaje' },
+  { icon: Brain, name: 'Brain', category: 'Aprendizaje' },
+  { icon: Lightbulb, name: 'Lightbulb', category: 'Aprendizaje' },
+  { icon: Laptop, name: 'Laptop', category: 'Aprendizaje' },
+  { icon: Target, name: 'Target', category: 'Aprendizaje' },
+
+  // Creatividad
+  { icon: Paintbrush, name: 'Paintbrush', category: 'Creatividad' },
+  { icon: Music, name: 'Music', category: 'Creatividad' },
+  { icon: Camera, name: 'Camera', category: 'Creatividad' },
+  { icon: Pen, name: 'Pen', category: 'Creatividad' },
+  { icon: Palette, name: 'Palette', category: 'Creatividad' },
+  { icon: Mic, name: 'Mic', category: 'Creatividad' },
+  { icon: Film, name: 'Film', category: 'Creatividad' },
+
+  // Naturaleza
+  { icon: Sun, name: 'Sun', category: 'Naturaleza' },
+  { icon: Moon, name: 'Moon', category: 'Naturaleza' },
+  { icon: Cloud, name: 'Cloud', category: 'Naturaleza' },
+  { icon: Flower, name: 'Flower', category: 'Naturaleza' },
+  { icon: Leaf, name: 'Leaf', category: 'Naturaleza' },
+  { icon: TreePine, name: 'TreePine', category: 'Naturaleza' },
+  { icon: Mountain, name: 'Mountain', category: 'Naturaleza' },
+  { icon: Waves, name: 'Waves', category: 'Naturaleza' },
+
+  // Rutina
+  { icon: Home, name: 'Home', category: 'Rutina' },
+  { icon: Bed, name: 'Bed', category: 'Rutina' },
+  { icon: Shower, name: 'Shower', category: 'Rutina' },
+  { icon: Clock, name: 'Clock', category: 'Rutina' },
+  { icon: AlarmClock, name: 'AlarmClock', category: 'Rutina' },
+
+  // Social
+  { icon: Users, name: 'Users', category: 'Social' },
+  { icon: MessageCircle, name: 'MessageCircle', category: 'Social' },
+  { icon: Phone, name: 'Phone', category: 'Social' },
+  { icon: ThumbsUp, name: 'ThumbsUp', category: 'Social' },
+  { icon: Smile, name: 'Smile', category: 'Social' },
+  { icon: PartyPopper, name: 'PartyPopper', category: 'Social' },
+
+  // Salud
+  { icon: Pill, name: 'Pill', category: 'Salud' },
+  { icon: Stethoscope, name: 'Stethoscope', category: 'Salud' },
+  { icon: HeartHandshake, name: 'HeartHandshake', category: 'Salud' },
+
+  // Hobbies
+  { icon: Gamepad2, name: 'Gamepad2', category: 'Hobbies' },
+  { icon: Trophy, name: 'Trophy', category: 'Hobbies' },
+  { icon: Medal, name: 'Medal', category: 'Hobbies' },
+  { icon: Award, name: 'Award', category: 'Hobbies' },
+
+  // Símbolos
+  { icon: Star, name: 'Star', category: 'General' },
+  { icon: Flame, name: 'Flame', category: 'General' },
+  { icon: Sparkles, name: 'Sparkles', category: 'General' },
+  { icon: Gem, name: 'Gem', category: 'General' },
+  { icon: CheckCircle, name: 'CheckCircle', category: 'General' },
+  { icon: Zap, name: 'Zap', category: 'General' },
+  { icon: Droplet, name: 'Droplet', category: 'General' },
 ];
 
 const HABIT_COLORS = [
@@ -56,6 +139,7 @@ export default function BibliotecaPage() {
   const [showRepeatPicker, setShowRepeatPicker] = useState(false);
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const [iconCategory, setIconCategory] = useState('Todos');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -200,30 +284,52 @@ export default function BibliotecaPage() {
 
                   {/* Icon Picker */}
                   {showIconPicker && (
-                    <div className="p-4 bg-slate-50 rounded-xl">
-                      <div className="grid grid-cols-8 gap-2 mb-4">
-                        {HABIT_ICONS.map((item, i) => {
-                          const IconComponent = item.icon;
-                          return (
-                            <button
-                              key={i}
-                              onClick={() => {
-                                setFormData({...formData, icon: item.name});
-                                setShowIconPicker(false);
-                              }}
-                              className="w-10 h-10 hover:bg-white rounded-lg flex items-center justify-center"
-                            >
-                              <IconComponent size={20} className="text-slate-700" />
-                            </button>
-                          );
-                        })}
+                    <div className="p-4 bg-slate-50 rounded-xl max-h-80 overflow-y-auto">
+                      {/* Category tabs */}
+                      <div className="flex gap-2 mb-3 overflow-x-auto pb-2">
+                        {['Todos', 'Ejercicio', 'Nutrición', 'Aprendizaje', 'Creatividad', 'Naturaleza', 'Rutina', 'Social', 'General'].map((cat) => (
+                          <button
+                            key={cat}
+                            onClick={() => setIconCategory(cat)}
+                            className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap ${
+                              iconCategory === cat ? 'bg-indigo-500 text-white' : 'bg-white text-slate-600'
+                            }`}
+                          >
+                            {cat}
+                          </button>
+                        ))}
                       </div>
-                      <div className="flex gap-2">
+
+                      {/* Icons grid */}
+                      <div className="grid grid-cols-8 gap-2 mb-4">
+                        {HABIT_ICONS
+                          .filter(item => iconCategory === 'Todos' || item.category === iconCategory)
+                          .map((item, i) => {
+                            const IconComponent = item.icon;
+                            return (
+                              <button
+                                key={i}
+                                onClick={() => {
+                                  setFormData({...formData, icon: item.name});
+                                  setShowIconPicker(false);
+                                }}
+                                className="w-10 h-10 hover:bg-white rounded-lg flex items-center justify-center transition-colors"
+                              >
+                                <IconComponent size={20} className="text-slate-700" />
+                              </button>
+                            );
+                          })}
+                      </div>
+
+                      {/* Color picker */}
+                      <div className="flex gap-2 flex-wrap">
                         {HABIT_COLORS.map((color, i) => (
                           <button
                             key={i}
                             onClick={() => setFormData({...formData, color})}
-                            className={`w-8 h-8 rounded-full ${formData.color === color ? 'ring-2 ring-offset-2 ring-indigo-500' : ''}`}
+                            className={`w-8 h-8 rounded-full transition-all ${
+                              formData.color === color ? 'ring-2 ring-offset-2 ring-indigo-500 scale-110' : ''
+                            }`}
                             style={{ backgroundColor: color }}
                           />
                         ))}
