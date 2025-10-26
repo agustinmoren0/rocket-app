@@ -230,42 +230,79 @@ export default function Home() {
         className="max-w-2xl mx-auto px-6 space-y-4 pb-24"
       >
         {/* Card Principal */}
+        {/* Tu semana - MEJORADO */}
         <motion.section
           variants={itemVariants}
-          className={`${currentTheme.bgCard} backdrop-blur-xl rounded-2xl shadow-sm border ${currentTheme.border} p-6`}
+          className="bg-white rounded-3xl p-6 shadow-sm"
         >
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-base font-semibold text-slate-900">Tu semana</h2>
-            <Link href="/historial" className={`text-xs font-medium ${currentTheme.accent} hover:opacity-70 transition-opacity`}>
-              Ver todo →
-            </Link>
-          </div>
-
-          <div className="flex justify-center mb-5">
-            <CircularProgress percentage={progress} />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="text-center">
-              <p className="text-2xl font-bold tracking-tight" style={{ color: currentTheme.primary }}>{activeDays}/7</p>
-              <p className="text-xs text-slate-500 mt-1">Días activos</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold tracking-tight" style={{ color: currentTheme.primary }}>{data.currentWeek.totalMinutes}</p>
-              <p className="text-xs text-slate-500 mt-1">Minutos</p>
-            </div>
-          </div>
-
-          {improvement !== 0 && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              className="mt-4 pt-4 border-t border-slate-100 text-center"
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-slate-900">Tu semana</h2>
+            <button
+              onClick={() => router.push('/estadisticas')}
+              className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
             >
-              <p className={`text-sm font-semibold ${improvement > 0 ? 'text-green-600' : 'text-orange-600'}`}>
-                {improvement > 0 ? '+' : ''}{improvement}% vs semana pasada
-              </p>
-            </motion.div>
+              Ver más →
+            </button>
+          </div>
+
+          {/* Progress Circle */}
+          <div className="flex flex-col items-center py-6">
+            <div className="relative w-48 h-48">
+              <svg className="w-full h-full -rotate-90">
+                <circle
+                  cx="96"
+                  cy="96"
+                  r="88"
+                  stroke="#e2e8f0"
+                  strokeWidth="12"
+                  fill="none"
+                />
+                <circle
+                  cx="96"
+                  cy="96"
+                  r="88"
+                  stroke="url(#gradient)"
+                  strokeWidth="12"
+                  fill="none"
+                  strokeDasharray={`${progress * 5.53} 553`}
+                  strokeLinecap="round"
+                  style={{ transition: 'stroke-dasharray 0.5s ease' }}
+                />
+                <defs>
+                  <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                    <stop offset="0%" stopColor={currentTheme.primary} />
+                    <stop offset="100%" stopColor={currentTheme.secondary} />
+                  </linearGradient>
+                </defs>
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-5xl font-bold text-slate-900">{Math.round(progress)}%</span>
+                <span className="text-sm text-slate-500 mt-1">Completado</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 gap-3 mb-4">
+            <div className="p-4 bg-slate-50 rounded-xl text-center">
+              <p className="text-sm text-slate-600 mb-1">Días activos</p>
+              <p className="text-2xl font-bold text-slate-900">{activeDays}/7</p>
+            </div>
+            <div className="p-4 bg-slate-50 rounded-xl text-center">
+              <p className="text-sm text-slate-600 mb-1">Minutos</p>
+              <p className="text-2xl font-bold text-slate-900">{data.currentWeek.totalMinutes}</p>
+            </div>
+          </div>
+
+          {/* Racha */}
+          {activeDays > 0 && (
+            <div className="p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl flex items-center gap-3">
+              <div className="text-3xl">🔥</div>
+              <div className="flex-1">
+                <p className="text-sm text-orange-900 font-medium">¡Racha activa!</p>
+                <p className="text-xs text-orange-700">{activeDays} días consecutivos</p>
+              </div>
+            </div>
           )}
         </motion.section>
 
@@ -381,6 +418,16 @@ export default function Home() {
               >
                 <span className="mr-2 text-lg">📊</span>
                 Mis hábitos
+              </Link>
+            </motion.div>
+
+            <motion.div whileHover={{ scale: 1.005 }} whileTap={{ scale: 0.995 }}>
+              <Link
+                href="/estadisticas"
+                className="block w-full h-12 rounded-2xl bg-white text-slate-700 font-medium flex items-center justify-center shadow-md hover:shadow-lg transition-all border border-slate-200"
+              >
+                <span className="mr-2 text-lg">📈</span>
+                Estadísticas
               </Link>
             </motion.div>
           </div>
