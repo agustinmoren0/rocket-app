@@ -43,7 +43,7 @@ export default function BibliotecaPage() {
     targetValue: 20,
     targetUnit: 'min' as 'min' | 'hs',
     targetPeriod: 'por día',
-    frequency: 'daily' as 'daily' | 'weekly' | 'monthly' | 'interval',
+    frequency: 'daily' as 'daily' | 'weekly' | '3x-week' | 'flexible',
     days: [0, 1, 2, 3, 4, 5, 6],
     reminderEnabled: false,
     reminderTime: '6:30',
