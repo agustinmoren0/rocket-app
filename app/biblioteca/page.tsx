@@ -8,37 +8,31 @@ import { saveCustomHabit } from '../lib/store';
 import habitsData from '../../data/habits.json';
 import {
   // Ejercicio & Fitness
-  Activity, Dumbbell, Bike, PersonStanding, Footprints, Heart, HeartPulse,
+  Activity, Dumbbell, Bike, Heart, HeartPulse, Footprints,
   // Comida & Nutrición
-  Apple, Coffee, UtensilsCrossed, Salad, Wine, CupSoda, IceCream,
+  Apple, Coffee, UtensilsCrossed, Wine, CupSoda,
   // Aprendizaje & Trabajo
   Book, BookOpen, GraduationCap, Brain, Lightbulb, Laptop, Briefcase, Target,
   // Creatividad & Arte
   Paintbrush, Music, Camera, Pen, Palette, Mic, Film, Image,
   // Naturaleza & Bienestar
-  Sun, Moon, Cloud, Flower, Leaf, TreePine, Mountain, Waves,
+  Sun, Moon, Cloud, Flower2, Leaf, TreePine, Mountain, Waves,
   // Casa & Rutina
-  Home, Bed, Shower, Trash, BedDouble, Clock, AlarmClock,
+  Home, BedDouble, Clock, AlarmClock, Trash2,
   // Social & Comunicación
   Users, MessageCircle, Phone, Mail, ThumbsUp, Smile, PartyPopper,
   // Salud & Medicina
-  Pill, Syringe, Stethoscope, Thermometer, BandAid, HeartHandshake,
+  Pill, Stethoscope, HeartHandshake,
   // Dinero & Finanzas
-  DollarSign, PiggyBank, TrendingUp, Wallet, CreditCard, Receipt,
+  DollarSign, PiggyBank, TrendingUp, Wallet, CreditCard,
   // Hobbies & Entretenimiento
-  Gamepad2, Tv, Radio, Drama, Puzzle, Trophy, Medal, Award,
-  // Tecnología
-  Smartphone, TabletSmartphone, Monitor, Wifi, Battery, Zap,
-  // Transporte
-  Car, Train, Plane, Bus, Ship,
+  Gamepad2, Trophy, Medal, Award,
   // Símbolos & Marcas
-  Star, Flame, Sparkles, Gem, CheckCircle, XCircle, AlertCircle,
+  Star, Flame, Sparkles, Gem, CheckCircle, XCircle, Zap,
   // Tiempo & Calendario
   Calendar, CalendarDays, Timer, Hourglass, Watch, Sunrise, Sunset,
-  // Emociones & Estados
-  Frown, Meh, HeartIcon, BrainCircuit, Eye, Ear,
   // Varios
-  Droplet, Wind, Thermometer, Umbrella, Glasses, BookMarked, CircleDot
+  Droplet, Wind, Umbrella, Glasses, Circle
 } from 'lucide-react';
 
 const HABIT_ICONS = [
@@ -46,7 +40,6 @@ const HABIT_ICONS = [
   { icon: Activity, name: 'Activity', category: 'Ejercicio' },
   { icon: Dumbbell, name: 'Dumbbell', category: 'Ejercicio' },
   { icon: Bike, name: 'Bike', category: 'Ejercicio' },
-  { icon: PersonStanding, name: 'PersonStanding', category: 'Ejercicio' },
   { icon: Footprints, name: 'Footprints', category: 'Ejercicio' },
   { icon: Heart, name: 'Heart', category: 'Ejercicio' },
   { icon: HeartPulse, name: 'HeartPulse', category: 'Ejercicio' },
@@ -55,7 +48,6 @@ const HABIT_ICONS = [
   { icon: Apple, name: 'Apple', category: 'Nutrición' },
   { icon: Coffee, name: 'Coffee', category: 'Nutrición' },
   { icon: UtensilsCrossed, name: 'UtensilsCrossed', category: 'Nutrición' },
-  { icon: Salad, name: 'Salad', category: 'Nutrición' },
   { icon: Wine, name: 'Wine', category: 'Nutrición' },
   { icon: CupSoda, name: 'CupSoda', category: 'Nutrición' },
 
@@ -76,12 +68,13 @@ const HABIT_ICONS = [
   { icon: Palette, name: 'Palette', category: 'Creatividad' },
   { icon: Mic, name: 'Mic', category: 'Creatividad' },
   { icon: Film, name: 'Film', category: 'Creatividad' },
+  { icon: Image, name: 'Image', category: 'Creatividad' },
 
   // Naturaleza
   { icon: Sun, name: 'Sun', category: 'Naturaleza' },
   { icon: Moon, name: 'Moon', category: 'Naturaleza' },
   { icon: Cloud, name: 'Cloud', category: 'Naturaleza' },
-  { icon: Flower, name: 'Flower', category: 'Naturaleza' },
+  { icon: Flower2, name: 'Flower2', category: 'Naturaleza' },
   { icon: Leaf, name: 'Leaf', category: 'Naturaleza' },
   { icon: TreePine, name: 'TreePine', category: 'Naturaleza' },
   { icon: Mountain, name: 'Mountain', category: 'Naturaleza' },
@@ -89,8 +82,7 @@ const HABIT_ICONS = [
 
   // Rutina
   { icon: Home, name: 'Home', category: 'Rutina' },
-  { icon: Bed, name: 'Bed', category: 'Rutina' },
-  { icon: Shower, name: 'Shower', category: 'Rutina' },
+  { icon: BedDouble, name: 'BedDouble', category: 'Rutina' },
   { icon: Clock, name: 'Clock', category: 'Rutina' },
   { icon: AlarmClock, name: 'AlarmClock', category: 'Rutina' },
 
@@ -113,6 +105,12 @@ const HABIT_ICONS = [
   { icon: Medal, name: 'Medal', category: 'Hobbies' },
   { icon: Award, name: 'Award', category: 'Hobbies' },
 
+  // Finanzas
+  { icon: DollarSign, name: 'DollarSign', category: 'Finanzas' },
+  { icon: PiggyBank, name: 'PiggyBank', category: 'Finanzas' },
+  { icon: TrendingUp, name: 'TrendingUp', category: 'Finanzas' },
+  { icon: Wallet, name: 'Wallet', category: 'Finanzas' },
+
   // Símbolos
   { icon: Star, name: 'Star', category: 'General' },
   { icon: Flame, name: 'Flame', category: 'General' },
@@ -121,6 +119,8 @@ const HABIT_ICONS = [
   { icon: CheckCircle, name: 'CheckCircle', category: 'General' },
   { icon: Zap, name: 'Zap', category: 'General' },
   { icon: Droplet, name: 'Droplet', category: 'General' },
+  { icon: Wind, name: 'Wind', category: 'General' },
+  { icon: Circle, name: 'Circle', category: 'General' },
 ];
 
 const HABIT_COLORS = [
@@ -287,7 +287,7 @@ export default function BibliotecaPage() {
                     <div className="p-4 bg-slate-50 rounded-xl max-h-80 overflow-y-auto">
                       {/* Category tabs */}
                       <div className="flex gap-2 mb-3 overflow-x-auto pb-2">
-                        {['Todos', 'Ejercicio', 'Nutrición', 'Aprendizaje', 'Creatividad', 'Naturaleza', 'Rutina', 'Social', 'General'].map((cat) => (
+                        {['Todos', 'Ejercicio', 'Nutrición', 'Aprendizaje', 'Creatividad', 'Naturaleza', 'Rutina', 'Social', 'Salud', 'Hobbies', 'Finanzas', 'General'].map((cat) => (
                           <button
                             key={cat}
                             onClick={() => setIconCategory(cat)}
