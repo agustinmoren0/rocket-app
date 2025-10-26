@@ -28,9 +28,12 @@ export default function BibliotecaPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>(habitsData.categories[0].id);
   const [selectedHabit, setSelectedHabit] = useState<Habit | null>(null);
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    minutes: number;
+    frequency: 'daily' | 'weekly' | '3x-week' | 'flexible';
+  }>({
     minutes: 0,
-    frequency: 'daily' as const
+    frequency: 'daily'
   });
 
   const categories = habitsData.categories as Category[];
