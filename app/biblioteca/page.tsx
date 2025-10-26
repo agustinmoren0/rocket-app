@@ -1,435 +1,317 @@
 'use client'
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../hooks/useTheme';
 import { saveCustomHabit } from '../lib/store';
 import habitsData from '../../data/habits.json';
 
-interface Habit {
-  id: string;
-  name: string;
-  description: string;
-  suggestedMinutes: number;
-  suggestedFrequency: string;
-}
+// Iconos disponibles (usar emoji o librería de iconos después)
+const HABIT_ICONS = [
+  '🏃', '🚴', '🧘', '💪', '🏋️', '⚽', '🏀', '🎾', '🏊', '🧗',
+  '📚', '✍️', '🎨', '🎵', '🎮', '📖', '🧠', '💡', '🔬', '🎓',
+  '💼', '💻', '📱', '🖥️', '⌨️', '🖱️', '📊', '📈', '📉', '🗂️',
+  '🍎', '🥗', '🥑', '🍊', '🥕', '🥦', '🍇', '🥤', '☕', '🍵',
+  '😴', '🛌', '⏰', '🌙', '☀️', '🌅', '🌄', '🌃', '🌆', '🌇',
+  '🧹', '🧽', '🧺', '🧼', '🪥', '🚿', '🛁', '🧴', '💊', '🏥',
+  '💰', '💵', '💳', '🏦', '📱', '🎯', '🎪', '🎭', '🎬', '📷',
+];
 
-interface Category {
-  id: string;
-  name: string;
-  emoji: string;
-  description: string;
-  habits: Habit[];
-}
+const HABIT_COLORS = [
+  '#3b82f6', '#8b5cf6', '#ec4899', '#f43f5e', '#f97316',
+  '#eab308', '#84cc16', '#22c55e', '#10b981', '#14b8a6',
+  '#06b6d4', '#0ea5e9', '#6366f1', '#a855f7', '#d946ef',
+];
 
 export default function BibliotecaPage() {
   const router = useRouter();
   const { currentTheme } = useTheme();
-  const [selectedCategory, setSelectedCategory] = useState<string>(habitsData.categories[0].id);
-  const [selectedHabit, setSelectedHabit] = useState<Habit | null>(null);
-  const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState<{
-    name: string;
-    minutes: number;
-    frequency: 'daily' | 'weekly' | '3x-week' | 'flexible';
-    days?: number[];
-    targetValue: number;
-    targetUnit: 'min' | 'hs';
-    targetPeriod: string;
-    reminderTime?: string;
-  }>({
+  const [selectedCategory, setSelectedCategory] = useState('energia-fisica');
+  const [selectedHabit, setSelectedHabit] = useState<any>(null);
+  const [showIconPicker, setShowIconPicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showRepeatPicker, setShowRepeatPicker] = useState(false);
+  const [showReminderPicker, setShowReminderPicker] = useState(false);
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+
+  const [formData, setFormData] = useState({
     name: '',
-    minutes: 0,
-    frequency: 'daily',
-    days: [],
+    icon: '🧘',
+    color: '#3b82f6',
     targetValue: 20,
-    targetUnit: 'min',
+    targetUnit: 'min' as 'min' | 'hs',
     targetPeriod: 'por día',
-    reminderTime: undefined
+    frequency: 'daily' as 'daily' | 'weekly' | 'monthly' | 'interval',
+    days: [0, 1, 2, 3, 4, 5, 6],
+    reminderEnabled: false,
+    reminderTime: '6:30',
+    startDate: new Date().toISOString().split('T')[0],
+    endType: 'never' as 'never' | 'date' | 'streak' | 'times' | 'total',
+    endValue: null as string | number | null,
   });
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
-  const [showDaysSelector, setShowDaysSelector] = useState(false);
 
-  const categories = habitsData.categories as Category[];
+  const categories = habitsData.categories;
   const currentCategory = categories.find(c => c.id === selectedCategory);
-  const habits = currentCategory?.habits || [];
 
-  const handleSelectHabit = (habit: Habit) => {
+  const handleSelectHabit = (habit: any) => {
     setSelectedHabit(habit);
     setFormData({
+      ...formData,
       name: habit.name,
-      minutes: habit.suggestedMinutes,
-      frequency: (habit.suggestedFrequency as 'daily' | 'weekly' | '3x-week' | 'flexible') || 'daily',
-      days: [],
-      targetValue: 20,
-      targetUnit: 'min',
-      targetPeriod: 'por día',
-      reminderTime: undefined
+      targetValue: habit.suggestedMinutes || 20,
     });
-    setShowModal(true);
   };
 
   const handleSaveHabit = () => {
-    if (!selectedHabit) return;
+    // Convertir horas a minutos si es necesario
+    const minutes = formData.targetUnit === 'hs'
+      ? formData.targetValue * 60
+      : formData.targetValue;
 
-    const habitData = {
-      name: formData.name || selectedHabit.name,
-      description: selectedHabit.description,
-      minutes: formData.targetUnit === 'hs' ? formData.targetValue * 60 : formData.targetValue,
+    // Guardar el hábito personalizado
+    saveCustomHabit({
+      name: formData.name,
+      description: selectedHabit?.description || '',
+      minutes,
       frequency: formData.frequency,
-      category: currentCategory?.id || 'general',
-      days: formData.days,
-      targetValue: formData.targetValue,
-      targetUnit: formData.targetUnit,
-      targetPeriod: formData.targetPeriod
-    };
+      category: selectedCategory
+    });
 
-    console.log('Hábito guardado:', habitData);
-
-    setShowToast(true);
-    setToastMessage('¡Hábito agregado! 🌱');
-
-    setTimeout(() => {
-      setShowToast(false);
-      setSelectedHabit(null);
-      setShowModal(false);
-    }, 1500);
+    setSelectedHabit(null);
+    router.push('/mis-habitos');
   };
 
   return (
-    <main className={`min-h-screen bg-gradient-to-br ${currentTheme.bg}`}>
-      <div className="max-w-4xl mx-auto px-6 pt-8 pb-24">
+    <main className={`min-h-screen ${currentTheme.bg} p-6`}>
+      <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <Link href="/">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className={`w-10 h-10 rounded-xl ${currentTheme.bgCard} shadow-sm flex items-center justify-center mb-6`}
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <button
+              onClick={() => router.back()}
+              className="flex items-center gap-2 text-slate-600 hover:text-slate-900 mb-2"
             >
-              ←
-            </motion.button>
-          </Link>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">
-            🌱 Biblioteca de Hábitos
-          </h1>
-          <p className="text-slate-600 mt-2">
-            Elige hábitos inspiradores o crea los tuyos propios
-          </p>
-        </motion.div>
+              ← Volver
+            </button>
+            <h1 className="text-3xl font-bold text-slate-900">
+              Biblioteca de Hábitos 🌱
+            </h1>
+          </div>
+        </div>
 
-        {/* Tabs de categorías */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="mb-8 overflow-x-auto pb-2"
-        >
+        {/* Category Tabs */}
+        <div className="mb-6 overflow-x-auto pb-2">
           <div className="flex gap-2 min-w-max">
-            {categories.map((cat) => (
-              <motion.button
-                key={cat.id}
-                onClick={() => setSelectedCategory(cat.id)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`px-4 py-2 rounded-2xl font-medium transition-all text-sm whitespace-nowrap ${
-                  selectedCategory === cat.id
-                    ? `${currentTheme.button} text-white shadow-md`
-                    : `${currentTheme.bgCard} text-slate-900 hover:${currentTheme.bgHover}`
+            {categories.map((category: any) => (
+              <button
+                key={category.id}
+                onClick={() => setSelectedCategory(category.id)}
+                className={`px-4 py-2 rounded-xl font-medium text-sm transition-all ${
+                  selectedCategory === category.id
+                    ? 'bg-white shadow-md text-slate-900'
+                    : 'bg-white/50 text-slate-600 hover:bg-white/80'
                 }`}
               >
-                {cat.emoji} {cat.name}
-              </motion.button>
+                <span className="mr-2">{category.emoji}</span>
+                {category.name.replace(/^.+ /, '')}
+              </button>
             ))}
           </div>
-        </motion.div>
+        </div>
 
-        {/* Descripción de categoría */}
-        {currentCategory && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.15 }}
-            className={`${currentTheme.bgCard} rounded-2xl p-4 mb-6 border border-slate-200`}
-          >
-            <p className="text-slate-700">{currentCategory.description}</p>
-          </motion.div>
-        )}
-
-        {/* Grid de hábitos */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-4"
-        >
-          {habits.map((habit, i) => (
-            <motion.button
+        {/* Habits Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {currentCategory?.habits.map((habit: any) => (
+            <button
               key={habit.id}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 + i * 0.03 }}
               onClick={() => handleSelectHabit(habit)}
-              whileHover={{ scale: 1.02, y: -2 }}
-              whileTap={{ scale: 0.98 }}
-              className={`${currentTheme.bgCard} rounded-2xl p-4 border border-slate-200 text-left transition-all hover:shadow-md`}
+              className="p-5 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all text-left"
             >
-              <h3 className="font-semibold text-slate-900 mb-1">{habit.name}</h3>
+              <h3 className="font-semibold text-slate-900 mb-2">{habit.name}</h3>
               <p className="text-sm text-slate-600">{habit.description}</p>
-              <div className="flex gap-2 mt-3 flex-wrap">
-                {habit.suggestedMinutes > 0 && (
-                  <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: `${currentTheme.primary}20`, color: currentTheme.primary }}>
-                    {habit.suggestedMinutes} min
-                  </span>
-                )}
-                <span className="text-xs px-2 py-1 rounded-full bg-slate-200 text-slate-700">
-                  {habit.suggestedFrequency}
-                </span>
-              </div>
-            </motion.button>
+            </button>
           ))}
-        </motion.div>
-      </div>
+        </div>
 
-      {/* Modal mejorado */}
-      <AnimatePresence>
-        {selectedHabit && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-end md:items-center justify-center p-0 md:p-6"
-            onClick={() => setSelectedHabit(null)}
-          >
+        {/* Modal */}
+        <AnimatePresence>
+          {selectedHabit && (
             <motion.div
-              initial={{ y: '100%', opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              exit={{ y: '100%', opacity: 0 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-t-3xl md:rounded-3xl w-full md:max-w-md md:w-full shadow-2xl max-h-[90vh] overflow-y-auto"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/40 z-50 flex items-end md:items-center justify-center"
+              onClick={() => setSelectedHabit(null)}
             >
-              {/* Header */}
-              <div className="sticky top-0 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between">
-                <button
-                  onClick={() => setSelectedHabit(null)}
-                  className="w-10 h-10 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors"
-                >
-                  ✕
-                </button>
-                <h2 className="text-lg font-semibold text-slate-900">Nuevo hábito</h2>
-                <button
-                  onClick={handleSaveHabit}
-                  className="w-10 h-10 rounded-full bg-indigo-500 hover:bg-indigo-600 flex items-center justify-center transition-colors"
-                >
-                  <span className="text-white text-xl">✓</span>
-                </button>
-              </div>
+              <motion.div
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                onClick={(e) => e.stopPropagation()}
+                className="bg-white rounded-t-3xl md:rounded-3xl w-full md:max-w-md max-h-[90vh] overflow-y-auto"
+              >
+                {/* Header */}
+                <div className="sticky top-0 bg-white border-b px-6 py-4 flex items-center justify-between z-10">
+                  <button onClick={() => setSelectedHabit(null)} className="text-2xl">✕</button>
+                  <h2 className="text-lg font-semibold">Nuevo hábito</h2>
+                  <button onClick={handleSaveHabit} className="w-10 h-10 rounded-full bg-indigo-500 text-white flex items-center justify-center">✓</button>
+                </div>
 
-              {/* Content */}
-              <div className="p-6 space-y-6">
-                {/* Nombre del hábito */}
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center text-2xl">
-                    🧘
-                  </div>
-                  <div className="flex-1">
+                {/* Content */}
+                <div className="p-6 space-y-4">
+                  {/* Icono y nombre */}
+                  <div className="flex items-center gap-4">
+                    <button
+                      onClick={() => setShowIconPicker(!showIconPicker)}
+                      className="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl"
+                      style={{ backgroundColor: formData.color + '20' }}
+                    >
+                      {formData.icon}
+                    </button>
                     <input
                       type="text"
                       value={formData.name}
                       onChange={(e) => setFormData({...formData, name: e.target.value})}
-                      className="w-full text-lg font-semibold text-slate-900 border-0 outline-none p-0"
+                      className="flex-1 text-xl font-semibold border-0 outline-none"
                       placeholder="Nombre del hábito"
                     />
                   </div>
-                </div>
 
-                {/* Repetir */}
-                <div>
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                      🔄
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-xs text-slate-500 uppercase tracking-wide">REPETIR</p>
-                      <p className="text-base font-medium text-slate-900">{
-                        formData.frequency === 'daily' ? 'Todos los días' :
-                        formData.frequency === 'weekly' ? 'Semanal' :
-                        formData.frequency === '3x-week' ? '3x por semana' : 'Flexible'
-                      }</p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setFormData({...formData, frequency: 'daily'})}
-                      className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
-                        formData.frequency === 'daily'
-                          ? 'bg-indigo-500 text-white'
-                          : 'bg-slate-100 text-slate-600'
-                      }`}
-                    >
-                      Diario
-                    </button>
-                    <button
-                      onClick={() => setFormData({...formData, frequency: 'weekly'})}
-                      className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium transition-all ${
-                        formData.frequency === 'weekly'
-                          ? 'bg-indigo-500 text-white'
-                          : 'bg-slate-100 text-slate-600'
-                      }`}
-                    >
-                      Semanal
-                    </button>
-                    <button
-                      onClick={() => setShowDaysSelector(!showDaysSelector)}
-                      className="px-3 py-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
-                    >
-                      →
-                    </button>
-                  </div>
-
-                  {/* Selector de días */}
-                  {showDaysSelector && (
-                    <div className="mt-3 p-4 bg-slate-50 rounded-xl">
-                      <p className="text-xs text-slate-600 mb-3">¿En qué días?</p>
-                      <div className="grid grid-cols-7 gap-2">
-                        {['D', 'L', 'M', 'X', 'J', 'V', 'S'].map((day, i) => (
+                  {/* Icon Picker */}
+                  {showIconPicker && (
+                    <div className="p-4 bg-slate-50 rounded-xl">
+                      <div className="grid grid-cols-8 gap-2 mb-4">
+                        {HABIT_ICONS.map((icon, i) => (
                           <button
                             key={i}
                             onClick={() => {
-                              const newDays = [...(formData.days || [])];
-                              if (newDays.includes(i)) {
-                                newDays.splice(newDays.indexOf(i), 1);
-                              } else {
-                                newDays.push(i);
-                              }
-                              setFormData({...formData, days: newDays});
+                              setFormData({...formData, icon});
+                              setShowIconPicker(false);
                             }}
-                            className={`w-10 h-10 rounded-full text-sm font-medium transition-all ${
-                              formData.days?.includes(i)
-                                ? 'bg-indigo-500 text-white'
-                                : 'bg-white text-slate-600 border border-slate-200'
-                            }`}
+                            className="w-10 h-10 text-2xl hover:bg-white rounded-lg"
                           >
-                            {day}
+                            {icon}
                           </button>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        {HABIT_COLORS.map((color, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setFormData({...formData, color})}
+                            className={`w-8 h-8 rounded-full ${formData.color === color ? 'ring-2 ring-offset-2 ring-indigo-500' : ''}`}
+                            style={{ backgroundColor: color }}
+                          />
                         ))}
                       </div>
                     </div>
                   )}
-                </div>
 
-                {/* Tiempo objetivo - Picker estilo iOS */}
-                <div>
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                      🎯
+                  {/* Repetir */}
+                  <button
+                    onClick={() => setShowRepeatPicker(!showRepeatPicker)}
+                    className="w-full flex items-center gap-3 p-4 bg-slate-50 rounded-xl"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">🔄</div>
+                    <div className="flex-1 text-left">
+                      <p className="text-xs text-slate-500 uppercase">REPETIR</p>
+                      <p className="font-medium">{formData.frequency === 'daily' ? 'Todos los días' : 'Personalizado'}</p>
                     </div>
-                    <div className="flex-1">
-                      <p className="text-xs text-slate-500 uppercase tracking-wide">OBJETIVO</p>
-                      <p className="text-base font-medium text-slate-900">
-                        {formData.targetValue} {formData.targetUnit} {formData.targetPeriod}
-                      </p>
-                    </div>
-                  </div>
+                    <span>→</span>
+                  </button>
 
-                  {/* Picker wheels iOS style */}
-                  <div className="flex gap-2 p-4 bg-slate-50 rounded-xl">
-                    {/* Value picker */}
-                    <select
-                      value={formData.targetValue}
-                      onChange={(e) => setFormData({...formData, targetValue: parseInt(e.target.value)})}
-                      className="flex-1 text-center text-lg font-medium bg-transparent border-0 outline-none"
-                    >
-                      {[...Array(100)].map((_, i) => (
-                        <option key={i} value={i + 1}>{i + 1}</option>
+                  {/* Objetivo */}
+                  <button
+                    onClick={() => setShowTimePicker(!showTimePicker)}
+                    className="w-full flex items-center gap-3 p-4 bg-slate-50 rounded-xl"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">🎯</div>
+                    <div className="flex-1 text-left">
+                      <p className="text-xs text-slate-500 uppercase">OBJETIVO</p>
+                      <p className="font-medium">{formData.targetValue} {formData.targetUnit} {formData.targetPeriod}</p>
+                    </div>
+                    <span>→</span>
+                  </button>
+
+                  {/* Time Picker */}
+                  {showTimePicker && (
+                    <div className="flex gap-2 p-4 bg-slate-50 rounded-xl">
+                      <select value={formData.targetValue} onChange={(e) => setFormData({...formData, targetValue: parseInt(e.target.value)})} className="flex-1 text-center text-lg bg-transparent">
+                        {[...Array(100)].map((_, i) => <option key={i} value={i+1}>{i+1}</option>)}
+                      </select>
+                      <select value={formData.targetUnit} onChange={(e) => setFormData({...formData, targetUnit: e.target.value as 'min' | 'hs'})} className="flex-1 text-center text-lg bg-transparent">
+                        <option value="min">min</option>
+                        <option value="hs">hs</option>
+                      </select>
+                      <select value={formData.targetPeriod} onChange={(e) => setFormData({...formData, targetPeriod: e.target.value})} className="flex-1 text-center text-lg bg-transparent">
+                        <option value="por día">por día</option>
+                        <option value="por semana">por semana</option>
+                        <option value="por mes">por mes</option>
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Recordatorio */}
+                  <button
+                    onClick={() => setShowReminderPicker(!showReminderPicker)}
+                    className="w-full flex items-center gap-3 p-4 bg-slate-50 rounded-xl"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">🔔</div>
+                    <div className="flex-1 text-left">
+                      <p className="text-xs text-slate-500 uppercase">RECORDATORIO</p>
+                      <p className="font-medium">{formData.reminderEnabled ? formData.reminderTime : 'En cualquier momento'}</p>
+                    </div>
+                    <span>→</span>
+                  </button>
+
+                  {/* Fecha inicio */}
+                  <button className="w-full flex items-center gap-3 p-4 bg-slate-50 rounded-xl">
+                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">📅</div>
+                    <div className="flex-1 text-left">
+                      <p className="text-xs text-slate-500 uppercase">FECHA DE INICIO</p>
+                      <p className="font-medium">Hoy</p>
+                    </div>
+                  </button>
+
+                  {/* Fecha fin */}
+                  <button
+                    onClick={() => setShowEndDatePicker(!showEndDatePicker)}
+                    className="w-full flex items-center gap-3 p-4 bg-slate-50 rounded-xl"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">📅</div>
+                    <div className="flex-1 text-left">
+                      <p className="text-xs text-slate-500 uppercase">FIN</p>
+                      <p className="font-medium">{formData.endType === 'never' ? 'Nunca' : 'Personalizado'}</p>
+                    </div>
+                    <span>→</span>
+                  </button>
+
+                  {/* End Date Picker */}
+                  {showEndDatePicker && (
+                    <div className="space-y-2">
+                      {['never', 'date', 'streak', 'times', 'total'].map((type) => (
+                        <button
+                          key={type}
+                          onClick={() => setFormData({...formData, endType: type as any})}
+                          className={`w-full p-3 rounded-lg text-left ${formData.endType === type ? 'bg-indigo-50 text-indigo-600 font-medium' : 'bg-white'}`}
+                        >
+                          {type === 'never' ? 'Nunca' :
+                           type === 'date' ? 'En una fecha' :
+                           type === 'streak' ? 'Por rachas consecutivas' :
+                           type === 'times' ? 'Por número de veces' :
+                           'Por cantidad total'}
+                        </button>
                       ))}
-                    </select>
-
-                    {/* Unit picker */}
-                    <select
-                      value={formData.targetUnit}
-                      onChange={(e) => setFormData({...formData, targetUnit: e.target.value as any})}
-                      className="flex-1 text-center text-lg font-medium bg-transparent border-0 outline-none"
-                    >
-                      <option value="min">min</option>
-                      <option value="hs">hs</option>
-                    </select>
-
-                    {/* Period picker */}
-                    <select
-                      value={formData.targetPeriod}
-                      onChange={(e) => setFormData({...formData, targetPeriod: e.target.value})}
-                      className="flex-1 text-center text-lg font-medium bg-transparent border-0 outline-none"
-                    >
-                      <option value="por día">por día</option>
-                      <option value="por semana">por semana</option>
-                      <option value="por mes">por mes</option>
-                      <option value="por año">por año</option>
-                    </select>
-                  </div>
+                    </div>
+                  )}
                 </div>
-
-                {/* Recordatorio */}
-                <div>
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                      🔔
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-xs text-slate-500 uppercase tracking-wide">RECORDATORIO</p>
-                      <p className="text-base font-medium text-slate-900">
-                        {formData.reminderTime || 'En cualquier momento'}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Fecha inicio */}
-                <div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                      📅
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-xs text-slate-500 uppercase tracking-wide">FECHA DE INICIO</p>
-                      <p className="text-base font-medium text-slate-900">Hoy</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Fecha fin */}
-                <div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">
-                      📅
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-xs text-slate-500 uppercase tracking-wide">FIN</p>
-                      <p className="text-base font-medium text-slate-900">Nunca</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              </motion.div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Toast notification */}
-      {showToast && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full shadow-lg z-50 animate-bounce">
-          {toastMessage}
-        </div>
-      )}
+          )}
+        </AnimatePresence>
+      </div>
     </main>
   );
 }
