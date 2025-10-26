@@ -1,0 +1,263 @@
+{
+  "categories": [
+    {
+      "id": "energia-fisica",
+      "name": "💪 Energía Física",
+      "emoji": "💪",
+      "color": "#f97316",
+      "description": "Mover el cuerpo, descansar bien",
+      "habits": [
+        {
+          "id": "dormir-temprano",
+          "name": "Dormir antes de medianoche",
+          "description": "El sueño de calidad mejora tu energía y concentración.",
+          "suggestedMinutes": 0,
+          "suggestedFrequency": "daily"
+        },
+        {
+          "id": "caminar",
+          "name": "Caminar 15 minutos",
+          "description": "Movimiento simple que activa tu cuerpo y mente.",
+          "suggestedMinutes": 15,
+          "suggestedFrequency": "daily"
+        },
+        {
+          "id": "agua",
+          "name": "Tomar 2L de agua",
+          "description": "Hidratación esencial para tu rendimiento diario.",
+          "suggestedMinutes": 0,
+          "suggestedFrequency": "daily"
+        },
+        {
+          "id": "estirar",
+          "name": "Estirar al despertar",
+          "description": "Activa tu cuerpo con estiramientos conscientes.",
+          "suggestedMinutes": 5,
+          "suggestedFrequency": "daily"
+        },
+        {
+          "id": "ejercicio",
+          "name": "Hacer ejercicio",
+          "description": "Fortalece tu cuerpo y libera endorfinas.",
+          "suggestedMinutes": 30,
+          "suggestedFrequency": "3x-week"
+        }
+      ]
+    },
+    {
+      "id": "equilibrio-mental",
+      "name": "🧘 Equilibrio Mental",
+      "emoji": "🧘",
+      "color": "#10b981",
+      "description": "Calmar la mente, reducir estrés",
+      "habits": [
+        {
+          "id": "respirar",
+          "name": "Respirar 3 min antes de dormir",
+          "description": "Calma tu mente y prepara tu cuerpo para descansar.",
+          "suggestedMinutes": 3,
+          "suggestedFrequency": "daily"
+        },
+        {
+          "id": "agradecer",
+          "name": "Escribir lo que agradezco",
+          "description": "Refuerza tu perspectiva positiva del día.",
+          "suggestedMinutes": 5,
+          "suggestedFrequency": "daily"
+        },
+        {
+          "id": "sin-celular",
+          "name": "No mirar el celular 1h antes de dormir",
+          "description": "Desconecta de pantallas para mejor descanso.",
+          "suggestedMinutes": 0,
+          "suggestedFrequency": "daily"
+        },
+        {
+          "id": "meditar",
+          "name": "Meditar 10 minutos",
+          "description": "Entrena tu atención y calma mental.",
+          "suggestedMinutes": 10,
+          "suggestedFrequency": "daily"
+        }
+      ]
+    },
+    {
+      "id": "creatividad",
+      "name": "🎨 Creatividad",
+      "emoji": "🎨",
+      "color": "#a855f7",
+      "description": "Expresarte, crear, explorar",
+      "habits": [
+        {
+          "id": "dibujar",
+          "name": "Dibujar o escribir sin objetivo",
+          "description": "Permite que tu mente explore libremente.",
+          "suggestedMinutes": 15,
+          "suggestedFrequency": "3x-week"
+        },
+        {
+          "id": "musica-nueva",
+          "name": "Escuchar música nueva",
+          "description": "Expande tu perspectiva sonora.",
+          "suggestedMinutes": 20,
+          "suggestedFrequency": "weekly"
+        },
+        {
+          "id": "historia",
+          "name": "Leer una historia corta",
+          "description": "Alimenta tu imaginación con narrativas.",
+          "suggestedMinutes": 15,
+          "suggestedFrequency": "3x-week"
+        },
+        {
+          "id": "crear",
+          "name": "Crear algo con las manos",
+          "description": "Cocinar, construir, hacer manualidades.",
+          "suggestedMinutes": 30,
+          "suggestedFrequency": "weekly"
+        }
+      ]
+    },
+    {
+      "id": "aprendizaje",
+      "name": "📚 Aprendizaje",
+      "emoji": "📚",
+      "color": "#3b82f6",
+      "description": "Desarrollarte, leer, estudiar",
+      "habits": [
+        {
+          "id": "leer",
+          "name": "Leer 10 minutos",
+          "description": "Expande tu conocimiento constantemente.",
+          "suggestedMinutes": 10,
+          "suggestedFrequency": "daily"
+        },
+        {
+          "id": "palabra-nueva",
+          "name": "Aprender una palabra nueva",
+          "description": "Enriquece tu vocabulario y pensamiento.",
+          "suggestedMinutes": 5,
+          "suggestedFrequency": "daily"
+        },
+        {
+          "id": "video-educativo",
+          "name": "Ver un video educativo",
+          "description": "Aprende de forma visual y entretenida.",
+          "suggestedMinutes": 15,
+          "suggestedFrequency": "3x-week"
+        },
+        {
+          "id": "curso",
+          "name": "Avanzar en un curso",
+          "description": "Progreso constante en tu desarrollo.",
+          "suggestedMinutes": 30,
+          "suggestedFrequency": "3x-week"
+        }
+      ]
+    },
+    {
+      "id": "relaciones",
+      "name": "💬 Relaciones",
+      "emoji": "💬",
+      "color": "#ec4899",
+      "description": "Cuidar vínculos, conectar",
+      "habits": [
+        {
+          "id": "mensaje",
+          "name": "Enviar mensaje a alguien que quiero",
+          "description": "Cultiva tus relaciones importantes.",
+          "suggestedMinutes": 5,
+          "suggestedFrequency": "daily"
+        },
+        {
+          "id": "llamada",
+          "name": "Llamar a un ser querido",
+          "description": "Conexión real más allá de mensajes.",
+          "suggestedMinutes": 15,
+          "suggestedFrequency": "weekly"
+        },
+        {
+          "id": "sonreir",
+          "name": "Sonreír o agradecer conscientemente",
+          "description": "Pequeños gestos que transforman vínculos.",
+          "suggestedMinutes": 0,
+          "suggestedFrequency": "daily"
+        }
+      ]
+    },
+    {
+      "id": "enfoque",
+      "name": "⚡ Enfoque",
+      "emoji": "⚡",
+      "color": "#eab308",
+      "description": "Evitar distracciones, cumplir metas",
+      "habits": [
+        {
+          "id": "revisar-tareas",
+          "name": "Revisar tareas 5 min al comenzar",
+          "description": "Claridad sobre tus prioridades del día.",
+          "suggestedMinutes": 5,
+          "suggestedFrequency": "daily"
+        },
+        {
+          "id": "sin-redes",
+          "name": "Evitar redes hasta el mediodía",
+          "description": "Protege tus horas de mayor energía.",
+          "suggestedMinutes": 0,
+          "suggestedFrequency": "daily"
+        },
+        {
+          "id": "planear-noche",
+          "name": "Planear el día la noche anterior",
+          "description": "Empieza con dirección clara.",
+          "suggestedMinutes": 10,
+          "suggestedFrequency": "daily"
+        },
+        {
+          "id": "pomodoro",
+          "name": "Trabajar en bloques de 25 min",
+          "description": "Enfoque profundo sin distracciones.",
+          "suggestedMinutes": 25,
+          "suggestedFrequency": "daily"
+        }
+      ]
+    },
+    {
+      "id": "bienestar",
+      "name": "🌙 Bienestar General",
+      "emoji": "🌙",
+      "color": "#64748b",
+      "description": "Pequeños hábitos cotidianos",
+      "habits": [
+        {
+          "id": "ordenar",
+          "name": "Ordenar un espacio pequeño",
+          "description": "Claridad externa, claridad mental.",
+          "suggestedMinutes": 10,
+          "suggestedFrequency": "daily"
+        },
+        {
+          "id": "comida-saludable",
+          "name": "Preparar comida saludable",
+          "description": "Nutrir tu cuerpo conscientemente.",
+          "suggestedMinutes": 20,
+          "suggestedFrequency": "daily"
+        },
+        {
+          "id": "sol",
+          "name": "Tomar sol 5 minutos",
+          "description": "Vitamina D natural para tu bienestar.",
+          "suggestedMinutes": 5,
+          "suggestedFrequency": "daily"
+        },
+        {
+          "id": "ducha-fria",
+          "name": "Ducha fría por 1 minuto",
+          "description": "Activa tu energía y disciplina.",
+          "suggestedMinutes": 1,
+          "suggestedFrequency": "daily"
+        }
+      ]
+    }
+  ]
+}

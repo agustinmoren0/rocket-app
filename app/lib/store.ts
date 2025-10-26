@@ -352,3 +352,48 @@ export function clearAllData() {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(STORAGE_KEY);
 }
+
+// ==========================================
+// HÁBITOS PERSONALIZADOS
+// ==========================================
+
+interface CustomHabit {
+  id: string;
+  name: string;
+  description: string;
+  minutes: number;
+  frequency: 'daily' | 'weekly' | '3x-week' | 'flexible';
+  category: string;
+  createdAt: string;
+}
+
+export function getCustomHabits(): CustomHabit[] {
+  if (typeof window === 'undefined') return [];
+  const stored = localStorage.getItem('habika_custom_habits');
+  return stored ? JSON.parse(stored) : [];
+}
+
+export function saveCustomHabit(habit: Omit<CustomHabit, 'id' | 'createdAt'>): CustomHabit {
+  const newHabit: CustomHabit = {
+    ...habit,
+    id: `custom_${Date.now()}`,
+    createdAt: new Date().toISOString()
+  };
+
+  const current = getCustomHabits();
+  const updated = [...current, newHabit];
+  localStorage.setItem('habika_custom_habits', JSON.stringify(updated));
+
+  return newHabit;
+}
+
+export function deleteCustomHabit(id: string): void {
+  const current = getCustomHabits();
+  const updated = current.filter(h => h.id !== id);
+  localStorage.setItem('habika_custom_habits', JSON.stringify(updated));
+}
+
+export function getAllHabits(): CustomHabit[] {
+  // Para futuro: combinar hábitos custom con predefinidos
+  return getCustomHabits();
+}
