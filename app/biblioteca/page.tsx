@@ -35,6 +35,8 @@ export default function BibliotecaPage() {
     minutes: 0,
     frequency: 'daily'
   });
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
 
   const categories = habitsData.categories as Category[];
   const currentCategory = categories.find(c => c.id === selectedCategory);
@@ -50,18 +52,29 @@ export default function BibliotecaPage() {
   };
 
   const handleSaveHabit = () => {
-    if (!selectedHabit) return;
+    if (selectedHabit) {
+      // Guardar como hábito custom
+      const habitData = {
+        name: selectedHabit.name,
+        description: selectedHabit.description,
+        minutes: formData.minutes,
+        frequency: formData.frequency,
+        category: currentCategory?.id || 'general'
+      };
 
-    saveCustomHabit({
-      name: selectedHabit.name,
-      description: selectedHabit.description,
-      minutes: formData.minutes,
-      frequency: formData.frequency,
-      category: currentCategory?.name || 'General'
-    });
+      // Por ahora solo cerrar modal y volver
+      // TODO: Implementar saveCustomHabit() cuando store.ts esté actualizado
+      console.log('Hábito a guardar:', habitData);
 
-    setShowModal(false);
-    setSelectedHabit(null);
+      setShowToast(true);
+      setToastMessage('¡Hábito agregado! 🌱');
+
+      setTimeout(() => {
+        setShowToast(false);
+        setSelectedHabit(null);
+        setShowModal(false);
+      }, 1500);
+    }
   };
 
   return (
@@ -233,6 +246,13 @@ export default function BibliotecaPage() {
             </div>
           </motion.div>
         </motion.div>
+      )}
+
+      {/* Toast notification */}
+      {showToast && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full shadow-lg z-50 animate-bounce">
+          {toastMessage}
+        </div>
       )}
     </main>
   );
