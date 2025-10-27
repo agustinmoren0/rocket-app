@@ -320,6 +320,17 @@ export default function HomePage() {
         .glass-card:hover {
           transform: translateY(-2px);
         }
+        main {
+          position: relative;
+          z-index: 10;
+        }
+        footer {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          z-index: 100 !important;
+        }
       `}</style>
     </div>
   );

@@ -153,7 +153,13 @@ export default function CalendarioPage() {
         {view === 'week' && (
           <div className={`${currentTheme.bgCard} rounded-2xl p-6 border border-white/40 space-y-3`}>
             {['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map((dayName, i) => {
-              const dayNumber = selectedDay + i - new Date().getDay();
+              // Calcular la fecha específica de cada día de la semana
+              const startOfWeek = new Date(currentDate);
+              startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
+              const dayDate = new Date(startOfWeek);
+              dayDate.setDate(startOfWeek.getDate() + i);
+
+              const dayNumber = dayDate.getDate();
               const dayEvents = events.filter(e => e.day === dayNumber);
               const isExpanded = expandedDays.includes(i);
 
@@ -164,10 +170,14 @@ export default function CalendarioPage() {
                     className="w-full p-4 flex items-center justify-between hover:bg-white/50 transition-colors"
                   >
                     <div className="text-left">
-                      <p className="font-bold text-slate-900">{dayName}</p>
-                      <p className="text-sm text-slate-600">{dayEvents.length} actividades</p>
+                      <p className="font-bold text-slate-900">
+                        {dayName} {dayNumber}
+                      </p>
+                      <p className="text-sm text-slate-600">
+                        {dayDate.toLocaleDateString('es-ES', { month: 'short' })} - {dayEvents.length} actividades
+                      </p>
                     </div>
-                    {isExpanded ? <ChevronRight size={20} /> : <ChevronRight size={20} />}
+                    {isExpanded ? <ChevronDown /> : <ChevronRight />}
                   </button>
 
                   {isExpanded && dayEvents.length > 0 && (
@@ -292,8 +302,14 @@ export default function CalendarioPage() {
               <div className="flex gap-3">
                 <button
                   onClick={() => {
-                    // TODO: abrir modal editar
                     setSelectedEvent(null);
+                    // Redirigir según tipo
+                    if (selectedEvent.type === 'habit') {
+                      router.push(`/editar-habito/${selectedEvent.id}`);
+                    } else {
+                      // TODO: crear página editar-actividad
+                      alert('Función de editar actividad próximamente');
+                    }
                   }}
                   className="flex-1 px-6 py-3 rounded-xl border-2 border-slate-200 font-medium flex items-center justify-center gap-2"
                 >
