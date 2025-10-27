@@ -17,21 +17,21 @@ export default function HomePage() {
   const [activeTab, setActiveTab] = useState('home');
   const [showFab, setShowFab] = useState(false);
   const [username, setUsername] = useState('');
-
-  const [weekData, setWeekData] = useState({
-    percentage: 0,
-    activeDays: 0,
-    totalDays: 7,
-    minutes: 0,
-    streak: 0,
-  });
+  const [percentage, setPercentage] = useState(0);
+  const [activeDays, setActiveDays] = useState(0);
+  const [totalDays] = useState(7);
+  const [minutes, setMinutes] = useState(0);
+  const [streak, setStreak] = useState(0);
 
   useEffect(() => {
     const stored = localStorage.getItem('habika_username');
     setUsername(stored || 'Alex');
 
     const progress = getWeekProgress();
-    setWeekData(progress);
+    setPercentage(progress);
+    setActiveDays(3); // TODO: calcular real
+    setMinutes(120); // TODO: calcular real
+    setStreak(5); // TODO: calcular real
   }, []);
 
   const daysOfWeek = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
@@ -96,7 +96,7 @@ export default function HomePage() {
                       className={`w-3 rounded-full ${
                         isToday
                           ? 'bg-indigo-600'
-                          : height > 50
+                          : percentage > 50
                             ? 'bg-indigo-400'
                             : 'bg-indigo-200'
                       }`}
@@ -121,7 +121,7 @@ export default function HomePage() {
             <div className="flex items-center gap-2">
               <Flame className="text-orange-500" size={32} />
               <div>
-                <p className="text-3xl font-bold text-slate-900">{weekData.streak}</p>
+                <p className="text-3xl font-bold text-slate-900">{streak}</p>
                 <p className="text-xs text-slate-600">días</p>
               </div>
             </div>
@@ -134,7 +134,7 @@ export default function HomePage() {
               <div className="flex items-center gap-2">
                 <PieChart className="text-indigo-600" size={32} />
                 <div>
-                  <p className="text-3xl font-bold text-slate-900">{Math.round(weekData.percentage)}%</p>
+                  <p className="text-3xl font-bold text-slate-900">{Math.round(percentage)}%</p>
                 </div>
               </div>
             </div>
