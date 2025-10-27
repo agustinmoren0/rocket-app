@@ -4,14 +4,14 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { loadData, setTheme, toggleZenMode, clearAllData, type Theme, THEMES } from '../lib/store';
+import { loadData, toggleZenMode, clearAllData } from '../lib/store';
 import { showToast } from '../components/Toast';
-import { useTheme } from '../hooks/useTheme';
+import { useTheme } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
 
 export default function PerfilPage() {
   const router = useRouter();
-  const { currentTheme, theme: activeTheme } = useTheme();
+  const { currentTheme, themeId, changeTheme } = useTheme();
   const { username, setUsername } = useUser();
   const [data, setData] = useState(() => loadData());
   const [isEditingName, setIsEditingName] = useState(false);
@@ -29,12 +29,9 @@ export default function PerfilPage() {
     showToast('Nombre actualizado', 'success');
   }
 
-  function handleThemeChange(newTheme: Theme) {
-    setTheme(newTheme);
-    showToast(`Tema ${THEMES[newTheme].name} activado`, 'success');
-    setTimeout(() => {
-      window.location.reload();
-    }, 500);
+  function handleThemeChange(themeId: string) {
+    changeTheme(themeId);
+    showToast(`Tema cambiado`, 'success');
   }
 
   function handleToggleZen() {
@@ -130,34 +127,31 @@ export default function PerfilPage() {
             <h3 className="text-base font-semibold text-slate-900">Tema de colores</h3>
           </div>
 
-          <div className="grid grid-cols-5 gap-3">
-            {(Object.keys(THEMES) as Theme[]).map((themeKey) => {
-              const theme = THEMES[themeKey];
-              const isActive = themeKey === activeTheme;
-
-              return (
-                <motion.button
-                  key={themeKey}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleThemeChange(themeKey)}
-                  className="flex flex-col items-center gap-2"
-                >
-                  <div
-                    className={`w-12 h-12 rounded-full flex items-center justify-center text-xl transition-all`}
-                    style={{
-                      background: `linear-gradient(135deg, ${theme.primary}, ${theme.secondary})`,
-                      boxShadow: isActive ? `0 0 0 2px white, 0 0 0 4px ${theme.primary}` : 'none'
-                    }}
-                  >
-                    {theme.emoji}
-                  </div>
-                  <p className={`text-xs font-medium ${isActive ? currentTheme.accent : 'text-slate-600'}`}>
-                    {theme.name}
-                  </p>
-                </motion.button>
-              );
-            })}
+          <div className="flex gap-3 flex-wrap justify-center">
+            {[
+              { id: 'oceano', name: 'Océano', emoji: '🌊', color: 'bg-blue-500' },
+              { id: 'bosque', name: 'Bosque', emoji: '🌲', color: 'bg-green-500' },
+              { id: 'atardecer', name: 'Atardecer', emoji: '🌅', color: 'bg-orange-500' },
+              { id: 'lavanda', name: 'Lavanda', emoji: '💜', color: 'bg-purple-500' },
+              { id: 'monocromo', name: 'Monocromo', emoji: '⚫', color: 'bg-slate-700' },
+            ].map((theme) => (
+              <motion.button
+                key={theme.id}
+                onClick={() => handleThemeChange(theme.id)}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`flex flex-col items-center gap-2 p-3 rounded-xl transition-all ${
+                  themeId === theme.id
+                    ? 'bg-indigo-100 ring-2 ring-indigo-500'
+                    : 'hover:bg-white/50'
+                }`}
+              >
+                <div className={`w-12 h-12 rounded-full ${theme.color} flex items-center justify-center text-2xl`}>
+                  {theme.emoji}
+                </div>
+                <span className="text-xs text-slate-600 font-medium">{theme.name}</span>
+              </motion.button>
+            ))}
           </div>
         </motion.section>
 

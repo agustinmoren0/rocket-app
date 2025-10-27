@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { useTheme } from '../hooks/useTheme';
+import { useTheme } from '../context/ThemeContext';
 import { getCustomHabits } from '../lib/store';
 import { TrendingUp, Award, Flame, Calendar, Clock } from 'lucide-react';
 import BottomNav from '../components/BottomNav';

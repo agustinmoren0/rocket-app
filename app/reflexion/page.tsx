@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { addActivity, CATEGORIES, type Category } from '../lib/store';
 import { showToast } from '../components/Toast';
 import { celebrateSave } from '../lib/confetti';
-import { useTheme } from '../hooks/useTheme';
+import { useTheme } from '../context/ThemeContext';
 
 const emotions = [
   { emoji: '🔥', label: 'En fuego' },

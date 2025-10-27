@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTheme } from './hooks/useTheme';
+import { useTheme } from './context/ThemeContext';
 import { useUser } from './context/UserContext';
 import { getWeekProgress, getCustomHabits } from './lib/store';
 import BottomNav from './components/BottomNav';

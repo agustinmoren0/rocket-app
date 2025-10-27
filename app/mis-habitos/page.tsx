@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTheme } from '../hooks/useTheme';
+import { useTheme } from '../context/ThemeContext';
 import { getCustomHabits, deleteCustomHabit } from '../lib/store';
 import {
   Activity, Pencil, Trash2, Check, X, BarChart3,

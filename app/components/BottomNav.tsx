@@ -5,10 +5,12 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Home, FileText, Plus, Activity, TrendingUp } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 export default function BottomNav() {
   const pathname = usePathname();
   const router = useRouter();
+  const { currentTheme } = useTheme();
   const [showFab, setShowFab] = useState(false);
 
   return (
@@ -85,16 +87,17 @@ export default function BottomNav() {
               </Link>
 
               {/* FAB integrado */}
-              <button
+              <motion.button
                 onClick={() => setShowFab(!showFab)}
+                whileTap={{ scale: 0.9 }}
                 className="flex flex-col items-center p-2 -mt-8"
               >
-                <div className={`w-16 h-16 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-xl flex items-center justify-center transition-all ${
+                <div className={`w-16 h-16 rounded-full ${currentTheme.gradient} text-white shadow-xl flex items-center justify-center hover:shadow-2xl transition-all ${
                   showFab ? 'rotate-45' : ''
                 }`}>
                   <Plus size={32} />
                 </div>
-              </button>
+              </motion.button>
 
               <Link href="/mis-habitos">
                 <button className={`flex flex-col items-center p-3 rounded-full transition-all ${

@@ -4,6 +4,7 @@ import "./globals.css";
 import RegisterSW from "./register-sw";
 import ToastContainer from "./components/Toast";
 import PageTransition from "./components/PageTransition";
+import { ThemeProvider } from "./context/ThemeContext";
 import { UserProvider } from "./context/UserContext";
 
 const inter = Inter({
@@ -32,13 +33,15 @@ export default function RootLayout({
   return (
     <html lang="es">
       <body className={`${inter.variable} font-sans antialiased`}>
-        <UserProvider>
-          <PageTransition>
-            {children}
-          </PageTransition>
-          <ToastContainer />
-          <RegisterSW />
-        </UserProvider>
+        <ThemeProvider>
+          <UserProvider>
+            <PageTransition>
+              {children}
+            </PageTransition>
+            <ToastContainer />
+            <RegisterSW />
+          </UserProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

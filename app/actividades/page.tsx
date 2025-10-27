@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTheme } from '../hooks/useTheme';
+import { useTheme } from '../context/ThemeContext';
 import { Activity, Plus, Calendar, Clock, TrendingUp, Edit2, Trash2, X } from 'lucide-react';
 import BottomNav from '../components/BottomNav';
 
