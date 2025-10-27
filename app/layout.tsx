@@ -6,6 +6,7 @@ import ToastContainer from "./components/Toast";
 import PageTransition from "./components/PageTransition";
 import { ThemeProvider } from "./context/ThemeContext";
 import { UserProvider } from "./context/UserContext";
+import OfflineIndicator from "./components/OfflineIndicator";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -35,6 +36,7 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`}>
         <ThemeProvider>
           <UserProvider>
+            <OfflineIndicator />
             <PageTransition>
               {children}
             </PageTransition>

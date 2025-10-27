@@ -9,7 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "canvas-confetti": "^1.9.3",
+    "canvas-confetti": "^1.9.4",
     "framer-motion": "^12.23.24",
     "html2canvas": "^1.4.1",
     "lucide-react": "^0.548.0",
