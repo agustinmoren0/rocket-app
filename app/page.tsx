@@ -1,444 +1,302 @@
 'use client'
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { motion, type Variants } from 'framer-motion';
-import CircularProgress from './components/CircularProgress';
-import InsightCard from './components/InsightCard';
-import StreakCard from './components/StreakCard';
-import ShareButton from './components/ShareButton';
-import { loadData, getWeekProgress, getImprovement, getCurrentStreak, getBestStreak, toggleZenMode } from './lib/store';
-import { celebrateStreak } from './lib/confetti';
+import { useRouter } from 'next/navigation';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from './hooks/useTheme';
+import { getWeekProgress, getCustomHabits, getActivities } from './lib/store';
+import {
+  Home, FileText, Plus, Activity, User,
+  Flame, PieChart, TrendingUp, Settings, X
+} from 'lucide-react';
 
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.06,
-      delayChildren: 0.1,
-    },
-  },
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 8 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.25,
-      ease: [0.25, 0.1, 0.25, 1],
-    },
-  },
-};
-
-export default function Home() {
+export default function HomePage() {
   const router = useRouter();
   const { currentTheme } = useTheme();
-  const [loaded, setLoaded] = useState(false);
-  const [data, setData] = useState(() => loadData());
-  const [showActivities, setShowActivities] = useState(false);
+  const [activeTab, setActiveTab] = useState('home');
+  const [showFab, setShowFab] = useState(false);
+  const [username, setUsername] = useState('');
+
+  const [weekData, setWeekData] = useState({
+    percentage: 0,
+    activeDays: 0,
+    totalDays: 7,
+    minutes: 0,
+    streak: 0,
+  });
 
   useEffect(() => {
-    const userData = loadData();
+    const stored = localStorage.getItem('habika_username');
+    setUsername(stored || 'Alex');
 
-    if (!userData.onboardingDone) {
-      router.replace('/onboarding');
-      return;
-    }
+    const progress = getWeekProgress();
+    setWeekData(progress);
+  }, []);
 
-    setData(userData);
-    setLoaded(true);
+  const daysOfWeek = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+  const today = new Date().getDay();
 
-    const currentStreak = getCurrentStreak();
-    const savedStreak = parseInt(localStorage.getItem('rocket.lastStreak') || '0');
-
-    if (currentStreak > savedStreak && currentStreak >= 3) {
-      setTimeout(() => celebrateStreak(), 500);
-    }
-
-    localStorage.setItem('rocket.lastStreak', currentStreak.toString());
-  }, [router]);
-
-  if (!loaded) {
-    return (
-      <main className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-slate-400 text-sm"
-        >
-          Cargando...
-        </motion.div>
-      </main>
-    );
-  }
-
-  const progress = getWeekProgress();
-  const improvement = getImprovement();
-  const activeDays = data.currentWeek.activeDays.filter(Boolean).length;
-  const currentStreak = getCurrentStreak();
-  const bestStreak = getBestStreak();
-
-  const getInsight = () => {
-    if (activeDays >= 5) return {
-      icon: '🚀',
-      title: '¡Despegue total!',
-      description: 'Estás en racha. Tu constancia es increíble.'
-    };
-    if (activeDays >= 3) return {
-      icon: '☀️',
-      title: 'Ritmo saludable',
-      description: 'Mantenés un flujo constante y sostenible.'
-    };
-    return {
-      icon: '🌱',
-      title: 'Empezando tu semana',
-      description: 'Cada día cuenta. Seguí avanzando a tu ritmo.'
-    };
-  };
-
-  const insight = getInsight();
-
-  // MODO ZEN
-  if (data.zenMode) {
-    return (
-      <main className={`min-h-screen bg-gradient-to-br ${currentTheme.bg}`}>
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-          className="max-w-xl mx-auto px-6 py-20 flex flex-col items-center justify-center min-h-screen"
-        >
-          <motion.div
-            initial={{ scale: 0.96, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.1, duration: 0.3 }}
-            className="mb-12"
-          >
-            <CircularProgress percentage={progress} />
-          </motion.div>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="text-slate-600 text-center mb-12 max-w-sm text-base"
-          >
-            {activeDays > 0
-              ? `Llevas ${activeDays} ${activeDays === 1 ? 'día' : 'días'} esta semana`
-              : 'Empezá tu semana'}
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            whileHover={{ scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
-          >
-            <Link
-              href="/reflexion"
-              className={`inline-flex items-center gap-2 px-6 h-12 rounded-2xl bg-gradient-to-r ${currentTheme.gradient} text-white font-medium shadow-md hover:shadow-lg transition-all duration-250`}
-            >
-              Registrar actividad
-            </Link>
-          </motion.div>
-
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            onClick={() => {
-              toggleZenMode();
-              setTimeout(() => window.location.href = '/', 100);
-            }}
-            className="mt-8 text-sm text-slate-400 hover:text-slate-600 transition-colors"
-          >
-            Salir del modo Zen
-          </motion.button>
-        </motion.div>
-      </main>
-    );
-  }
-
-  // MODO NORMAL
   return (
-    <main className={`min-h-screen bg-gradient-to-br ${currentTheme.bg}`}>
-      {/* Header Premium */}
-      <motion.header
-        initial={{ opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className="max-w-2xl mx-auto px-6 pt-8 pb-6 flex items-center justify-between"
-      >
-        <div>
-          <h1 className="text-xl font-semibold text-slate-900 tracking-tight">
-            Hola, {data.name} 👋
-          </h1>
-          <p className="text-sm text-slate-500 mt-0.5">
-            {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
-          </p>
+    <div className="min-h-screen relative">
+      {/* Gradient Background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-indigo-50 via-white to-purple-50 -z-10" />
+
+      {/* Header */}
+      <header className="sticky top-0 z-20 backdrop-blur-xl bg-white/60 border-b border-white/20 px-6 pt-6 pb-4">
+        <div className="flex items-center justify-between max-w-4xl mx-auto">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">
+              Hola, {username} 👋
+            </h1>
+            <p className="text-sm text-slate-600">
+              {new Date().toLocaleDateString('es-ES', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long'
+              })}
+            </p>
+          </div>
+          <button
+            onClick={() => router.push('/perfil')}
+            className="w-12 h-12 rounded-full bg-white/60 backdrop-blur-md border border-white/40 flex items-center justify-center hover:bg-white/80 transition-all"
+          >
+            <Settings size={20} className="text-slate-600" />
+          </button>
         </div>
-        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-          <Link
-            href="/perfil"
-            className={`w-10 h-10 rounded-xl ${currentTheme.bgCard} shadow-sm flex items-center justify-center ${currentTheme.bgHover} transition-all duration-200`}
-          >
-            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-600">
-              <circle cx="10" cy="10" r="3"/>
-              <path d="M19 10a9 9 0 0 1-9 9m9-9a9 9 0 0 0-9-9m9 9H1m9 9a9 9 0 0 1-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 0 1 9-9"/>
-            </svg>
-          </Link>
-        </motion.div>
-      </motion.header>
+      </header>
 
-      {/* Quick Nav */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.1 }}
-        className="max-w-2xl mx-auto px-6 mb-6 flex gap-2"
-      >
-        <motion.div className="flex-1" whileHover={{ scale: 1.005 }} whileTap={{ scale: 0.995 }}>
-          <Link
-            href="/balance"
-            className={`h-11 rounded-xl ${currentTheme.bgCard} shadow-sm flex items-center justify-center gap-2 text-sm font-medium text-slate-700 ${currentTheme.bgHover} transition-all duration-200`}
-          >
-            <span className="text-base">📊</span>
-            Balance
-          </Link>
-        </motion.div>
-        <motion.div className="flex-1" whileHover={{ scale: 1.005 }} whileTap={{ scale: 0.995 }}>
-          <Link
-            href="/historial"
-            className={`h-11 rounded-xl ${currentTheme.bgCard} shadow-sm flex items-center justify-center gap-2 text-sm font-medium text-slate-700 ${currentTheme.bgHover} transition-all duration-200`}
-          >
-            <span className="text-base">📅</span>
-            Historial
-          </Link>
-        </motion.div>
-      </motion.div>
+      {/* Main Content */}
+      <main className="px-6 py-6 max-w-4xl mx-auto pb-32 space-y-5">
 
-      <motion.div
-        variants={containerVariants}
-        initial="hidden"
-        animate="visible"
-        className="max-w-2xl mx-auto px-6 space-y-4 pb-24"
-      >
-        {/* Card Principal */}
-        {/* Tu semana - MEJORADO */}
-        <motion.section
-          variants={itemVariants}
-          className="bg-white rounded-3xl p-6 shadow-sm"
-        >
+        {/* Tu semana - Con barras verticales */}
+        <div className="glass-card rounded-2xl p-6 backdrop-blur-xl bg-white/60 border border-white/40 hover:shadow-xl transition-all">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-slate-900">Tu semana</h2>
-            <button
-              onClick={() => router.push('/estadisticas')}
-              className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
-            >
-              Ver más →
-            </button>
+            <Link href="/historial">
+              <button className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
+                Ver todo →
+              </button>
+            </Link>
           </div>
 
-          {/* Progress Circle */}
-          <div className="flex flex-col items-center py-6">
-            <div className="relative w-48 h-48">
-              <svg className="w-full h-full -rotate-90">
-                <circle
-                  cx="96"
-                  cy="96"
-                  r="88"
-                  stroke="#e2e8f0"
-                  strokeWidth="12"
-                  fill="none"
-                />
-                <circle
-                  cx="96"
-                  cy="96"
-                  r="88"
-                  stroke="url(#gradient)"
-                  strokeWidth="12"
-                  fill="none"
-                  strokeDasharray={`${progress * 5.53} 553`}
-                  strokeLinecap="round"
-                  style={{ transition: 'stroke-dasharray 0.5s ease' }}
-                />
-                <defs>
-                  <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor={currentTheme.primary} />
-                    <stop offset="100%" stopColor={currentTheme.secondary} />
-                  </linearGradient>
-                </defs>
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-5xl font-bold text-slate-900">{Math.round(progress)}%</span>
-                <span className="text-sm text-slate-500 mt-1">Completado</span>
-              </div>
-            </div>
-          </div>
+          {/* Week bars */}
+          <div className="flex items-end justify-between gap-2 h-32">
+            {daysOfWeek.map((day, i) => {
+              const isToday = i === (today === 0 ? 6 : today - 1);
+              const height = Math.random() * 100; // TODO: usar datos reales
 
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="p-4 bg-slate-50 rounded-xl text-center">
-              <p className="text-sm text-slate-600 mb-1">Días activos</p>
-              <p className="text-2xl font-bold text-slate-900">{activeDays}/7</p>
-            </div>
-            <div className="p-4 bg-slate-50 rounded-xl text-center">
-              <p className="text-sm text-slate-600 mb-1">Minutos</p>
-              <p className="text-2xl font-bold text-slate-900">{data.currentWeek.totalMinutes}</p>
-            </div>
-          </div>
-
-          {/* Racha */}
-          {activeDays > 0 && (
-            <div className="p-4 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl flex items-center gap-3">
-              <div className="text-3xl">🔥</div>
-              <div className="flex-1">
-                <p className="text-sm text-orange-900 font-medium">¡Racha activa!</p>
-                <p className="text-xs text-orange-700">{activeDays} días consecutivos</p>
-              </div>
-            </div>
-          )}
-        </motion.section>
-
-        <motion.div variants={itemVariants}>
-          <StreakCard currentStreak={currentStreak} bestStreak={bestStreak} />
-        </motion.div>
-
-        <motion.div variants={itemVariants}>
-          <InsightCard {...insight} />
-        </motion.div>
-
-        {/* Actividades */}
-        {data.currentWeek.activities.length > 0 && (
-          <motion.section
-            variants={itemVariants}
-            className={`${currentTheme.bgCard} backdrop-blur-xl rounded-2xl shadow-sm border ${currentTheme.border} p-5`}
-          >
-            <button
-              onClick={() => setShowActivities(!showActivities)}
-              className="w-full flex items-center justify-between"
-            >
-              <h2 className="text-base font-semibold text-slate-900">
-                Recientes
-              </h2>
-              <motion.span
-                animate={{ rotate: showActivities ? 180 : 0 }}
-                className="text-slate-400"
-              >
-                ↓
-              </motion.span>
-            </button>
-
-            {showActivities && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                transition={{ duration: 0.25 }}
-                className="mt-4 space-y-2"
-              >
-                {data.currentWeek.activities.slice(-5).reverse().map((act, i) => {
-                  const actualIndex = data.currentWeek.activities.length - 1 - i;
-                  return (
+              return (
+                <div key={i} className="flex-1 flex flex-col items-center gap-2">
+                  <div className="flex-1 w-full flex items-end justify-center">
                     <motion.div
-                      key={i}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.03, duration: 0.25 }}
-                      className={`flex items-start gap-3 py-3 border-b ${currentTheme.border} last:border-0`}
-                    >
-                      {act.emotion && (
-                        <span className="text-xl flex-shrink-0">{act.emotion}</span>
-                      )}
-                      <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${currentTheme.gradientSubtle} flex items-center justify-center flex-shrink-0`}>
-                        <span className="text-xs font-bold" style={{ color: currentTheme.primary }}>
-                          {act.minutes}m
-                        </span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm text-slate-800 line-clamp-2 leading-relaxed">{act.note}</p>
-                        <p className="text-xs text-slate-500 mt-1">
-                          {formatDate(act.date)}
-                        </p>
-                      </div>
-                      <Link
-                        href={`/editar?date=${act.date}&index=${actualIndex}`}
-                        className={`text-xs font-medium ${currentTheme.accent} hover:opacity-70 transition-opacity`}
-                      >
-                        Editar
-                      </Link>
-                    </motion.div>
-                  );
-                })}
-              </motion.div>
-            )}
-          </motion.section>
-        )}
-
-        {/* Botones de acción */}
-        <motion.div variants={itemVariants} className="space-y-3 pt-2">
-          <ShareButton
-            name={data.name}
-            progress={progress}
-            activeDays={activeDays}
-            minutes={data.currentWeek.totalMinutes}
-            streak={currentStreak}
-          />
-
-          <div className="space-y-3">
-            <motion.div whileHover={{ scale: 1.005 }} whileTap={{ scale: 0.995 }}>
-              <Link
-                href="/reflexion"
-                className={`block w-full h-12 rounded-2xl bg-gradient-to-r ${currentTheme.gradient} text-white font-medium flex items-center justify-center shadow-md hover:shadow-lg transition-all duration-250`}
-              >
-                <span className="mr-2 text-lg">+</span>
-                Registrar actividad
-              </Link>
-            </motion.div>
-
-            <motion.div whileHover={{ scale: 1.005 }} whileTap={{ scale: 0.995 }}>
-              <Link
-                href="/biblioteca"
-                className="block w-full h-12 rounded-2xl bg-white text-slate-700 font-medium flex items-center justify-center shadow-md hover:shadow-lg transition-all border border-slate-200"
-              >
-                <span className="mr-2 text-lg">🌱</span>
-                Explorar hábitos
-              </Link>
-            </motion.div>
-
-            <motion.div whileHover={{ scale: 1.005 }} whileTap={{ scale: 0.995 }}>
-              <Link
-                href="/mis-habitos"
-                className="block w-full h-12 rounded-2xl bg-white text-slate-700 font-medium flex items-center justify-center shadow-md hover:shadow-lg transition-all border border-slate-200"
-              >
-                <span className="mr-2 text-lg">📊</span>
-                Mis hábitos
-              </Link>
-            </motion.div>
-
-            <motion.div whileHover={{ scale: 1.005 }} whileTap={{ scale: 0.995 }}>
-              <Link
-                href="/estadisticas"
-                className="block w-full h-12 rounded-2xl bg-white text-slate-700 font-medium flex items-center justify-center shadow-md hover:shadow-lg transition-all border border-slate-200"
-              >
-                <span className="mr-2 text-lg">📈</span>
-                Estadísticas
-              </Link>
-            </motion.div>
+                      initial={{ height: 0 }}
+                      animate={{ height: `${height}%` }}
+                      transition={{ delay: i * 0.1, duration: 0.5 }}
+                      className={`w-3 rounded-full ${
+                        isToday
+                          ? 'bg-indigo-600'
+                          : height > 50
+                            ? 'bg-indigo-400'
+                            : 'bg-indigo-200'
+                      }`}
+                    />
+                  </div>
+                  <span className={`text-xs font-medium ${
+                    isToday ? 'text-indigo-600 font-bold' : 'text-slate-500'
+                  }`}>
+                    {day}
+                  </span>
+                </div>
+              );
+            })}
           </div>
-        </motion.div>
-      </motion.div>
-    </main>
-  );
-}
+        </div>
 
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-  return days[date.getDay()];
+        {/* Racha + Balance */}
+        <div className="grid grid-cols-2 gap-4">
+          {/* Tu Racha */}
+          <div className="glass-card rounded-2xl p-6 backdrop-blur-xl bg-white/60 border border-white/40 hover:shadow-xl transition-all">
+            <h3 className="text-sm font-medium text-slate-600 mb-2">Tu Racha</h3>
+            <div className="flex items-center gap-2">
+              <Flame className="text-orange-500" size={32} />
+              <div>
+                <p className="text-3xl font-bold text-slate-900">{weekData.streak}</p>
+                <p className="text-xs text-slate-600">días</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Balance */}
+          <Link href="/balance">
+            <div className="glass-card rounded-2xl p-6 backdrop-blur-xl bg-white/60 border border-white/40 hover:shadow-xl transition-all cursor-pointer">
+              <h3 className="text-sm font-medium text-slate-600 mb-2">Balance</h3>
+              <div className="flex items-center gap-2">
+                <PieChart className="text-indigo-600" size={32} />
+                <div>
+                  <p className="text-3xl font-bold text-slate-900">{Math.round(weekData.percentage)}%</p>
+                </div>
+              </div>
+            </div>
+          </Link>
+        </div>
+
+        {/* Mensaje de la semana */}
+        <div className="glass-card rounded-2xl p-6 backdrop-blur-xl bg-gradient-to-br from-indigo-50/80 to-purple-50/80 border border-white/40">
+          <h3 className="font-bold text-slate-900 mb-2">Mensaje de la semana</h3>
+          <p className="text-sm text-slate-700 leading-relaxed">
+            "La creatividad no se gasta. Cuanta más usas, más tienes." - Maya Angelou
+          </p>
+        </div>
+
+        {/* Historial */}
+        <Link href="/historial">
+          <div className="glass-card rounded-2xl p-5 backdrop-blur-xl bg-white/60 border border-white/40 hover:shadow-xl transition-all cursor-pointer flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
+                <TrendingUp className="text-orange-600" size={24} />
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-900">Historial</h3>
+                <p className="text-sm text-slate-600">Revisa tu progreso semanal</p>
+              </div>
+            </div>
+            <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center">
+              →
+            </div>
+          </div>
+        </Link>
+      </main>
+
+      {/* FAB + Modal */}
+      <AnimatePresence>
+        {showFab && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setShowFab(false)}
+              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+            />
+
+            {/* FAB Options */}
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 20, scale: 0.9 }}
+              className="fixed bottom-32 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-3"
+            >
+              <button
+                onClick={() => {
+                  setShowFab(false);
+                  router.push('/registrar-actividad');
+                }}
+                className="flex items-center gap-3 bg-white/90 backdrop-blur-xl rounded-2xl px-6 py-4 shadow-lg border border-white/40 hover:scale-105 transition-all"
+              >
+                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                  <Activity className="text-green-600" size={24} />
+                </div>
+                <span className="font-semibold text-slate-900">Registrar actividad</span>
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowFab(false);
+                  router.push('/biblioteca');
+                }}
+                className="flex items-center gap-3 bg-white/90 backdrop-blur-xl rounded-2xl px-6 py-4 shadow-lg border border-white/40 hover:scale-105 transition-all"
+              >
+                <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
+                  <Plus className="text-indigo-600" size={24} />
+                </div>
+                <span className="font-semibold text-slate-900">Añadir hábito</span>
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Bottom Navigation */}
+      <footer className="fixed bottom-0 left-0 right-0 z-30">
+        <div className="max-w-lg mx-auto px-6 pb-6">
+          {/* FAB Button */}
+          <div className="absolute bottom-20 left-1/2 -translate-x-1/2">
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setShowFab(!showFab)}
+              className={`w-16 h-16 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-xl flex items-center justify-center hover:shadow-2xl transition-all ${
+                showFab ? 'rotate-45' : ''
+              }`}
+            >
+              <Plus size={32} />
+            </motion.button>
+          </div>
+
+          {/* Nav Bar */}
+          <div className="rounded-full backdrop-blur-xl bg-white/70 border border-white/40 shadow-xl p-1">
+            <nav className="flex items-center justify-between px-2">
+              <button
+                onClick={() => setActiveTab('home')}
+                className={`flex flex-col items-center p-3 rounded-full transition-all ${
+                  activeTab === 'home' ? 'bg-indigo-100 text-indigo-600' : 'text-slate-600'
+                }`}
+              >
+                <Home size={22} />
+                <span className="text-xs font-bold mt-1">Hoy</span>
+              </button>
+
+              <Link href="/actividades">
+                <button
+                  onClick={() => setActiveTab('activities')}
+                  className={`flex flex-col items-center p-3 rounded-full transition-all ${
+                    activeTab === 'activities' ? 'bg-indigo-100 text-indigo-600' : 'text-slate-600'
+                  }`}
+                >
+                  <Activity size={22} />
+                  <span className="text-xs font-bold mt-1">Actividades</span>
+                </button>
+              </Link>
+
+              <div className="w-16" />
+
+              <Link href="/mis-habitos">
+                <button
+                  onClick={() => setActiveTab('habits')}
+                  className={`flex flex-col items-center p-3 rounded-full transition-all ${
+                    activeTab === 'habits' ? 'bg-indigo-100 text-indigo-600' : 'text-slate-600'
+                  }`}
+                >
+                  <FileText size={22} />
+                  <span className="text-xs font-bold mt-1">Hábitos</span>
+                </button>
+              </Link>
+
+              <Link href="/estadisticas">
+                <button
+                  onClick={() => setActiveTab('stats')}
+                  className={`flex flex-col items-center p-3 rounded-full transition-all ${
+                    activeTab === 'stats' ? 'bg-indigo-100 text-indigo-600' : 'text-slate-600'
+                  }`}
+                >
+                  <TrendingUp size={22} />
+                  <span className="text-xs font-bold mt-1">Resumen</span>
+                </button>
+              </Link>
+            </nav>
+          </div>
+        </div>
+      </footer>
+
+      <style jsx global>{`
+        .glass-card {
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .glass-card:hover {
+          transform: translateY(-2px);
+        }
+      `}</style>
+    </div>
+  );
 }
