@@ -190,61 +190,62 @@ export default function HomePage() {
         </div>
       </main>
 
-      {/* FAB + Modal */}
-      <AnimatePresence>
-        {showFab && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setShowFab(false)}
-              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-60"
-            />
-
-            {/* FAB Options */}
-            <motion.div
-              initial={{ opacity: 0, y: 20, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.9 }}
-              className="fixed bottom-32 left-1/2 -translate-x-1/2 z-70 flex flex-col gap-3"
-            >
-              <button
-                onClick={() => {
-                  setShowFab(false);
-                  router.push('/registrar-actividad');
-                }}
-                className="flex items-center gap-3 bg-white/90 backdrop-blur-xl rounded-2xl px-6 py-4 shadow-lg border border-white/40 hover:scale-105 transition-all"
-              >
-                <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                  <Activity className="text-green-600" size={24} />
-                </div>
-                <span className="font-semibold text-slate-900">Registrar actividad</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  setShowFab(false);
-                  router.push('/biblioteca');
-                }}
-                className="flex items-center gap-3 bg-white/90 backdrop-blur-xl rounded-2xl px-6 py-4 shadow-lg border border-white/40 hover:scale-105 transition-all"
-              >
-                <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
-                  <Plus className="text-indigo-600" size={24} />
-                </div>
-                <span className="font-semibold text-slate-900">Añadir hábito</span>
-              </button>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
-
-      {/* Bottom Navigation */}
+      {/* Bottom Navigation with FAB */}
       <footer className="fixed bottom-0 left-0 right-0 z-50">
         <div className="relative max-w-lg mx-auto px-6 pb-6">
-          {/* FAB Button - DENTRO del footer */}
-          <div className="absolute -top-8 left-1/2 -translate-x-1/2">
+          {/* FAB Modal - Backdrop */}
+          <AnimatePresence>
+            {showFab && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setShowFab(false)}
+                className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+              />
+            )}
+          </AnimatePresence>
+
+          {/* FAB Options Modal */}
+          <AnimatePresence>
+            {showFab && (
+              <motion.div
+                initial={{ opacity: 0, y: 20, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.9 }}
+                className="absolute bottom-32 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-3"
+              >
+                <button
+                  onClick={() => {
+                    setShowFab(false);
+                    router.push('/registrar-actividad');
+                  }}
+                  className="flex items-center gap-3 bg-white/90 backdrop-blur-xl rounded-2xl px-6 py-4 shadow-lg border border-white/40 hover:scale-105 transition-all"
+                >
+                  <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                    <Activity className="text-green-600" size={24} />
+                  </div>
+                  <span className="font-semibold text-slate-900">Registrar actividad</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowFab(false);
+                    router.push('/biblioteca');
+                  }}
+                  className="flex items-center gap-3 bg-white/90 backdrop-blur-xl rounded-2xl px-6 py-4 shadow-lg border border-white/40 hover:scale-105 transition-all"
+                >
+                  <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center">
+                    <Plus className="text-indigo-600" size={24} />
+                  </div>
+                  <span className="font-semibold text-slate-900">Añadir hábito</span>
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* FAB Button */}
+          <div className="absolute -top-8 left-1/2 -translate-x-1/2 z-50">
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => setShowFab(!showFab)}
@@ -319,17 +320,6 @@ export default function HomePage() {
         }
         .glass-card:hover {
           transform: translateY(-2px);
-        }
-        main {
-          position: relative;
-          z-index: 10;
-        }
-        footer {
-          position: fixed;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          z-index: 100 !important;
         }
       `}</style>
     </div>
