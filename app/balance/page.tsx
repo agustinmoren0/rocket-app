@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion, type Variants } from 'framer-motion';
@@ -32,6 +33,7 @@ const itemVariants: Variants = {
 export default function BalancePage() {
   const router = useRouter();
   const { currentTheme } = useTheme();
+  const [period, setPeriod] = useState<'day' | 'week' | 'month'>('week');
   const data = loadData();
   const breakdown = getCategoryBreakdown();
 
@@ -70,6 +72,25 @@ export default function BalancePage() {
       </motion.header>
 
       <div className="max-w-2xl mx-auto px-6 pb-24">
+        {/* Period Selector */}
+        <div className="flex gap-2 mb-6 bg-white/60 backdrop-blur-xl rounded-2xl p-1 border border-white/40">
+          {[
+            { key: 'day', label: 'Hoy' },
+            { key: 'week', label: 'Semana' },
+            { key: 'month', label: 'Mes' }
+          ].map((p) => (
+            <button
+              key={p.key}
+              onClick={() => setPeriod(p.key as any)}
+              className={`flex-1 py-2 rounded-xl font-medium text-sm transition-all ${
+                period === p.key ? 'bg-indigo-600 text-white' : 'text-slate-600'
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+
         {hasCategories ? (
           <motion.div
             variants={containerVariants}

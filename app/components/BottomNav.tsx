@@ -63,21 +63,9 @@ export default function BottomNav() {
 
       {/* Bottom Nav */}
       <footer className="fixed bottom-0 left-0 right-0 z-30">
-        <div className="relative max-w-lg mx-auto px-6 pb-6">
-          <div className="absolute -top-8 left-1/2 -translate-x-1/2">
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setShowFab(!showFab)}
-              className={`w-16 h-16 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-xl flex items-center justify-center transition-all ${
-                showFab ? 'rotate-45' : ''
-              }`}
-            >
-              <Plus size={32} />
-            </motion.button>
-          </div>
-
+        <div className="max-w-lg mx-auto px-6 pb-6">
           <div className="rounded-full backdrop-blur-xl bg-white/70 border border-white/40 shadow-xl p-1">
-            <nav className="flex items-center justify-between px-2">
+            <nav className="flex items-center justify-around px-2">
               <Link href="/">
                 <button className={`flex flex-col items-center p-3 rounded-full transition-all ${
                   pathname === '/' ? 'bg-indigo-100 text-indigo-600' : 'text-slate-600'
@@ -96,7 +84,17 @@ export default function BottomNav() {
                 </button>
               </Link>
 
-              <div className="w-16" />
+              {/* FAB integrado */}
+              <button
+                onClick={() => setShowFab(!showFab)}
+                className="flex flex-col items-center p-2 -mt-8"
+              >
+                <div className={`w-16 h-16 rounded-full bg-gradient-to-br from-indigo-600 to-purple-600 text-white shadow-xl flex items-center justify-center transition-all ${
+                  showFab ? 'rotate-45' : ''
+                }`}>
+                  <Plus size={32} />
+                </div>
+              </button>
 
               <Link href="/mis-habitos">
                 <button className={`flex flex-col items-center p-3 rounded-full transition-all ${

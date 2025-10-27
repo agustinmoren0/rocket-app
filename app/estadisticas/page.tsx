@@ -30,7 +30,7 @@ export default function EstadisticasPage() {
   }, []);
 
   return (
-    <main className={`min-h-screen ${currentTheme.bg} p-6`}>
+    <main className={`min-h-screen ${currentTheme.bg} pb-40 p-6`}>
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">

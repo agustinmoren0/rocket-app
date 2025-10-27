@@ -18,8 +18,8 @@ export default function ActividadesPage() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-      <div className="max-w-4xl mx-auto p-6 pb-32">
+    <main className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 pb-40">
+      <div className="max-w-4xl mx-auto p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
