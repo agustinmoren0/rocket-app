@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from './hooks/useTheme';
-import { getWeekProgress, getCustomHabits, getActivities } from './lib/store';
+import { getWeekProgress, getCustomHabits } from './lib/store';
 import {
   Home, FileText, Plus, Activity, User,
   Flame, PieChart, TrendingUp, Settings, X
