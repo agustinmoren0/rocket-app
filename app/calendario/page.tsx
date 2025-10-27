@@ -86,7 +86,7 @@ export default function CalendarioPage() {
         </div>
 
         {/* View Selector */}
-        <div className={`flex gap-2 mb-6 ${currentTheme.card} rounded-2xl p-1 border border-white/40`}>
+        <div className={`flex gap-2 mb-6 ${currentTheme.bgCard} rounded-2xl p-1 border border-white/40`}>
           {[
             { key: 'day', label: 'Diario' },
             { key: 'week', label: 'Semanal' },
@@ -96,7 +96,7 @@ export default function CalendarioPage() {
               key={v.key}
               onClick={() => setView(v.key as any)}
               className={`flex-1 py-2 rounded-xl font-medium text-sm transition-all ${
-                view === v.key ? `${currentTheme.primary} text-white` : 'text-slate-600'
+                view === v.key ? `bg-indigo-600 text-white` : 'text-slate-600'
               }`}
             >
               {v.label}
@@ -105,7 +105,7 @@ export default function CalendarioPage() {
         </div>
 
         {/* Period Navigation */}
-        <div className={`flex items-center justify-between mb-6 ${currentTheme.card} rounded-2xl p-4 border border-white/40`}>
+        <div className={`flex items-center justify-between mb-6 ${currentTheme.bgCard} rounded-2xl p-4 border border-white/40`}>
           <button onClick={goToPrevPeriod} className="p-2 hover:bg-white/50 rounded-lg">
             <ChevronLeft size={20} />
           </button>
@@ -122,7 +122,7 @@ export default function CalendarioPage() {
 
         {/* Vista Diaria */}
         {view === 'day' && (
-          <div className={`${currentTheme.card} rounded-2xl p-6 border border-white/40 space-y-2`}>
+          <div className={`${currentTheme.bgCard} rounded-2xl p-6 border border-white/40 space-y-2`}>
             {Array.from({ length: 24 }).map((_, hour) => {
               const event = events.find(e => e.hour === hour && e.day === selectedDay);
               return (
@@ -151,7 +151,7 @@ export default function CalendarioPage() {
 
         {/* Vista Semanal */}
         {view === 'week' && (
-          <div className={`${currentTheme.card} rounded-2xl p-6 border border-white/40 space-y-3`}>
+          <div className={`${currentTheme.bgCard} rounded-2xl p-6 border border-white/40 space-y-3`}>
             {['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map((dayName, i) => {
               const dayNumber = selectedDay + i - new Date().getDay();
               const dayEvents = events.filter(e => e.day === dayNumber);
@@ -192,7 +192,7 @@ export default function CalendarioPage() {
 
         {/* Vista Mensual */}
         {view === 'month' && (
-          <div className={`${currentTheme.card} rounded-2xl p-6 border border-white/40`}>
+          <div className={`${currentTheme.bgCard} rounded-2xl p-6 border border-white/40`}>
             <div className="grid grid-cols-7 gap-2 mb-2">
               {['D', 'L', 'M', 'M', 'J', 'V', 'S'].map((day) => (
                 <div key={day} className="text-center text-sm font-medium text-slate-600 py-2">
@@ -217,7 +217,7 @@ export default function CalendarioPage() {
                       if (dayEvents.length > 0) toggleDayExpand(day);
                     }}
                     className={`aspect-square rounded-xl flex flex-col items-center justify-center transition-all ${
-                      isToday ? `${currentTheme.primary} text-white font-bold` :
+                      isToday ? `bg-indigo-600 text-white font-bold` :
                       selectedDay === day ? 'bg-indigo-100 text-indigo-600' :
                       'bg-white/50 hover:bg-white text-slate-700'
                     }`}
@@ -275,7 +275,7 @@ export default function CalendarioPage() {
               animate={{ scale: 1 }}
               exit={{ scale: 0.9 }}
               onClick={(e) => e.stopPropagation()}
-              className={`${currentTheme.card} rounded-3xl p-6 max-w-sm w-full border border-white/40`}
+              className={`${currentTheme.bgCard} rounded-3xl p-6 max-w-sm w-full border border-white/40`}
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-bold">{selectedEvent.title}</h3>
