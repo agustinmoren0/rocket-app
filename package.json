@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@hello-pangea/dnd": "^18.0.1",
     "canvas-confetti": "^1.9.4",
     "framer-motion": "^12.23.24",
     "html2canvas": "^1.4.1",

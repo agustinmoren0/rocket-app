@@ -2,8 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, ChevronDown, Clock, Edit2, Trash2, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Clock, Edit2, Trash2, X, Droplet, Sparkles } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { useCycle } from '../context/CycleContext';
 import BottomNav from '../components/BottomNav';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -20,11 +21,28 @@ interface Event {
 export default function CalendarioPage() {
   const router = useRouter();
   const { currentTheme } = useTheme();
+  const { cycleData } = useCycle();
   const [view, setView] = useState<'day' | 'week' | 'month'>('day');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(new Date().getDate());
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [expandedDays, setExpandedDays] = useState<number[]>([]);
+
+  // Helper function to get cycle info for a specific day
+  const getCycleDayInfo = (dayNumber: number) => {
+    if (!cycleData.isActive) return null;
+
+    const lastPeriod = new Date(cycleData.lastPeriodStart);
+    const targetDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), dayNumber);
+    const daysSince = Math.floor((targetDate.getTime() - lastPeriod.getTime()) / (1000 * 60 * 60 * 24));
+    const cycleDay = (daysSince % cycleData.cycleLengthDays) + 1;
+
+    const isPeriod = cycleDay <= cycleData.periodLengthDays;
+    const isFertile = cycleDay >= Math.floor(cycleData.cycleLengthDays / 2) - 5 &&
+                     cycleDay <= Math.floor(cycleData.cycleLengthDays / 2) + 2;
+
+    return { isPeriod, isFertile, cycleDay };
+  };
 
   // Mock events
   const [events, setEvents] = useState<Event[]>([
@@ -218,6 +236,7 @@ export default function CalendarioPage() {
                 const day = i + 1;
                 const isToday = day === new Date().getDate();
                 const dayEvents = events.filter(e => e.day === day);
+                const cycleInfo = getCycleDayInfo(day);
 
                 return (
                   <button
@@ -226,13 +245,17 @@ export default function CalendarioPage() {
                       setSelectedDay(day);
                       if (dayEvents.length > 0) toggleDayExpand(day);
                     }}
-                    className={`aspect-square rounded-xl flex flex-col items-center justify-center transition-all ${
-                      isToday ? `bg-indigo-600 text-white font-bold` :
+                    className={`aspect-square rounded-xl flex flex-col items-center justify-center transition-all relative ${
+                      isToday ? `${currentTheme.gradient} text-white font-bold` :
                       selectedDay === day ? 'bg-indigo-100 text-indigo-600' :
+                      cycleInfo?.isPeriod ? 'bg-red-100 text-red-700 border-2 border-red-300' :
+                      cycleInfo?.isFertile ? 'bg-amber-100 text-amber-700 border-2 border-amber-300' :
                       'bg-white/50 hover:bg-white text-slate-700'
                     }`}
                   >
                     <span className="text-sm">{day}</span>
+
+                    {/* Indicador de eventos */}
                     {dayEvents.length > 0 && (
                       <div className="flex gap-0.5 mt-1">
                         {dayEvents.slice(0, 3).map((_, i) => (
@@ -240,10 +263,39 @@ export default function CalendarioPage() {
                         ))}
                       </div>
                     )}
+
+                    {/* Indicador de ciclo */}
+                    {cycleInfo?.isPeriod && (
+                      <div className="absolute top-1 right-1">
+                        <Droplet size={12} className="text-red-500 fill-red-500" />
+                      </div>
+                    )}
+                    {cycleInfo?.isFertile && (
+                      <div className="absolute top-1 right-1">
+                        <Sparkles size={12} className="text-amber-500" />
+                      </div>
+                    )}
                   </button>
                 );
               })}
             </div>
+
+            {/* Leyenda del ciclo */}
+            {cycleData.isActive && (
+              <div className="mt-6 p-4 bg-rose-50 rounded-xl">
+                <p className="text-sm font-medium text-slate-900 mb-3">Leyenda del ciclo:</p>
+                <div className="flex flex-wrap gap-4 text-sm">
+                  <div className="flex items-center gap-2">
+                    <Droplet size={16} className="text-red-500 fill-red-500" />
+                    <span className="text-slate-700">Periodo</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={16} className="text-amber-500" />
+                    <span className="text-slate-700">Ventana fértil</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Eventos del día seleccionado */}
             {expandedDays.includes(selectedDay) && (
