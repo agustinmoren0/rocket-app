@@ -7,6 +7,7 @@ import PageTransition from "./components/PageTransition";
 import { ThemeProvider } from "./context/ThemeContext";
 import { UserProvider } from "./context/UserContext";
 import OfflineIndicator from "./components/OfflineIndicator";
+import DesktopLayout from "./components/DesktopLayout";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -37,9 +38,11 @@ export default function RootLayout({
         <ThemeProvider>
           <UserProvider>
             <OfflineIndicator />
-            <PageTransition>
-              {children}
-            </PageTransition>
+            <DesktopLayout>
+              <PageTransition>
+                {children}
+              </PageTransition>
+            </DesktopLayout>
             <ToastContainer />
             <RegisterSW />
           </UserProvider>

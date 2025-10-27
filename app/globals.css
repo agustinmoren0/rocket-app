@@ -238,3 +238,68 @@ input,
 textarea {
   transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
+
+/* ============================================
+   DESKTOP RESPONSIVE - Optimizaciones para lg+
+   ============================================ */
+
+@media (min-width: 1024px) {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-size: 1rem;
+    line-height: 1.6;
+  }
+
+  .container-desktop {
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 2rem;
+  }
+
+  /* Botones y links con transiciones mejoradas */
+  button,
+  a {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  button:hover,
+  a:hover {
+    transition-duration: 0.2s;
+  }
+
+  /* Focus visible para navegación por teclado */
+  button:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible {
+    outline: 2px solid var(--indigo);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Sidebar animations */
+  aside {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  /* Main content layout */
+  main {
+    transition: margin-left 0.3s ease;
+  }
+
+  /* Cards con better hover effects */
+  [role="button"],
+  .button-like {
+    transition: all 0.2s ease;
+  }
+
+  [role="button"]:hover,
+  .button-like:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+}
