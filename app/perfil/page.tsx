@@ -1,26 +1,31 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { loadData, setUserName, setTheme, toggleZenMode, clearAllData, type Theme, THEMES } from '../lib/store';
+import { loadData, setTheme, toggleZenMode, clearAllData, type Theme, THEMES } from '../lib/store';
 import { showToast } from '../components/Toast';
 import { useTheme } from '../hooks/useTheme';
+import { useUser } from '../context/UserContext';
 
 export default function PerfilPage() {
   const router = useRouter();
   const { currentTheme, theme: activeTheme } = useTheme();
+  const { username, setUsername } = useUser();
   const [data, setData] = useState(() => loadData());
-  const [editingName, setEditingName] = useState(false);
-  const [newName, setNewName] = useState(data.name);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [tempName, setTempName] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
+  useEffect(() => {
+    setTempName(username);
+  }, [username]);
+
   function handleSaveName() {
-    if (!newName.trim()) return;
-    setUserName(newName.trim());
-    setData(loadData());
-    setEditingName(false);
+    if (!tempName.trim()) return;
+    setUsername(tempName.trim());
+    setIsEditingName(false);
     showToast('Nombre actualizado', 'success');
   }
 
@@ -78,15 +83,15 @@ export default function PerfilPage() {
         >
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center text-2xl">
-              {data.name.charAt(0).toUpperCase()}
+              {username.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1">
-              {editingName ? (
+              {isEditingName ? (
                 <div className="flex gap-2">
                   <input
                     type="text"
-                    value={newName}
-                    onChange={(e) => setNewName(e.target.value)}
+                    value={tempName}
+                    onChange={(e) => setTempName(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
                     className="flex-1 h-9 px-3 rounded-xl bg-white border-2 border-slate-200 focus:outline-none text-sm"
                     autoFocus
@@ -100,9 +105,9 @@ export default function PerfilPage() {
                 </div>
               ) : (
                 <>
-                  <h2 className="text-lg font-semibold text-slate-900">{data.name}</h2>
+                  <h2 className="text-lg font-semibold text-slate-900">{username}</h2>
                   <button
-                    onClick={() => setEditingName(true)}
+                    onClick={() => setIsEditingName(true)}
                     className={`text-xs ${currentTheme.accent} hover:opacity-70 transition-opacity mt-0.5`}
                   >
                     Cambiar nombre

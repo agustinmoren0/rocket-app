@@ -305,13 +305,12 @@ export default function CalendarioPage() {
                     setSelectedEvent(null);
                     // Redirigir según tipo
                     if (selectedEvent.type === 'habit') {
-                      router.push(`/editar-habito/${selectedEvent.id}`);
+                      router.push(`/biblioteca?edit=${selectedEvent.id}`);
                     } else {
-                      // TODO: crear página editar-actividad
-                      alert('Función de editar actividad próximamente');
+                      router.push(`/editar-actividad/${selectedEvent.id}`);
                     }
                   }}
-                  className="flex-1 px-6 py-3 rounded-xl border-2 border-slate-200 font-medium flex items-center justify-center gap-2"
+                  className="flex-1 px-6 py-3 rounded-xl border-2 border-slate-200 font-medium flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors"
                 >
                   <Edit2 size={18} />
                   Editar
