@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { useTheme } from '../hooks/useTheme';
 import { getCustomHabits } from '../lib/store';
 import { TrendingUp, Award, Flame, Calendar, Clock } from 'lucide-react';
+import BottomNav from '../components/BottomNav';
 
 export default function EstadisticasPage() {
   const router = useRouter();
@@ -149,6 +150,7 @@ export default function EstadisticasPage() {
           )}
         </div>
       </div>
+      <BottomNav />
     </main>
   );
 }

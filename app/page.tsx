@@ -25,7 +25,7 @@ export default function HomePage() {
 
   useEffect(() => {
     const stored = localStorage.getItem('habika_username');
-    setUsername(stored || 'Alex');
+    setUsername(stored || 'Usuario');
 
     const progress = getWeekProgress();
     setPercentage(progress);
@@ -73,7 +73,7 @@ export default function HomePage() {
         <div className="glass-card rounded-2xl p-6 backdrop-blur-xl bg-white/60 border border-white/40 hover:shadow-xl transition-all">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-slate-900">Tu semana</h2>
-            <Link href="/historial">
+            <Link href="/calendario">
               <button className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
                 Ver todo →
               </button>
@@ -166,6 +166,18 @@ export default function HomePage() {
             </div>
           </div>
         </Link>
+
+        {/* Actividades Recientes */}
+        <div className="glass-card rounded-2xl p-6 backdrop-blur-xl bg-white/60 border border-white/40">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-slate-900">Recientes</h2>
+            <Link href="/actividades">
+              <button className="text-sm font-semibold text-indigo-600">Ver todas →</button>
+            </Link>
+          </div>
+          {/* TODO: mostrar últimas 3 actividades */}
+          <p className="text-sm text-slate-600">No hay actividades recientes</p>
+        </div>
       </main>
 
       {/* FAB + Modal */}
@@ -220,9 +232,9 @@ export default function HomePage() {
 
       {/* Bottom Navigation */}
       <footer className="fixed bottom-0 left-0 right-0 z-30">
-        <div className="max-w-lg mx-auto px-6 pb-6">
-          {/* FAB Button */}
-          <div className="absolute bottom-20 left-1/2 -translate-x-1/2">
+        <div className="relative max-w-lg mx-auto px-6 pb-6">
+          {/* FAB Button - DENTRO del footer */}
+          <div className="absolute -top-8 left-1/2 -translate-x-1/2">
             <motion.button
               whileTap={{ scale: 0.9 }}
               onClick={() => setShowFab(!showFab)}
@@ -237,15 +249,17 @@ export default function HomePage() {
           {/* Nav Bar */}
           <div className="rounded-full backdrop-blur-xl bg-white/70 border border-white/40 shadow-xl p-1">
             <nav className="flex items-center justify-between px-2">
-              <button
-                onClick={() => setActiveTab('home')}
-                className={`flex flex-col items-center p-3 rounded-full transition-all ${
-                  activeTab === 'home' ? 'bg-indigo-100 text-indigo-600' : 'text-slate-600'
-                }`}
-              >
-                <Home size={22} />
-                <span className="text-xs font-bold mt-1">Hoy</span>
-              </button>
+              <Link href="/">
+                <button
+                  onClick={() => setActiveTab('home')}
+                  className={`flex flex-col items-center p-3 rounded-full transition-all ${
+                    activeTab === 'home' ? 'bg-indigo-100 text-indigo-600' : 'text-slate-600'
+                  }`}
+                >
+                  <Home size={22} />
+                  <span className="text-xs font-bold mt-1">Hoy</span>
+                </button>
+              </Link>
 
               <Link href="/actividades">
                 <button

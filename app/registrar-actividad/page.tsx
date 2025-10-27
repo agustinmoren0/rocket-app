@@ -9,9 +9,10 @@ export default function RegistrarActividadPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({
     name: '',
-    minutes: 30,
-    date: new Date().toISOString().split('T')[0],
+    minutes: 20,
+    unit: 'min',
     category: 'energia-fisica',
+    date: new Date().toISOString().split('T')[0],
     notes: '',
   });
 
@@ -79,19 +80,28 @@ export default function RegistrarActividadPage() {
             />
           </div>
 
-          {/* Minutos */}
+          {/* Duración */}
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-2">
               <Clock size={16} className="inline mr-2" />
-              Duración (minutos)
+              Duración
             </label>
-            <input
-              type="number"
-              value={formData.minutes}
-              onChange={(e) => setFormData({ ...formData, minutes: parseInt(e.target.value) || 0 })}
-              min="1"
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all"
-            />
+            <div className="flex gap-2">
+              <input
+                type="number"
+                value={formData.minutes}
+                onChange={(e) => setFormData({...formData, minutes: parseInt(e.target.value) || 0})}
+                className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 outline-none"
+              />
+              <select
+                value={formData.unit || 'min'}
+                onChange={(e) => setFormData({...formData, unit: e.target.value})}
+                className="px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 outline-none"
+              >
+                <option value="min">min</option>
+                <option value="hs">hs</option>
+              </select>
+            </div>
           </div>
 
           {/* Fecha */}

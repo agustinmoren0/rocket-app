@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { useTheme } from '../hooks/useTheme';
 import { Activity, Plus, Calendar, Clock, TrendingUp } from 'lucide-react';
+import BottomNav from '../components/BottomNav';
 
 export default function ActividadesPage() {
   const router = useRouter();
@@ -96,6 +97,7 @@ export default function ActividadesPage() {
           </div>
         )}
       </div>
+      <BottomNav />
     </main>
   );
 }

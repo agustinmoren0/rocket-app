@@ -9,6 +9,7 @@ import {
   Activity, Pencil, Trash2, Check, X, BarChart3,
   Filter, Search
 } from 'lucide-react';
+import BottomNav from '../components/BottomNav';
 
 export default function MisHabitosPage() {
   const router = useRouter();
@@ -408,6 +409,7 @@ export default function MisHabitosPage() {
           )}
         </AnimatePresence>
       </div>
+      <BottomNav />
     </main>
   );
 }
