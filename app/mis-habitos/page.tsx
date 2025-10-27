@@ -5,11 +5,13 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
 import { getCustomHabits, deleteCustomHabit } from '../lib/store';
+import { getStreakDisplay } from '../lib/streakLogic';
 import {
-  Activity, Pencil, Trash2, Check, X, BarChart3,
+  Activity, Pencil, Trash2, Check, X, BarChart3, Flame,
   Filter, Search
 } from 'lucide-react';
 import BottomNav from '../components/BottomNav';
+import HabitCheckbox from '../components/HabitCheckbox';
 
 export default function MisHabitosPage() {
   const router = useRouter();
@@ -182,75 +184,95 @@ export default function MisHabitosPage() {
           </div>
         ) : (
           <div className="space-y-3">
-            {filteredHabits.map((habit, i) => (
-              <motion.div
-                key={habit.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.05 }}
-                className={`p-4 bg-white rounded-2xl shadow-sm flex items-center gap-4 transition-all ${
-                  isSelectionMode ? 'hover:bg-slate-50' : ''
-                } ${selectedHabits.includes(habit.id) ? 'ring-2 ring-indigo-500' : ''}`}
-              >
-                {/* Checkbox en modo selección */}
-                {isSelectionMode && (
-                  <button
-                    onClick={() => toggleSelection(habit.id)}
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
-                      selectedHabits.includes(habit.id)
-                        ? 'bg-indigo-500 border-indigo-500'
-                        : 'border-slate-300'
-                    }`}
+            {filteredHabits.map((habit, i) => {
+              const streak = getStreakDisplay(habit.id);
+              return (
+                <motion.div
+                  key={habit.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className={`p-4 ${currentTheme.bgCard} rounded-2xl shadow-sm flex items-center gap-4 transition-all border ${currentTheme.border} ${
+                    isSelectionMode ? `hover:${currentTheme.bgHover}` : ''
+                  } ${selectedHabits.includes(habit.id) ? 'ring-2 ring-indigo-500' : ''}`}
+                >
+                  {/* Checkbox en modo selección */}
+                  {isSelectionMode && (
+                    <button
+                      onClick={() => toggleSelection(habit.id)}
+                      className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                        selectedHabits.includes(habit.id)
+                          ? 'bg-indigo-500 border-indigo-500'
+                          : 'border-slate-300'
+                      }`}
+                    >
+                      {selectedHabits.includes(habit.id) && (
+                        <Check size={14} className="text-white" />
+                      )}
+                    </button>
+                  )}
+
+                  {/* Habit checkbox */}
+                  {!isSelectionMode && (
+                    <HabitCheckbox
+                      habitId={habit.id}
+                      habitName={habit.name}
+                      onComplete={() => setHabits([...habits])}
+                    />
+                  )}
+
+                  {/* Icon */}
+                  <div
+                    className="w-12 h-12 rounded-xl flex items-center justify-center"
+                    style={{ backgroundColor: (habit.color || '#3b82f6') + '20' }}
                   >
-                    {selectedHabits.includes(habit.id) && (
-                      <Check size={14} className="text-white" />
+                    <Activity size={24} style={{ color: habit.color || '#3b82f6' }} />
+                  </div>
+
+                  {/* Info */}
+                  <button
+                    onClick={() => !isSelectionMode && router.push(`/habito/${habit.id}`)}
+                    className="flex-1 text-left"
+                  >
+                    <h3 className={`font-semibold ${currentTheme.text}`}>{habit.name}</h3>
+                    <div className="flex items-center gap-3 text-sm mt-1">
+                      <span className={currentTheme.textSecondary}>
+                        {habit.minutes} min · {habit.frequency === 'daily' ? 'Diario' : 'Personalizado'}
+                      </span>
+                      {streak.current > 0 && (
+                        <span className="flex items-center gap-1 text-orange-600 font-medium">
+                          <Flame size={14} />
+                          {streak.current}
+                        </span>
+                      )}
+                    </div>
+                    {habit.category && (
+                      <span className="inline-block mt-1 px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded-full">
+                        {habit.category}
+                      </span>
                     )}
                   </button>
-                )}
 
-                {/* Icon */}
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center"
-                  style={{ backgroundColor: (habit.color || '#3b82f6') + '20' }}
-                >
-                  <Activity size={24} style={{ color: habit.color || '#3b82f6' }} />
-                </div>
-
-                {/* Info */}
-                <button
-                  onClick={() => !isSelectionMode && setSelectedHabitDetails(habit)}
-                  className="flex-1 text-left"
-                >
-                  <h3 className="font-semibold text-slate-900">{habit.name}</h3>
-                  <p className="text-sm text-slate-600">
-                    {habit.minutes} min · {habit.frequency === 'daily' ? 'Diario' : 'Personalizado'}
-                  </p>
-                  {habit.category && (
-                    <span className="inline-block mt-1 px-2 py-0.5 bg-slate-100 text-slate-600 text-xs rounded-full">
-                      {habit.category}
-                    </span>
+                  {/* Actions */}
+                  {!isSelectionMode && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => router.push(`/editar-habito/${habit.id}`)}
+                        className={`w-10 h-10 rounded-full hover:${currentTheme.bgHover} flex items-center justify-center transition-colors`}
+                      >
+                        <Pencil size={18} className={currentTheme.textSecondary} />
+                      </button>
+                      <button
+                        onClick={() => setHabitToDelete(habit.id)}
+                        className="w-10 h-10 rounded-full hover:bg-red-50 flex items-center justify-center transition-colors"
+                      >
+                        <Trash2 size={18} className="text-red-500" />
+                      </button>
+                    </div>
                   )}
-                </button>
-
-                {/* Actions */}
-                {!isSelectionMode && (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => router.push(`/editar-habito/${habit.id}`)}
-                      className="w-10 h-10 rounded-full hover:bg-slate-100 flex items-center justify-center transition-colors"
-                    >
-                      <Pencil size={18} className="text-slate-600" />
-                    </button>
-                    <button
-                      onClick={() => setHabitToDelete(habit.id)}
-                      className="w-10 h-10 rounded-full hover:bg-red-50 flex items-center justify-center transition-colors"
-                    >
-                      <Trash2 size={18} className="text-red-500" />
-                    </button>
-                  </div>
-                )}
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
           </div>
         )}
 

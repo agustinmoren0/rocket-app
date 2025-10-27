@@ -6,22 +6,25 @@ import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from './context/ThemeContext';
 import { useUser } from './context/UserContext';
+import { useCycle } from './context/CycleContext';
 import { getWeekProgress, getCustomHabits } from './lib/store';
 import BottomNav from './components/BottomNav';
 import {
   Home, FileText, Plus, Activity, User,
-  Flame, PieChart, TrendingUp, Settings, X
+  Flame, PieChart, TrendingUp, Settings, X, BookOpen, PauseCircle
 } from 'lucide-react';
 
 export default function HomePage() {
   const router = useRouter();
   const { currentTheme } = useTheme();
   const { username } = useUser();
+  const { cycleData, getPhaseInfo } = useCycle();
   const [percentage, setPercentage] = useState(0);
   const [activeDays, setActiveDays] = useState(0);
   const [totalDays] = useState(7);
   const [minutes, setMinutes] = useState(0);
   const [streak, setStreak] = useState(0);
+  const [pausedCount, setPausedCount] = useState(0);
 
   useEffect(() => {
     const progress = getWeekProgress();
@@ -29,6 +32,12 @@ export default function HomePage() {
     setActiveDays(3); // TODO: calcular real
     setMinutes(120); // TODO: calcular real
     setStreak(5); // TODO: calcular real
+
+    // Count paused habits
+    const paused = localStorage.getItem('habika_paused_habits');
+    if (paused) {
+      setPausedCount(JSON.parse(paused).length);
+    }
   }, []);
 
   const daysOfWeek = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
@@ -144,6 +153,62 @@ export default function HomePage() {
           <p className="text-sm text-slate-700 leading-relaxed">
             "La creatividad no se gasta. Cuanta más usas, más tienes." - Maya Angelou
           </p>
+        </div>
+
+        {/* Cycle Mode Indicator - Si está activo */}
+        {cycleData.isActive && (
+          <Link href="/modo-ciclo">
+            <motion.div
+              whileHover={{ y: -4 }}
+              className="glass-card rounded-2xl p-5 backdrop-blur-xl bg-gradient-to-br from-pink-50/80 to-rose-50/80 border border-rose-200/40 hover:shadow-lg transition-all cursor-pointer"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-2xl flex-shrink-0">
+                  {getPhaseInfo(cycleData.currentPhase).emoji}
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-slate-900">Modo Ciclo</h3>
+                  <p className="text-sm text-slate-600">
+                    Fase {getPhaseInfo(cycleData.currentPhase).name} · Día {cycleData.currentDay}
+                  </p>
+                </div>
+                <div className="text-slate-400">→</div>
+              </div>
+            </motion.div>
+          </Link>
+        )}
+
+        {/* Quick Access Shortcuts */}
+        <div className="grid grid-cols-2 gap-4">
+          {/* Reflexiones */}
+          <Link href="/reflexiones">
+            <motion.div
+              whileHover={{ y: -4 }}
+              className="glass-card rounded-2xl p-5 backdrop-blur-xl bg-white/60 border border-white/40 hover:shadow-lg transition-all cursor-pointer"
+            >
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center mb-3">
+                <BookOpen size={24} className="text-white" />
+              </div>
+              <h3 className="font-bold text-slate-900 mb-1">Reflexiones</h3>
+              <p className="text-xs text-slate-600">Tu diario semanal</p>
+            </motion.div>
+          </Link>
+
+          {/* Pausados */}
+          <Link href="/pausados">
+            <motion.div
+              whileHover={{ y: -4 }}
+              className="glass-card rounded-2xl p-5 backdrop-blur-xl bg-white/60 border border-white/40 hover:shadow-lg transition-all cursor-pointer"
+            >
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mb-3">
+                <PauseCircle size={24} className="text-white" />
+              </div>
+              <h3 className="font-bold text-slate-900 mb-1">En pausa</h3>
+              <p className="text-xs text-slate-600">
+                {pausedCount > 0 ? `${pausedCount} hábitos` : 'Sin pausas'}
+              </p>
+            </motion.div>
+          </Link>
         </div>
 
         {/* Historial */}

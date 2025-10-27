@@ -6,6 +6,7 @@ import ToastContainer from "./components/Toast";
 import PageTransition from "./components/PageTransition";
 import { ThemeProvider } from "./context/ThemeContext";
 import { UserProvider } from "./context/UserContext";
+import { CycleProvider } from "./context/CycleContext";
 import OfflineIndicator from "./components/OfflineIndicator";
 import DesktopLayout from "./components/DesktopLayout";
 
@@ -37,14 +38,16 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`}>
         <ThemeProvider>
           <UserProvider>
-            <OfflineIndicator />
-            <DesktopLayout>
-              <PageTransition>
-                {children}
-              </PageTransition>
-            </DesktopLayout>
-            <ToastContainer />
-            <RegisterSW />
+            <CycleProvider>
+              <OfflineIndicator />
+              <DesktopLayout>
+                <PageTransition>
+                  {children}
+                </PageTransition>
+              </DesktopLayout>
+              <ToastContainer />
+              <RegisterSW />
+            </CycleProvider>
           </UserProvider>
         </ThemeProvider>
       </body>

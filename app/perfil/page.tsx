@@ -8,11 +8,14 @@ import { loadData, toggleZenMode, clearAllData } from '../lib/store';
 import { showToast } from '../components/Toast';
 import { useTheme } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
+import { useCycle } from '../context/CycleContext';
+import { Heart } from 'lucide-react';
 
 export default function PerfilPage() {
   const router = useRouter();
   const { currentTheme, themeId, changeTheme } = useTheme();
   const { username, setUsername } = useUser();
+  const { cycleData } = useCycle();
   const [data, setData] = useState(() => loadData());
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState('');
@@ -185,6 +188,48 @@ export default function PerfilPage() {
               />
             </button>
           </div>
+        </motion.section>
+
+        {/* Modo Ciclo */}
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.22 }}
+          className={`${currentTheme.bgCard} backdrop-blur-xl rounded-2xl shadow-sm border ${currentTheme.border} p-6`}
+        >
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => router.push('/modo-ciclo')}
+            className={`w-full p-5 rounded-2xl border-2 transition-all ${
+              cycleData.isActive
+                ? 'bg-gradient-to-r from-pink-50 to-rose-50 border-rose-300'
+                : 'border-slate-200 hover:border-rose-300'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center">
+                  <Heart size={24} className="text-white" />
+                </div>
+                <div className="text-left">
+                  <p className="font-bold text-slate-900">Modo Ciclo 🌸</p>
+                  <p className="text-sm text-slate-600">
+                    {cycleData.isActive ? 'Activo' : 'Adapta hábitos a tu ciclo'}
+                  </p>
+                </div>
+              </div>
+              <div
+                className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  cycleData.isActive
+                    ? 'bg-rose-500 text-white'
+                    : 'bg-slate-200 text-slate-600'
+                }`}
+              >
+                {cycleData.isActive ? 'ON' : 'OFF'}
+              </div>
+            </div>
+          </motion.button>
         </motion.section>
 
         {/* Actualizar */}
