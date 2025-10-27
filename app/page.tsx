@@ -27,11 +27,21 @@ export default function HomePage() {
     const stored = localStorage.getItem('habika_username');
     setUsername(stored || 'Usuario');
 
+    // Escuchar cambios en configuración
+    const handleStorageChange = () => {
+      const updated = localStorage.getItem('habika_username');
+      if (updated) setUsername(updated);
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
     const progress = getWeekProgress();
     setPercentage(progress);
     setActiveDays(3); // TODO: calcular real
     setMinutes(120); // TODO: calcular real
     setStreak(5); // TODO: calcular real
+
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const daysOfWeek = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
@@ -190,7 +200,7 @@ export default function HomePage() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setShowFab(false)}
-              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40"
+              className="fixed inset-0 bg-black/20 backdrop-blur-sm z-60"
             />
 
             {/* FAB Options */}
@@ -198,7 +208,7 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 20, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 20, scale: 0.9 }}
-              className="fixed bottom-32 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-3"
+              className="fixed bottom-32 left-1/2 -translate-x-1/2 z-70 flex flex-col gap-3"
             >
               <button
                 onClick={() => {
@@ -231,7 +241,7 @@ export default function HomePage() {
       </AnimatePresence>
 
       {/* Bottom Navigation */}
-      <footer className="fixed bottom-0 left-0 right-0 z-30">
+      <footer className="fixed bottom-0 left-0 right-0 z-50">
         <div className="relative max-w-lg mx-auto px-6 pb-6">
           {/* FAB Button - DENTRO del footer */}
           <div className="absolute -top-8 left-1/2 -translate-x-1/2">
