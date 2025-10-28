@@ -99,7 +99,10 @@ export default function CalendarioPage() {
           <button onClick={() => router.back()} className="text-slate-600">
             ← Volver
           </button>
-          <h1 className="text-2xl font-bold text-slate-900">Calendario 📅</h1>
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">Calendario</h1>
+            <p className="text-sm text-slate-600">Tu progreso mes a mes</p>
+          </div>
           <div className="w-20" />
         </div>
 

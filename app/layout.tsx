@@ -9,6 +9,7 @@ import { UserProvider } from "./context/UserContext";
 import { CycleProvider } from "./context/CycleContext";
 import OfflineIndicator from "./components/OfflineIndicator";
 import QuickPeriodTracker from "./components/QuickPeriodTracker";
+import TopBar from "./components/TopBar";
 import DesktopLayout from "./components/DesktopLayout";
 
 const inter = Inter({
@@ -42,10 +43,13 @@ export default function RootLayout({
             <CycleProvider>
               <OfflineIndicator />
               <QuickPeriodTracker />
+              <TopBar />
               <DesktopLayout>
-                <PageTransition>
-                  {children}
-                </PageTransition>
+                <div className="pt-16 lg:pt-0">
+                  <PageTransition>
+                    {children}
+                  </PageTransition>
+                </div>
               </DesktopLayout>
               <ToastContainer />
               <RegisterSW />

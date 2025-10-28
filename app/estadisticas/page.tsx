@@ -40,9 +40,10 @@ export default function EstadisticasPage() {
           >
             ← Volver
           </button>
-          <h1 className="text-3xl font-bold text-slate-900">
-            Estadísticas 📊
-          </h1>
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900">Tu evolución</h1>
+            <p className="text-sm text-slate-600">Mide lo que importa: constancia, no perfección</p>
+          </div>
           <div className="w-20" />
         </div>
 

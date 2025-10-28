@@ -53,14 +53,10 @@ export default function HomePage() {
         <div className="flex items-center justify-between max-w-4xl mx-auto">
           <div>
             <h1 className="text-2xl font-bold text-slate-900">
-              Hola, {username} 👋
+              Tu día
             </h1>
             <p className="text-sm text-slate-600">
-              {new Date().toLocaleDateString('es-ES', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long'
-              })}
+              Cada paso cuenta, sin presión
             </p>
           </div>
           <button

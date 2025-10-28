@@ -139,10 +139,10 @@ export default function ReflexionesPage() {
           className="mb-8"
         >
           <h1 className={`text-3xl font-bold ${currentTheme.text} mb-2`}>
-            Reflexiones Semanales
+            Reflexiones
           </h1>
           <p className={`${currentTheme.textSecondary}`}>
-            Cada semana, reflexiona sobre tu camino. Sin juzgarte, solo observando.
+            Tu diario de crecimiento personal
           </p>
         </motion.div>
 

@@ -356,9 +356,12 @@ export default function PerfilPage() {
         animate={{ opacity: 1, y: 0 }}
         className="max-w-2xl mx-auto px-6 pt-8 pb-6 flex items-center justify-between"
       >
-        <h1 className="text-xl font-semibold text-slate-900 tracking-tight">
-          Configuración
-        </h1>
+        <div>
+          <h1 className="text-xl font-semibold text-slate-900 tracking-tight">
+            Configuración
+          </h1>
+          <p className="text-xs text-slate-500">Personaliza tu experiencia</p>
+        </div>
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
