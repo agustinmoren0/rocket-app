@@ -7,13 +7,14 @@ import { useCycle } from '../context/CycleContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Calendar, Heart, Sparkles, Settings, TrendingUp,
-  AlertCircle, Droplet, Moon, Sun, Thermometer, Activity, ArrowLeft
+  AlertCircle, Droplet, Moon, Sun, Thermometer, Activity, ArrowLeft,
+  Bell, AlertTriangle, RotateCcw, Save, Check, X
 } from 'lucide-react';
 
 export default function ModoCicloPage() {
   const router = useRouter();
   const { currentTheme } = useTheme();
-  const { cycleData, getPhaseInfo, addSymptom, deactivateCycleMode } = useCycle();
+  const { cycleData, getPhaseInfo, addSymptom, deactivateCycleMode, updateCycleSettings, registerNewPeriod, resetCycleData } = useCycle();
   const [activeTab, setActiveTab] = useState<'overview' | 'symptoms' | 'insights' | 'settings'>('overview');
   const [todaySymptoms, setTodaySymptoms] = useState<string[]>([]);
 
@@ -196,6 +197,41 @@ export default function ModoCicloPage() {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
+              {/* Quick action - Register period if not in period */}
+              {cycleData.currentDay > cycleData.periodLengthDays && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className={`bg-gradient-to-r from-red-50 to-rose-50 rounded-3xl p-6 border-2 border-rose-200`}
+                >
+                  <div className="flex items-center gap-4 mb-4">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-red-400 to-rose-500 flex items-center justify-center">
+                      <Droplet size={28} className="text-white" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-slate-900 mb-1">
+                        ¿Tu periodo comenzó hoy?
+                      </h3>
+                      <p className="text-sm text-slate-600">
+                        Actualiza tus datos para cálculos precisos
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      if (confirm('¿Registrar periodo hoy?')) {
+                        registerNewPeriod(today);
+                        alert('✅ Periodo registrado correctamente');
+                      }
+                    }}
+                    className="w-full py-3 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                  >
+                    <Droplet size={18} />
+                    Registrar periodo
+                  </button>
+                </motion.div>
+              )}
+
               {/* Sugerencias de hábitos */}
               <div className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl p-6 lg:p-8 border ${currentTheme.border}`}>
                 <h2 className={`text-xl font-bold ${currentTheme.text} mb-4`}>
@@ -370,79 +406,304 @@ export default function ModoCicloPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl p-6 lg:p-8 border ${currentTheme.border}`}
+              className="space-y-6"
             >
-              <h2 className={`text-xl font-bold ${currentTheme.text} mb-6`}>
-                Configuración del ciclo
-              </h2>
-
-              <div className="space-y-6">
-                <div>
-                  <label className={`block text-sm font-medium ${currentTheme.text} mb-2`}>
-                    Duración del ciclo
-                  </label>
-                  <input
-                    type="number"
-                    value={cycleData.cycleLengthDays}
-                    readOnly
-                    className={`w-full px-4 py-3 rounded-xl border ${currentTheme.border} ${currentTheme.bgCardSecondary || currentTheme.bgHover} ${currentTheme.text}`}
-                    min="21"
-                    max="35"
-                  />
-                  <p className={`text-xs ${currentTheme.textSecondary} mt-1`}>Días entre periodos</p>
-                </div>
-
-                <div>
-                  <label className={`block text-sm font-medium ${currentTheme.text} mb-2`}>
-                    Duración del periodo
-                  </label>
-                  <input
-                    type="number"
-                    value={cycleData.periodLengthDays}
-                    readOnly
-                    className={`w-full px-4 py-3 rounded-xl border ${currentTheme.border} ${currentTheme.bgCardSecondary || currentTheme.bgHover} ${currentTheme.text}`}
-                    min="2"
-                    max="8"
-                  />
-                </div>
-
-                <div className={`border-t ${currentTheme.border} pt-6`}>
-                  <h3 className={`font-semibold ${currentTheme.text} mb-4`}>Notificaciones</h3>
-
-                  <div className="space-y-3">
-                    <label className={`flex items-center justify-between p-4 rounded-xl cursor-pointer ${currentTheme.bgCardSecondary || currentTheme.bgHover}`}>
-                      <span className={`text-sm font-medium ${currentTheme.text}`}>
-                        Recordar registrar periodo
-                      </span>
-                      <input type="checkbox" defaultChecked className="w-5 h-5" />
-                    </label>
-
-                    <label className={`flex items-center justify-between p-4 rounded-xl cursor-pointer ${currentTheme.bgCardSecondary || currentTheme.bgHover}`}>
-                      <span className={`text-sm font-medium ${currentTheme.text}`}>
-                        Avisar ventana fértil
-                      </span>
-                      <input type="checkbox" defaultChecked className="w-5 h-5" />
-                    </label>
-
-                    <label className={`flex items-center justify-between p-4 rounded-xl cursor-pointer ${currentTheme.bgCardSecondary || currentTheme.bgHover}`}>
-                      <span className={`text-sm font-medium ${currentTheme.text}`}>
-                        Sugerencias de hábitos por fase
-                      </span>
-                      <input type="checkbox" defaultChecked className="w-5 h-5" />
-                    </label>
+              {/* Registrar nuevo periodo */}
+              <div className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl p-6 lg:p-8 border border-rose-200`}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-400 to-rose-500 flex items-center justify-center">
+                    <Droplet size={24} className="text-white" />
+                  </div>
+                  <div>
+                    <h2 className={`text-xl font-bold ${currentTheme.text}`}>Registrar periodo</h2>
+                    <p className={`text-sm ${currentTheme.textSecondary}`}>¿Tu periodo comenzó hoy?</p>
                   </div>
                 </div>
 
-                <div className={`border-t ${currentTheme.border} pt-6`}>
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    onClick={handleDeactivate}
-                    className="w-full py-3 text-red-600 hover:bg-red-50 rounded-xl font-medium transition-colors"
-                  >
-                    Desactivar Modo Ciclo
-                  </motion.button>
+                <div className="mb-4">
+                  <label className={`block text-sm font-medium ${currentTheme.text} mb-2`}>
+                    Fecha de inicio del periodo
+                  </label>
+                  <input
+                    type="date"
+                    defaultValue={today}
+                    max={today}
+                    id="newPeriodDate"
+                    className={`w-full px-4 py-3 rounded-xl border-2 border-rose-200 focus:border-rose-500 outline-none ${currentTheme.bgCardSecondary || currentTheme.bgHover} ${currentTheme.text}`}
+                  />
                 </div>
+
+                <button
+                  onClick={() => {
+                    const dateInput = document.getElementById('newPeriodDate') as HTMLInputElement;
+                    const date = dateInput.value;
+
+                    if (confirm(`¿Registrar nuevo periodo el ${new Date(date).toLocaleDateString('es-ES')}?`)) {
+                      registerNewPeriod(date);
+                      alert('✅ Periodo registrado. Los cálculos se han actualizado.');
+                    }
+                  }}
+                  className="w-full py-4 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                >
+                  <Check size={20} />
+                  Registrar nuevo periodo
+                </button>
+
+                <p className={`text-xs ${currentTheme.textSecondary} mt-3 text-center`}>
+                  Esto actualizará todos los cálculos y predicciones
+                </p>
+              </div>
+
+              {/* Ajustar configuración del ciclo */}
+              <div className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl p-6 lg:p-8 border border-rose-200`}>
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
+                    <Settings size={24} className="text-white" />
+                  </div>
+                  <div>
+                    <h2 className={`text-xl font-bold ${currentTheme.text}`}>Ajustar ciclo</h2>
+                    <p className={`text-sm ${currentTheme.textSecondary}`}>Actualiza la duración según tu cuerpo</p>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div>
+                    <label className={`block text-sm font-medium ${currentTheme.text} mb-3`}>
+                      🔄 Duración del ciclo completo
+                    </label>
+                    <input
+                      type="range"
+                      min="21"
+                      max="35"
+                      defaultValue={cycleData.cycleLengthDays}
+                      id="cycleLengthSlider"
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const display = document.getElementById('cycleLengthDisplay');
+                        if (display) display.textContent = value;
+                      }}
+                      className="w-full h-3 bg-rose-200 rounded-lg appearance-none cursor-pointer accent-rose-500"
+                    />
+                    <div className="flex justify-between items-center text-xs text-slate-500 mt-2">
+                      <span>21 días</span>
+                      <div className="flex flex-col items-center">
+                        <span id="cycleLengthDisplay" className="text-3xl font-bold text-slate-900">
+                          {cycleData.cycleLengthDays}
+                        </span>
+                        <span className={currentTheme.textSecondary}>días</span>
+                      </div>
+                      <span>35 días</span>
+                    </div>
+                    <p className={`text-xs ${currentTheme.bgCardSecondary} p-3 rounded-lg mt-3 ${currentTheme.textSecondary}`}>
+                      💡 Tiempo entre el primer día de un periodo y el siguiente
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className={`block text-sm font-medium ${currentTheme.text} mb-3`}>
+                      🩸 Duración del sangrado
+                    </label>
+                    <input
+                      type="range"
+                      min="2"
+                      max="8"
+                      defaultValue={cycleData.periodLengthDays}
+                      id="periodLengthSlider"
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const display = document.getElementById('periodLengthDisplay');
+                        if (display) display.textContent = value;
+                      }}
+                      className="w-full h-3 bg-rose-200 rounded-lg appearance-none cursor-pointer accent-rose-500"
+                    />
+                    <div className="flex justify-between items-center text-xs text-slate-500 mt-2">
+                      <span>2 días</span>
+                      <div className="flex flex-col items-center">
+                        <span id="periodLengthDisplay" className="text-3xl font-bold text-slate-900">
+                          {cycleData.periodLengthDays}
+                        </span>
+                        <span className={currentTheme.textSecondary}>días</span>
+                      </div>
+                      <span>8 días</span>
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      const cycleSlider = document.getElementById('cycleLengthSlider') as HTMLInputElement;
+                      const periodSlider = document.getElementById('periodLengthSlider') as HTMLInputElement;
+
+                      const newCycleLength = parseInt(cycleSlider.value);
+                      const newPeriodLength = parseInt(periodSlider.value);
+
+                      if (confirm('¿Guardar nuevos ajustes?')) {
+                        updateCycleSettings(newCycleLength, newPeriodLength);
+                        alert('✅ Configuración actualizada');
+                      }
+                    }}
+                    className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+                  >
+                    <Save size={20} />
+                    Guardar cambios
+                  </button>
+                </div>
+              </div>
+
+              {/* Notificaciones */}
+              <div className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl p-6 lg:p-8 border border-rose-200`}>
+                <h3 className={`font-bold ${currentTheme.text} mb-4 flex items-center gap-2`}>
+                  <Bell size={20} />
+                  Notificaciones
+                </h3>
+
+                <div className="space-y-3">
+                  <label className={`flex items-center justify-between p-4 bg-rose-50 rounded-xl cursor-pointer hover:bg-rose-100 transition-colors`}>
+                    <div className="flex items-center gap-3">
+                      <Droplet size={20} className="text-rose-500" />
+                      <div>
+                        <p className={`text-sm font-medium ${currentTheme.text}`}>
+                          Recordar registrar periodo
+                        </p>
+                        <p className={`text-xs ${currentTheme.textSecondary}`}>Cuando llegue la fecha prevista</p>
+                      </div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      defaultChecked
+                      className="w-5 h-5 accent-rose-500"
+                    />
+                  </label>
+
+                  <label className={`flex items-center justify-between p-4 bg-amber-50 rounded-xl cursor-pointer hover:bg-amber-100 transition-colors`}>
+                    <div className="flex items-center gap-3">
+                      <Sparkles size={20} className="text-amber-500" />
+                      <div>
+                        <p className={`text-sm font-medium ${currentTheme.text}`}>
+                          Avisar ventana fértil
+                        </p>
+                        <p className={`text-xs ${currentTheme.textSecondary}`}>3 días antes del inicio</p>
+                      </div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      defaultChecked
+                      className="w-5 h-5 accent-amber-500"
+                    />
+                  </label>
+
+                  <label className={`flex items-center justify-between p-4 bg-purple-50 rounded-xl cursor-pointer hover:bg-purple-100 transition-colors`}>
+                    <div className="flex items-center gap-3">
+                      <Heart size={20} className="text-purple-500" />
+                      <div>
+                        <p className={`text-sm font-medium ${currentTheme.text}`}>
+                          Sugerencias de hábitos
+                        </p>
+                        <p className={`text-xs ${currentTheme.textSecondary}`}>Según tu fase actual</p>
+                      </div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      defaultChecked
+                      className="w-5 h-5 accent-purple-500"
+                    />
+                  </label>
+
+                  <label className={`flex items-center justify-between p-4 bg-blue-50 rounded-xl cursor-pointer hover:bg-blue-100 transition-colors`}>
+                    <div className="flex items-center gap-3">
+                      <Activity size={20} className="text-blue-500" />
+                      <div>
+                        <p className={`text-sm font-medium ${currentTheme.text}`}>
+                          Recordar registrar síntomas
+                        </p>
+                        <p className={`text-xs ${currentTheme.textSecondary}`}>Diariamente a las 20:00</p>
+                      </div>
+                    </div>
+                    <input
+                      type="checkbox"
+                      defaultChecked
+                      className="w-5 h-5 accent-blue-500"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* Historial de periodos */}
+              <div className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl p-6 lg:p-8 border border-rose-200`}>
+                <h3 className={`font-bold ${currentTheme.text} mb-4 flex items-center gap-2`}>
+                  <Calendar size={20} />
+                  Historial de periodos
+                </h3>
+
+                <div className="space-y-2">
+                  {(() => {
+                    const history = JSON.parse(localStorage.getItem('habika_period_history') || '[]');
+                    const lastThree = history.slice(-3).reverse();
+
+                    if (lastThree.length === 0) {
+                      return (
+                        <p className={`text-sm ${currentTheme.textSecondary} text-center py-4`}>
+                          Aún no hay registros. Comienza registrando tu próximo periodo.
+                        </p>
+                      );
+                    }
+
+                    return lastThree.map((entry: any, i: number) => (
+                      <div key={i} className={`flex items-center gap-3 p-3 bg-rose-50 rounded-xl`}>
+                        <Droplet size={18} className="text-rose-500" />
+                        <div className="flex-1">
+                          <p className={`text-sm font-medium ${currentTheme.text}`}>
+                            {new Date(entry.date).toLocaleDateString('es-ES', {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric'
+                            })}
+                          </p>
+                          <p className={`text-xs ${currentTheme.textSecondary}`}>
+                            Registrado {new Date(entry.timestamp).toLocaleDateString('es-ES')}
+                          </p>
+                        </div>
+                      </div>
+                    ));
+                  })()}
+                </div>
+              </div>
+
+              {/* Zona de peligro */}
+              <div className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl p-6 lg:p-8 border-2 border-red-200`}>
+                <h3 className={`font-bold text-red-900 mb-4 flex items-center gap-2`}>
+                  <AlertTriangle size={20} />
+                  Zona de peligro
+                </h3>
+
+                <div className="space-y-3">
+                  <button
+                    onClick={resetCycleData}
+                    className="w-full py-3 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                  >
+                    <RotateCcw size={18} />
+                    Reiniciar configuración
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      if (confirm(
+                        '¿Desactivar Modo Ciclo?\n\n' +
+                        'Tus datos se guardarán y podrás reactivarlo cuando quieras.'
+                      )) {
+                        deactivateCycleMode();
+                        router.push('/perfil');
+                      }
+                    }}
+                    className="w-full py-3 bg-red-100 hover:bg-red-200 text-red-900 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                  >
+                    <X size={18} />
+                    Desactivar Modo Ciclo
+                  </button>
+                </div>
+
+                <p className={`text-xs ${currentTheme.textSecondary} mt-4 text-center`}>
+                  💾 Tu historial se mantendrá guardado
+                </p>
               </div>
             </motion.div>
           )}

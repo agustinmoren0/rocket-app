@@ -34,6 +34,9 @@ interface CycleContextType {
   addSymptom: (date: string, symptom: string) => void;
   getCurrentPhase: () => CyclePhase;
   getPhaseInfo: (phase: CyclePhase) => PhaseInfo;
+  updateCycleSettings: (cycleLength: number, periodLength: number) => void;
+  registerNewPeriod: (date: string) => void;
+  resetCycleData: () => void;
 }
 
 const CycleContext = createContext<CycleContextType | null>(null);
@@ -222,6 +225,56 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
     return phases[phase];
   };
 
+  const updateCycleSettings = (cycleLength: number, periodLength: number) => {
+    const updated = {
+      ...cycleData,
+      cycleLengthDays: cycleLength,
+      periodLengthDays: periodLength,
+    };
+
+    updateCycleCalculations(updated);
+  };
+
+  const registerNewPeriod = (date: string) => {
+    const updated = {
+      ...cycleData,
+      lastPeriodStart: new Date(date).toISOString(),
+    };
+
+    updateCycleCalculations(updated);
+
+    // Save period to history
+    const history = JSON.parse(localStorage.getItem('habika_period_history') || '[]');
+    history.push({
+      date,
+      timestamp: new Date().toISOString(),
+    });
+    localStorage.setItem('habika_period_history', JSON.stringify(history));
+  };
+
+  const resetCycleData = () => {
+    const confirmed = confirm(
+      '¿Reiniciar Modo Ciclo?\n\n' +
+      'Se mantendrá el historial pero resetearás la configuración actual.'
+    );
+
+    if (!confirmed) return;
+
+    const newData: CycleData = {
+      isActive: true,
+      lastPeriodStart: new Date().toISOString().split('T')[0],
+      cycleLengthDays: 28,
+      periodLengthDays: 5,
+      currentPhase: 'menstrual',
+      currentDay: 1,
+      nextPeriodDate: '',
+      fertilityWindow: { start: '', end: '' },
+      symptoms: {},
+    };
+
+    updateCycleCalculations(newData);
+  };
+
   return (
     <CycleContext.Provider
       value={{
@@ -231,6 +284,9 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
         addSymptom,
         getCurrentPhase,
         getPhaseInfo,
+        updateCycleSettings,
+        registerNewPeriod,
+        resetCycleData,
       }}
     >
       {children}

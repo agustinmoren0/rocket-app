@@ -8,6 +8,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import { UserProvider } from "./context/UserContext";
 import { CycleProvider } from "./context/CycleContext";
 import OfflineIndicator from "./components/OfflineIndicator";
+import QuickPeriodTracker from "./components/QuickPeriodTracker";
 import DesktopLayout from "./components/DesktopLayout";
 
 const inter = Inter({
@@ -40,6 +41,7 @@ export default function RootLayout({
           <UserProvider>
             <CycleProvider>
               <OfflineIndicator />
+              <QuickPeriodTracker />
               <DesktopLayout>
                 <PageTransition>
                   {children}
