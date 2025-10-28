@@ -11,7 +11,7 @@ import { getWeekProgress, getCustomHabits } from './lib/store';
 import BottomNav from './components/BottomNav';
 import {
   Home, FileText, Plus, Activity, User,
-  Flame, PieChart, TrendingUp, Settings, X, BookOpen, PauseCircle
+  Flame, PieChart, TrendingUp, Settings, X, BookOpen, PauseCircle, Heart, ArrowRight
 } from 'lucide-react';
 
 export default function HomePage() {
@@ -155,24 +155,56 @@ export default function HomePage() {
           </p>
         </div>
 
-        {/* Cycle Mode Indicator - Si está activo */}
-        {cycleData.isActive && (
+        {/* Modo Ciclo - Active or Promotional */}
+        {cycleData.isActive ? (
           <Link href="/modo-ciclo">
             <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
               whileHover={{ y: -4 }}
               className="glass-card rounded-2xl p-5 backdrop-blur-xl bg-gradient-to-br from-pink-50/80 to-rose-50/80 border border-rose-200/40 hover:shadow-lg transition-all cursor-pointer"
             >
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-2xl flex-shrink-0">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-3xl flex-shrink-0">
                   {getPhaseInfo(cycleData.currentPhase).emoji}
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-bold text-slate-900">Modo Ciclo</h3>
+                  <h3 className="font-bold text-slate-900">Modo Ciclo Activo</h3>
                   <p className="text-sm text-slate-600">
                     Fase {getPhaseInfo(cycleData.currentPhase).name} · Día {cycleData.currentDay}
                   </p>
+                  <div className="flex gap-2 mt-2">
+                    <div className="text-xs px-2 py-1 rounded-full bg-rose-100 text-rose-700 font-medium">
+                      Próximo periodo: {Math.ceil((new Date(cycleData.nextPeriodDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))}d
+                    </div>
+                  </div>
                 </div>
-                <div className="text-slate-400">→</div>
+                <ArrowRight size={20} className="text-slate-400 flex-shrink-0" />
+              </div>
+            </motion.div>
+          </Link>
+        ) : (
+          <Link href="/perfil">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ y: -4 }}
+              className="glass-card rounded-2xl p-5 backdrop-blur-xl bg-gradient-to-br from-pink-50/80 to-rose-50/80 border border-rose-200/40 hover:shadow-lg transition-all cursor-pointer"
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center flex-shrink-0">
+                  <Heart size={28} className="text-white" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-slate-900">Modo Ciclo 🌸</h3>
+                  <p className="text-sm text-slate-600">
+                    Adapta tus hábitos a tu ciclo menstrual
+                  </p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Recibe recomendaciones personalizadas según tu fase del ciclo
+                  </p>
+                </div>
+                <ArrowRight size={20} className="text-slate-400 flex-shrink-0" />
               </div>
             </motion.div>
           </Link>

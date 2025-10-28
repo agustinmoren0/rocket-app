@@ -3,13 +3,309 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { loadData, toggleZenMode, clearAllData } from '../lib/store';
 import { showToast } from '../components/Toast';
 import { useTheme } from '../context/ThemeContext';
 import { useUser } from '../context/UserContext';
 import { useCycle } from '../context/CycleContext';
-import { Heart } from 'lucide-react';
+import { Heart, ChevronRight, ChevronLeft } from 'lucide-react';
+
+function ModoCicloSection({ cycleData, currentTheme }: any) {
+  const { activateCycleMode, deactivateCycleMode } = useCycle();
+  const [showCycleSetup, setShowCycleSetup] = useState(false);
+  const [cycleStep, setCycleStep] = useState<1 | 2 | 3>(1);
+  const [cycleFormData, setCycleFormData] = useState({
+    lastPeriod: '',
+    cycleLength: 28,
+    periodLength: 5,
+  });
+  const [showDeactivateConfirm, setShowDeactivateConfirm] = useState(false);
+
+  const handleActivateCycle = () => {
+    if (!cycleFormData.lastPeriod) {
+      showToast('Selecciona la fecha de tu último período', 'error');
+      return;
+    }
+    activateCycleMode(cycleFormData.lastPeriod, cycleFormData.cycleLength, cycleFormData.periodLength);
+    setShowCycleSetup(false);
+    setCycleStep(1);
+    setCycleFormData({ lastPeriod: '', cycleLength: 28, periodLength: 5 });
+    showToast('Modo Ciclo activado', 'success');
+  };
+
+  const handleDeactivateCycle = () => {
+    deactivateCycleMode();
+    setShowDeactivateConfirm(false);
+    showToast('Modo Ciclo desactivado', 'success');
+  };
+
+  const daysUntilPeriod = cycleData.isActive
+    ? Math.ceil(
+        (new Date(cycleData.nextPeriodDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+      )
+    : 0;
+
+  const phaseEmojiMap = {
+    menstrual: '🌙',
+    follicular: '🌱',
+    ovulatory: '✨',
+    luteal: '🍂',
+  };
+
+  const phaseEmoji = phaseEmojiMap[cycleData.currentPhase as keyof typeof phaseEmojiMap] || '❓';
+
+  if (cycleData.isActive && !showCycleSetup) {
+    return (
+      <motion.section
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.22 }}
+        className={`${currentTheme.bgCard} backdrop-blur-xl rounded-2xl shadow-sm border ${currentTheme.border} p-6`}
+      >
+        <div className="flex items-center gap-2 mb-4">
+          <span className="text-2xl">{phaseEmoji}</span>
+          <h3 className="text-base font-semibold text-slate-900">Modo Ciclo Activo</h3>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div className={`${currentTheme.bgCardSecondary || currentTheme.bgHover} rounded-xl p-3`}>
+            <p className="text-xs text-slate-600 mb-1">Día del ciclo</p>
+            <p className="text-2xl font-bold text-slate-900">{cycleData.currentDay}</p>
+          </div>
+          <div className={`${currentTheme.bgCardSecondary || currentTheme.bgHover} rounded-xl p-3`}>
+            <p className="text-xs text-slate-600 mb-1">Próximo período</p>
+            <p className="text-2xl font-bold text-slate-900">{Math.max(0, daysUntilPeriod)}d</p>
+          </div>
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowCycleSetup(true)}
+            className={`flex-1 h-10 rounded-xl ${currentTheme.button} text-white text-sm font-medium hover:opacity-90 transition-opacity`}
+          >
+            Editar datos
+          </button>
+          <button
+            onClick={() => setShowDeactivateConfirm(true)}
+            className="flex-1 h-10 rounded-xl bg-slate-200 text-slate-900 text-sm font-medium hover:bg-slate-300 transition-colors"
+          >
+            Desactivar
+          </button>
+        </div>
+
+        {showDeactivateConfirm && (
+          <motion.div
+            initial={{ opacity: 0, y: 2 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`mt-3 ${currentTheme.bgCardSecondary} rounded-xl p-3`}
+          >
+            <p className="text-sm font-medium text-slate-900 mb-2">¿Desactivar Modo Ciclo?</p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowDeactivateConfirm(false)}
+                className="flex-1 h-8 rounded-lg bg-slate-300 hover:bg-slate-400 text-slate-900 text-xs font-medium transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleDeactivateCycle}
+                className="flex-1 h-8 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-medium transition-colors"
+              >
+                Sí, desactivar
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </motion.section>
+    );
+  }
+
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.22 }}
+      className={`${currentTheme.bgCard} backdrop-blur-xl rounded-2xl shadow-sm border ${currentTheme.border} p-6`}
+    >
+      <AnimatePresence mode="wait">
+        {!showCycleSetup ? (
+          <motion.button
+            key="inactive"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={() => setShowCycleSetup(true)}
+            className={`w-full p-5 rounded-2xl border-2 transition-all ${
+              cycleData.isActive
+                ? 'bg-gradient-to-r from-pink-50 to-rose-50 border-rose-300'
+                : 'border-slate-200 hover:border-rose-300'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center">
+                  <Heart size={24} className="text-white" />
+                </div>
+                <div className="text-left">
+                  <p className="font-bold text-slate-900">Modo Ciclo 🌸</p>
+                  <p className="text-sm text-slate-600">Adapta hábitos a tu ciclo</p>
+                </div>
+              </div>
+              <div className="px-3 py-1 rounded-full text-xs font-medium bg-slate-200 text-slate-600">
+                OFF
+              </div>
+            </div>
+          </motion.button>
+        ) : (
+          <motion.div
+            key="setup"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+          >
+            <div className="flex items-center gap-2 mb-6">
+              <div className="flex gap-1">
+                {[1, 2, 3].map((step) => (
+                  <div
+                    key={step}
+                    className={`h-1.5 flex-1 rounded-full transition-all ${
+                      step <= cycleStep ? 'bg-rose-500' : 'bg-slate-200'
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-xs font-medium text-slate-600">
+                Paso {cycleStep}/3
+              </span>
+            </div>
+
+            <AnimatePresence mode="wait">
+              {cycleStep === 1 && (
+                <motion.div
+                  key="step1"
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                >
+                  <label className="block text-sm font-medium text-slate-900 mb-3">
+                    Fecha de tu último período
+                  </label>
+                  <input
+                    type="date"
+                    value={cycleFormData.lastPeriod}
+                    onChange={(e) => setCycleFormData({ ...cycleFormData, lastPeriod: e.target.value })}
+                    max={new Date().toISOString().split('T')[0]}
+                    className="w-full h-12 px-4 rounded-xl border-2 border-slate-200 focus:border-rose-400 focus:outline-none text-slate-900 font-medium text-base"
+                  />
+                  <p className="text-xs text-slate-600 mt-2">
+                    Selecciona la fecha en que comenzó tu último período menstrual
+                  </p>
+                </motion.div>
+              )}
+
+              {cycleStep === 2 && (
+                <motion.div
+                  key="step2"
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                >
+                  <label className="block text-sm font-medium text-slate-900 mb-3">
+                    Duración del ciclo: {cycleFormData.cycleLength} días
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs text-slate-600 min-w-fit">21d</span>
+                    <input
+                      type="range"
+                      min="21"
+                      max="35"
+                      value={cycleFormData.cycleLength}
+                      onChange={(e) =>
+                        setCycleFormData({ ...cycleFormData, cycleLength: parseInt(e.target.value) })
+                      }
+                      className="cycle-slider flex-1 h-2 rounded-lg appearance-none cursor-pointer accent-rose-500"
+                    />
+                    <span className="text-xs text-slate-600 min-w-fit">35d</span>
+                  </div>
+                  <p className="text-xs text-slate-600 mt-3">
+                    La mayoría de ciclos duran entre 21 y 35 días. El promedio es 28 días.
+                  </p>
+                </motion.div>
+              )}
+
+              {cycleStep === 3 && (
+                <motion.div
+                  key="step3"
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                >
+                  <label className="block text-sm font-medium text-slate-900 mb-3">
+                    Duración del período: {cycleFormData.periodLength} días
+                  </label>
+                  <div className="flex items-center gap-4">
+                    <span className="text-xs text-slate-600 min-w-fit">2d</span>
+                    <input
+                      type="range"
+                      min="2"
+                      max="8"
+                      value={cycleFormData.periodLength}
+                      onChange={(e) =>
+                        setCycleFormData({ ...cycleFormData, periodLength: parseInt(e.target.value) })
+                      }
+                      className="cycle-slider flex-1 h-2 rounded-lg appearance-none cursor-pointer accent-rose-500"
+                    />
+                    <span className="text-xs text-slate-600 min-w-fit">8d</span>
+                  </div>
+                  <p className="text-xs text-slate-600 mt-3">
+                    El período menstrual típico dura entre 2 y 8 días. La mayoría dura 5 días.
+                  </p>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            <div className="flex gap-2 mt-6">
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  if (cycleStep > 1) {
+                    setCycleStep((cycleStep - 1) as 1 | 2 | 3);
+                  } else {
+                    setShowCycleSetup(false);
+                  }
+                }}
+                className="flex-1 h-11 rounded-xl border-2 border-slate-200 text-slate-900 font-medium hover:border-slate-300 transition-colors flex items-center justify-center gap-2"
+              >
+                <ChevronLeft size={18} />
+                {cycleStep === 1 ? 'Cancelar' : 'Atrás'}
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => {
+                  if (cycleStep < 3) {
+                    setCycleStep((cycleStep + 1) as 1 | 2 | 3);
+                  } else {
+                    handleActivateCycle();
+                  }
+                }}
+                disabled={!cycleFormData.lastPeriod && cycleStep === 1}
+                className="flex-1 h-11 rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 text-white font-medium hover:shadow-lg transition-shadow flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {cycleStep === 3 ? 'Activar' : 'Siguiente'}
+                <ChevronRight size={18} />
+              </motion.button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.section>
+  );
+}
 
 export default function PerfilPage() {
   const router = useRouter();
@@ -191,46 +487,8 @@ export default function PerfilPage() {
         </motion.section>
 
         {/* Modo Ciclo */}
-        <motion.section
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.22 }}
-          className={`${currentTheme.bgCard} backdrop-blur-xl rounded-2xl shadow-sm border ${currentTheme.border} p-6`}
-        >
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => router.push('/modo-ciclo')}
-            className={`w-full p-5 rounded-2xl border-2 transition-all ${
-              cycleData.isActive
-                ? 'bg-gradient-to-r from-pink-50 to-rose-50 border-rose-300'
-                : 'border-slate-200 hover:border-rose-300'
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center">
-                  <Heart size={24} className="text-white" />
-                </div>
-                <div className="text-left">
-                  <p className="font-bold text-slate-900">Modo Ciclo 🌸</p>
-                  <p className="text-sm text-slate-600">
-                    {cycleData.isActive ? 'Activo' : 'Adapta hábitos a tu ciclo'}
-                  </p>
-                </div>
-              </div>
-              <div
-                className={`px-3 py-1 rounded-full text-xs font-medium ${
-                  cycleData.isActive
-                    ? 'bg-rose-500 text-white'
-                    : 'bg-slate-200 text-slate-600'
-                }`}
-              >
-                {cycleData.isActive ? 'ON' : 'OFF'}
-              </div>
-            </div>
-          </motion.button>
-        </motion.section>
+        <ModoCicloSection cycleData={cycleData} currentTheme={currentTheme} />
+
 
         {/* Actualizar */}
         <motion.section

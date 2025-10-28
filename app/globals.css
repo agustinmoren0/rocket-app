@@ -303,3 +303,132 @@ textarea {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   }
 }
+
+/* ============================================
+   MOBILE OPTIMIZATIONS - iOS/Android
+   ============================================ */
+
+@media (max-width: 768px) {
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Input font-size 16px to prevent iOS zoom on focus */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="date"],
+  input[type="tel"],
+  input[type="number"],
+  textarea,
+  select {
+    font-size: 16px !important;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  /* Minimum touch target size (44x44px) */
+  button,
+  a[role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="checkbox"],
+  input[type="radio"],
+  [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Range slider custom styling for mobile */
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 5px;
+    background: linear-gradient(to right, #f0f0f0 0%, #f0f0f0 100%);
+    outline: none;
+    -webkit-appearance: none;
+  }
+
+  /* Range slider thumb - webkit (Chrome, Safari, Edge) */
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(236, 72, 153, 0.4);
+    transition: all 0.2s ease;
+  }
+
+  input[type="range"]::-webkit-slider-thumb:active {
+    transform: scale(1.2);
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.6);
+  }
+
+  /* Range slider thumb - Firefox */
+  input[type="range"]::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 8px rgba(236, 72, 153, 0.4);
+    transition: all 0.2s ease;
+  }
+
+  input[type="range"]::-moz-range-thumb:active {
+    transform: scale(1.2);
+    box-shadow: 0 4px 12px rgba(236, 72, 153, 0.6);
+  }
+
+  /* Range slider track - Firefox */
+  input[type="range"]::-moz-range-track {
+    background: transparent;
+    border: none;
+  }
+
+  input[type="range"]::-moz-range-progress {
+    background: linear-gradient(135deg, #ec4899 0%, #f43f5e 100%);
+    height: 6px;
+    border-radius: 5px;
+  }
+
+  /* Cycle slider specific styling */
+  .cycle-slider {
+    accent-color: #ec4899;
+  }
+
+  /* Prevent double tap zoom */
+  button,
+  a,
+  input[type="button"],
+  input[type="submit"] {
+    touch-action: manipulation;
+  }
+
+  /* Smooth transitions on mobile */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Date input improvements */
+  input[type="date"] {
+    font-size: 16px;
+  }
+
+  /* Select improvements */
+  select {
+    font-size: 16px;
+  }
+}
