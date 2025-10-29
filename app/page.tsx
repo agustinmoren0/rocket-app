@@ -2,255 +2,219 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { useTheme } from './context/ThemeContext';
 import { useUser } from './context/UserContext';
 import { useCycle } from './context/CycleContext';
-import { Calendar, TrendingUp, Heart, Flame, Clock } from 'lucide-react';
+import { motion } from 'framer-motion';
 
-const getGreeting = () => {
-  const hour = new Date().getHours();
-  if (hour < 12) return { text: '¡Qué buen día!', emoji: '🌅' };
-  if (hour < 18) return { text: '¡Buena tarde!', emoji: '☀️' };
-  return { text: '¡Buena noche!', emoji: '🌙' };
-};
-
-export default function HomePage() {
+export default function DashboardPage() {
   const router = useRouter();
-  const { currentTheme } = useTheme();
   const { username } = useUser();
   const { cycleData } = useCycle();
-  const [habits, setHabits] = useState<any[]>([]);
+
   const [stats, setStats] = useState({
-    habitConsistency: 0,
+    consistency: 0,
     activityTime: 0,
-    currentStreak: 0,
+    streak: 0,
   });
 
+  const [motivationalMessage, setMotivationalMessage] = useState('');
+
   useEffect(() => {
-    // Load habits and calculate stats
-    const stored = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
-    setHabits(stored);
+    calculateStats();
+  }, []);
 
-    // Calculate 7-day consistency
+  const calculateStats = () => {
+    const habits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
     const completions = JSON.parse(localStorage.getItem('habika_completions') || '{}');
-    const today = new Date();
-    let completedDays = 0;
-    let totalPossibleDays = 0;
+    const activities = JSON.parse(localStorage.getItem('habika_activities') || '[]');
 
-    for (let i = 0; i < 7; i++) {
+    const today = new Date();
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      return date.toISOString().split('T')[0];
+    });
+
+    // Calcular constancia
+    let totalPossible = 0;
+    let totalCompleted = 0;
+
+    habits.forEach((habit: any) => {
+      if (habit.status !== 'active') return;
+      const habitCompletions = completions[habit.id] || [];
+
+      last7Days.forEach(date => {
+        const dayOfWeek = new Date(date).getDay();
+        const shouldCount = habit.frequency === 'diario' ||
+          (habit.frequency === 'semanal' && habit.daysOfWeek?.includes(dayOfWeek));
+
+        if (shouldCount) {
+          totalPossible++;
+          const completed = habitCompletions.some((c: any) =>
+            c.date === date && c.status === 'completed'
+          );
+          if (completed) totalCompleted++;
+        }
+      });
+    });
+
+    const consistency = totalPossible > 0 ? Math.round((totalCompleted / totalPossible) * 100) : 0;
+
+    // Tiempo en actividades
+    const activityTime = activities
+      .filter((a: any) => last7Days.includes(a.date))
+      .reduce((sum: number, a: any) => sum + (a.duration || 0), 0);
+
+    // Racha global
+    let streak = 0;
+    for (let i = 0; i < 365; i++) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
       const dateStr = date.toISOString().split('T')[0];
-      totalPossibleDays++;
 
-      // Check if any habit was completed on this day
-      let dayCompleted = false;
-      for (const habitId in completions) {
-        const habitCompletions = completions[habitId] as any[];
-        if (habitCompletions.find((c: any) => c.date === dateStr && c.status === 'completed')) {
-          dayCompleted = true;
-          break;
-        }
-      }
-      if (dayCompleted) completedDays++;
-    }
+      const hasCompletion = Object.values(completions).some((habitComps: any) =>
+        habitComps.some((c: any) => c.date === dateStr && c.status === 'completed')
+      );
 
-    const consistency = totalPossibleDays > 0 ? Math.round((completedDays / totalPossibleDays) * 100) : 0;
-
-    // Calculate current streak
-    let streak = 0;
-    const sortedDates = Object.keys(completions)
-      .flatMap((habitId) =>
-        (completions[habitId] as any[])
-          .filter((c: any) => c.status === 'completed')
-          .map((c: any) => c.date)
-      )
-      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
-
-    const uniqueDates = [...new Set(sortedDates)];
-    const todayStr = new Date().toISOString().split('T')[0];
-    const startDate = new Date(uniqueDates[0] || todayStr);
-    startDate.setHours(0, 0, 0, 0);
-
-    for (let i = 0; i < uniqueDates.length; i++) {
-      const date = new Date(uniqueDates[i]);
-      date.setHours(0, 0, 0, 0);
-      const checkDate = new Date(startDate);
-      checkDate.setDate(checkDate.getDate() - i);
-
-      const daysDiff = Math.floor((startDate.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
-      if (daysDiff <= i + 1) {
-        streak = i + 1;
-      } else {
+      if (hasCompletion) {
+        streak++;
+      } else if (i > 0) {
         break;
       }
     }
 
     setStats({
-      habitConsistency: consistency,
-      activityTime: stored.length * 15, // Estimate: 15 min per habit
-      currentStreak: streak,
+      consistency,
+      activityTime: Math.round(activityTime / 60),
+      streak,
     });
-  }, []);
 
-  const greeting = getGreeting();
-  const motivationalMessages = [
-    { min: 0, max: 33, msg: 'Pequeños pasos llevan a grandes cambios. ¡Empieza hoy!' },
-    { min: 34, max: 66, msg: '¡Vas muy bien! Mantén la consistencia.' },
-    { min: 67, max: 100, msg: '¡Excelente consistencia! Eres increíble 🌟' },
-  ];
+    // Mensaje motivacional
+    if (consistency >= 80) {
+      setMotivationalMessage('"La constancia no es la ausencia de fallos, sino la persistencia a pesar de ellos. ¡Sigue brillando!"');
+    } else if (consistency >= 60) {
+      setMotivationalMessage('"Pequeños pasos llevan a grandes cambios. ¡Empieza hoy!"');
+    } else {
+      setMotivationalMessage('"Cada día es una nueva oportunidad para crecer."');
+    }
+  };
 
-  const message = motivationalMessages.find(
-    (m) => stats.habitConsistency >= m.min && stats.habitConsistency <= m.max
-  )?.msg || 'Cada día es una nueva oportunidad';
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return '¡Qué buen día!';
+    if (hour < 19) return '¡Buena tarde!';
+    return '¡Buena noche!';
+  };
 
   return (
-    <main className={`min-h-screen ${currentTheme.bg} pb-32 pt-20 lg:pt-8 relative overflow-hidden`}>
-      {/* Animated Background Blobs */}
-      <div className="fixed inset-0 -z-10 overflow-hidden">
-        <div
-          className="absolute -top-40 -right-40 w-80 h-80 rounded-full opacity-30 animate-blob"
-          style={{
-            background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.secondary} 100%)`,
-            animationDelay: '0s',
-          }}
-        />
-        <div
-          className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full opacity-30 animate-blob"
-          style={{
-            background: `linear-gradient(135deg, ${currentTheme.secondary} 0%, ${currentTheme.accent2} 100%)`,
-            animationDelay: '2s',
-          }}
-        />
-        <div
-          className="absolute top-1/2 left-1/2 w-80 h-80 rounded-full opacity-20 animate-blob"
-          style={{
-            background: `linear-gradient(135deg, ${currentTheme.accent1} 0%, ${currentTheme.primary} 100%)`,
-            animationDelay: '4s',
-          }}
-        />
+    <div className="relative min-h-screen w-full flex flex-col pb-32 bg-[#FFF5F0]">
+      {/* Background blobs */}
+      <div className="absolute top-0 left-0 w-full h-96 overflow-hidden -z-10">
+        <div className="absolute -top-20 -left-20 w-80 h-80 bg-[#FF99AC]/30 rounded-full filter blur-3xl opacity-60" />
+        <div className="absolute -top-10 right-0 w-80 h-80 bg-[#FFC0A9]/30 rounded-full filter blur-3xl opacity-60" />
+        <div className="absolute top-20 -right-20 w-80 h-80 bg-[#FDF0D5]/30 rounded-full filter blur-3xl opacity-60" />
       </div>
 
-      <div className="max-w-2xl mx-auto px-6 relative z-10 space-y-6">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+      {/* Header */}
+      <header className="flex items-center justify-between p-4 pb-2 h-20">
+        <div className="flex flex-col">
+          <p className="text-[#A67B6B] text-base">Hola, {username || 'Usuario'}</p>
+          <p className="text-[#3D2C28] text-2xl font-bold tracking-tight">{getGreeting()}</p>
+        </div>
+        <button
+          onClick={() => router.push('/estadisticas')}
+          className="flex items-center justify-center h-12 w-12 rounded-full glass-stitch"
         >
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-4xl">{greeting.emoji}</span>
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900">{greeting.text}</h1>
-              <p className={`text-sm ${currentTheme.textMuted}`}>{username || 'Usuario'}</p>
+          <span className="material-symbols-outlined text-[#3D2C28]">insights</span>
+        </button>
+      </header>
+
+      {/* Main content */}
+      <main className="flex-grow p-4 space-y-6">
+        {/* Tu Semana */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="rounded-xl glass-stitch p-4"
+        >
+          <div className="flex justify-between items-start">
+            <p className="text-[#A67B6B] text-sm font-medium">Tu Semana</p>
+            {cycleData.isActive && (
+              <button
+                onClick={() => router.push('/modo-ciclo')}
+                className="flex items-center gap-2 bg-white/50 px-2.5 py-1 rounded-full text-lg"
+              >
+                🌸
+              </button>
+            )}
+          </div>
+          <div className="mt-4 space-y-3">
+            <div className="flex items-center gap-3">
+              <span className="material-symbols-outlined text-[#FF8C66] text-xl">checklist</span>
+              <p className="text-[#3D2C28] font-medium">
+                Constancia de Hábitos: <span className="font-bold">{stats.consistency}%</span>
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="material-symbols-outlined text-[#FF8C66] text-xl">hourglass_top</span>
+              <p className="text-[#3D2C28] font-medium">
+                Tiempo en Actividades: <span className="font-bold">{stats.activityTime}h</span>
+              </p>
             </div>
           </div>
         </motion.div>
 
-        {/* Tu Semana Card */}
+        {/* Racha */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className={`${currentTheme.bgGlass} rounded-3xl p-6 border ${currentTheme.border}`}
+          className="relative rounded-xl bg-gradient-to-br from-[#FFC0A9] to-[#FF99AC] p-5 flex items-center justify-between shadow-lg"
         >
-          <div className="flex items-center gap-3 mb-4">
-            <div className={`w-10 h-10 rounded-lg ${currentTheme.primary} flex items-center justify-center`}>
-              <Calendar size={20} className="text-white" />
-            </div>
-            <div className="flex-1">
-              <h2 className="text-lg font-bold text-slate-900">Tu Semana</h2>
-            </div>
+          <div className="flex flex-col">
+            <p className="text-white text-base font-bold">Racha Actual</p>
+            <p className="text-white text-5xl font-extrabold tracking-tighter">{stats.streak}</p>
+            <p className="text-white/80 text-sm">días seguidos</p>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className={`text-xs ${currentTheme.textMuted} mb-1`}>Consistencia</p>
-              <p className="text-2xl font-bold text-slate-900">{stats.habitConsistency}%</p>
-            </div>
-            <div>
-              <p className={`text-xs ${currentTheme.textMuted} mb-1`}>Tiempo invertido</p>
-              <div className="flex items-baseline gap-1">
-                <p className="text-2xl font-bold text-slate-900">{stats.activityTime}</p>
-                <p className="text-xs text-slate-500">min</p>
-              </div>
-            </div>
+          <div className="absolute right-4 bottom-0 opacity-20">
+            <span className="material-symbols-outlined text-9xl text-white -rotate-12">local_fire_department</span>
           </div>
         </motion.div>
 
-        {/* Racha Actual Card */}
+        {/* Mensaje */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className={`${currentTheme.gradient} rounded-3xl p-6 text-white`}
+          className="rounded-xl bg-white p-4 shadow-lg"
         >
-          <div className="flex items-center gap-4">
-            <Flame size={32} className="flex-shrink-0" />
-            <div>
-              <p className="text-sm opacity-90 mb-1">Racha Actual</p>
-              <div className="flex items-baseline gap-2">
-                <p className="text-4xl font-bold">{stats.currentStreak}</p>
-                <p className="text-sm opacity-75">días</p>
-              </div>
-            </div>
-          </div>
+          <p className="text-[#3D2C28] text-base font-bold leading-tight">Mensaje para ti</p>
+          <p className="text-[#A67B6B] text-sm mt-1">{motivationalMessage}</p>
         </motion.div>
 
-        {/* Motivational Message */}
+        {/* Quick actions */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className={`${currentTheme.bgCard} rounded-3xl p-6 border ${currentTheme.border}`}
-        >
-          <p className="text-sm leading-relaxed text-slate-700">
-            💭 {message}
-          </p>
-        </motion.div>
-
-        {/* Modo Ciclo Card */}
-        {cycleData.isActive && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            onClick={() => router.push('/modo-ciclo')}
-            className={`${currentTheme.bgCard} rounded-3xl p-6 border ${currentTheme.border} cursor-pointer hover:shadow-lg transition-shadow`}
-          >
-            <div className="flex items-center gap-4">
-              <div className="text-3xl">🌺</div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-slate-900">Modo Ciclo Activo</h3>
-                <p className="text-sm text-slate-600">Día {cycleData.currentDay} del ciclo</p>
-              </div>
-            </div>
-          </motion.div>
-        )}
-
-        {/* Quick Actions */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
           className="grid grid-cols-2 gap-4"
         >
           <button
             onClick={() => router.push('/reflexiones')}
-            className={`${currentTheme.bgCard} rounded-2xl p-4 border ${currentTheme.border} text-left hover:shadow-lg transition-shadow`}
+            className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-white shadow-lg"
           >
-            <p className="text-sm font-semibold text-slate-900">📝 Reflexiones</p>
-            <p className="text-xs text-slate-500 mt-1">Tu diario</p>
+            <span className="material-symbols-outlined text-3xl text-[#FF8C66]">edit_note</span>
+            <span className="text-sm font-semibold text-[#3D2C28]">Reflexiones</span>
           </button>
           <button
             onClick={() => router.push('/calendario')}
-            className={`${currentTheme.bgCard} rounded-2xl p-4 border ${currentTheme.border} text-left hover:shadow-lg transition-shadow`}
+            className="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-white shadow-lg"
           >
-            <p className="text-sm font-semibold text-slate-900">📅 Calendario</p>
-            <p className="text-xs text-slate-500 mt-1">Visualiza todo</p>
+            <span className="material-symbols-outlined text-3xl text-[#FF8C66]">calendar_month</span>
+            <span className="text-sm font-semibold text-[#3D2C28]">Calendario</span>
           </button>
         </motion.div>
-      </div>
-    </main>
+      </main>
+    </div>
   );
 }
