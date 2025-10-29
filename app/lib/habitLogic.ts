@@ -152,3 +152,75 @@ const calculateBestStreak = (completions: any[]): number => {
 
   return maxStreak;
 };
+
+export const calculateHabitConsistency = (habitId: string, days: number = 7): number => {
+  const completions = JSON.parse(
+    localStorage.getItem('habika_completions') || '{}'
+  );
+  const habitCompletions = completions[habitId] || [];
+
+  const completed = habitCompletions.filter(
+    (c: any) => c.status === 'completed'
+  );
+
+  if (completed.length === 0) return 0;
+
+  // Count unique completion days in last N days
+  const today = new Date();
+  const cutoffDate = new Date(today);
+  cutoffDate.setDate(cutoffDate.getDate() - days);
+
+  const recentCompletions = completed.filter((c: any) => {
+    const date = new Date(c.date);
+    return date >= cutoffDate;
+  });
+
+  const consistency = Math.round((recentCompletions.length / days) * 100);
+  return Math.min(consistency, 100);
+};
+
+export const calculateGlobalStreak = (): number => {
+  const completions = JSON.parse(
+    localStorage.getItem('habika_completions') || '{}'
+  );
+
+  // Collect all completion dates
+  const allDates = new Set<string>();
+  for (const habitId in completions) {
+    const habitCompletions = completions[habitId] as any[];
+    habitCompletions.forEach((c: any) => {
+      if (c.status === 'completed') {
+        allDates.add(c.date);
+      }
+    });
+  }
+
+  if (allDates.size === 0) return 0;
+
+  // Sort dates in descending order
+  const sortedDates = Array.from(allDates).sort((a, b) =>
+    new Date(b).getTime() - new Date(a).getTime()
+  );
+
+  // Calculate streak
+  let streak = 0;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  for (const dateStr of sortedDates) {
+    const date = new Date(dateStr);
+    date.setHours(0, 0, 0, 0);
+
+    const daysDiff = Math.floor(
+      (today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    if (daysDiff === streak || daysDiff === streak + 1) {
+      streak++;
+    } else {
+      break;
+    }
+  }
+
+  return streak;
+};

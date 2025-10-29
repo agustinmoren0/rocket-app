@@ -16,7 +16,7 @@ export default function BottomNav() {
   if (pathname === '/onboarding') return null;
 
   const mainNavItems = [
-    { icon: Home, label: 'Inicio', path: '/' },
+    { icon: Home, label: 'Hoy', path: '/' },
     { icon: Activity, label: 'Hábitos', path: '/mis-habitos' },
     { icon: Calendar, label: 'Calendario', path: '/calendario' },
     { icon: TrendingUp, label: 'Progreso', path: '/estadisticas' },
@@ -70,9 +70,9 @@ export default function BottomNav() {
       </AnimatePresence>
 
       {/* Bottom Navigation */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-200 z-30">
-        <div className="flex items-center justify-between px-4 h-20">
-          {mainNavItems.map((item) => {
+      <nav className={`lg:hidden fixed bottom-0 left-0 right-0 ${currentTheme.bgGlass} border-t ${currentTheme.border} z-30`}>
+        <div className="flex items-center justify-between px-2 h-20">
+          {mainNavItems.slice(0, 2).map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.path;
 
@@ -83,18 +83,52 @@ export default function BottomNav() {
                 className="flex flex-col items-center justify-center flex-1 relative"
               >
                 <motion.div
-                  animate={{ scale: isActive ? 1 : 0.9 }}
-                  className={`relative ${
+                  animate={{ scale: isActive ? 1.1 : 0.9 }}
+                  className={`relative transition-colors ${
                     isActive ? currentTheme.primaryText : 'text-slate-400'
                   }`}
                 >
                   <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeTab"
-                      className={`absolute -bottom-2 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${currentTheme.primary}`}
-                    />
-                  )}
+                </motion.div>
+                <span className={`text-xs mt-1 font-medium ${
+                  isActive ? currentTheme.primaryText : 'text-slate-400'
+                }`}>
+                  {item.label}
+                </span>
+              </button>
+            );
+          })}
+
+          {/* Center FAB */}
+          <div className="flex-1 flex justify-center">
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setShowFabMenu(!showFabMenu)}
+              className={`w-14 h-14 rounded-full ${currentTheme.gradient} text-white shadow-2xl flex items-center justify-center relative -top-6 ${
+                showFabMenu ? 'rotate-45' : ''
+              } transition-transform`}
+            >
+              <Plus size={28} strokeWidth={2.5} />
+            </motion.button>
+          </div>
+
+          {mainNavItems.slice(2).map((item) => {
+            const Icon = item.icon;
+            const isActive = pathname === item.path;
+
+            return (
+              <button
+                key={item.path}
+                onClick={() => router.push(item.path)}
+                className="flex flex-col items-center justify-center flex-1 relative"
+              >
+                <motion.div
+                  animate={{ scale: isActive ? 1.1 : 0.9 }}
+                  className={`relative transition-colors ${
+                    isActive ? currentTheme.primaryText : 'text-slate-400'
+                  }`}
+                >
+                  <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
                 </motion.div>
                 <span className={`text-xs mt-1 font-medium ${
                   isActive ? currentTheme.primaryText : 'text-slate-400'
@@ -106,17 +140,6 @@ export default function BottomNav() {
           })}
         </div>
       </nav>
-
-      {/* FAB Button */}
-      <motion.button
-        whileTap={{ scale: 0.9 }}
-        onClick={() => setShowFabMenu(!showFabMenu)}
-        className={`lg:hidden fixed bottom-24 right-6 w-14 h-14 rounded-full ${currentTheme.gradient} text-white shadow-2xl flex items-center justify-center z-50 ${
-          showFabMenu ? 'rotate-45' : ''
-        } transition-transform`}
-      >
-        <Plus size={28} strokeWidth={2.5} />
-      </motion.button>
     </>
   );
 }

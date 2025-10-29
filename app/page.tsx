@@ -1,285 +1,256 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useTheme } from './context/ThemeContext';
 import { useUser } from './context/UserContext';
 import { useCycle } from './context/CycleContext';
-import { getWeekProgress, getCustomHabits } from './lib/store';
-import BottomNav from './components/BottomNav';
-import {
-  Home, FileText, Plus, Activity, User,
-  Flame, PieChart, TrendingUp, Settings, X, BookOpen, PauseCircle, Heart, ArrowRight
-} from 'lucide-react';
+import { Calendar, TrendingUp, Heart, Flame, Clock } from 'lucide-react';
+
+const getGreeting = () => {
+  const hour = new Date().getHours();
+  if (hour < 12) return { text: '¡Qué buen día!', emoji: '🌅' };
+  if (hour < 18) return { text: '¡Buena tarde!', emoji: '☀️' };
+  return { text: '¡Buena noche!', emoji: '🌙' };
+};
 
 export default function HomePage() {
   const router = useRouter();
   const { currentTheme } = useTheme();
   const { username } = useUser();
-  const { cycleData, getPhaseInfo } = useCycle();
-  const [percentage, setPercentage] = useState(0);
-  const [activeDays, setActiveDays] = useState(0);
-  const [totalDays] = useState(7);
-  const [minutes, setMinutes] = useState(0);
-  const [streak, setStreak] = useState(0);
-  const [pausedCount, setPausedCount] = useState(0);
+  const { cycleData } = useCycle();
+  const [habits, setHabits] = useState<any[]>([]);
+  const [stats, setStats] = useState({
+    habitConsistency: 0,
+    activityTime: 0,
+    currentStreak: 0,
+  });
 
   useEffect(() => {
-    const progress = getWeekProgress();
-    setPercentage(progress);
-    setActiveDays(3); // TODO: calcular real
-    setMinutes(120); // TODO: calcular real
-    setStreak(5); // TODO: calcular real
+    // Load habits and calculate stats
+    const stored = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
+    setHabits(stored);
 
-    // Count paused habits
-    const paused = localStorage.getItem('habika_paused_habits');
-    if (paused) {
-      setPausedCount(JSON.parse(paused).length);
+    // Calculate 7-day consistency
+    const completions = JSON.parse(localStorage.getItem('habika_completions') || '{}');
+    const today = new Date();
+    let completedDays = 0;
+    let totalPossibleDays = 0;
+
+    for (let i = 0; i < 7; i++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      totalPossibleDays++;
+
+      // Check if any habit was completed on this day
+      let dayCompleted = false;
+      for (const habitId in completions) {
+        const habitCompletions = completions[habitId] as any[];
+        if (habitCompletions.find((c: any) => c.date === dateStr && c.status === 'completed')) {
+          dayCompleted = true;
+          break;
+        }
+      }
+      if (dayCompleted) completedDays++;
     }
+
+    const consistency = totalPossibleDays > 0 ? Math.round((completedDays / totalPossibleDays) * 100) : 0;
+
+    // Calculate current streak
+    let streak = 0;
+    const sortedDates = Object.keys(completions)
+      .flatMap((habitId) =>
+        (completions[habitId] as any[])
+          .filter((c: any) => c.status === 'completed')
+          .map((c: any) => c.date)
+      )
+      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+
+    const uniqueDates = [...new Set(sortedDates)];
+    const todayStr = new Date().toISOString().split('T')[0];
+    const startDate = new Date(uniqueDates[0] || todayStr);
+    startDate.setHours(0, 0, 0, 0);
+
+    for (let i = 0; i < uniqueDates.length; i++) {
+      const date = new Date(uniqueDates[i]);
+      date.setHours(0, 0, 0, 0);
+      const checkDate = new Date(startDate);
+      checkDate.setDate(checkDate.getDate() - i);
+
+      const daysDiff = Math.floor((startDate.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+      if (daysDiff <= i + 1) {
+        streak = i + 1;
+      } else {
+        break;
+      }
+    }
+
+    setStats({
+      habitConsistency: consistency,
+      activityTime: stored.length * 15, // Estimate: 15 min per habit
+      currentStreak: streak,
+    });
   }, []);
 
-  const daysOfWeek = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
-  const today = new Date().getDay();
+  const greeting = getGreeting();
+  const motivationalMessages = [
+    { min: 0, max: 33, msg: 'Pequeños pasos llevan a grandes cambios. ¡Empieza hoy!' },
+    { min: 34, max: 66, msg: '¡Vas muy bien! Mantén la consistencia.' },
+    { min: 67, max: 100, msg: '¡Excelente consistencia! Eres increíble 🌟' },
+  ];
+
+  const message = motivationalMessages.find(
+    (m) => stats.habitConsistency >= m.min && stats.habitConsistency <= m.max
+  )?.msg || 'Cada día es una nueva oportunidad';
 
   return (
-    <div className="min-h-screen relative">
-      {/* Gradient Background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-indigo-50 via-white to-purple-50 -z-10" />
+    <main className={`min-h-screen ${currentTheme.bg} pb-32 pt-20 lg:pt-8 relative overflow-hidden`}>
+      {/* Animated Background Blobs */}
+      <div className="fixed inset-0 -z-10 overflow-hidden">
+        <div
+          className="absolute -top-40 -right-40 w-80 h-80 rounded-full opacity-30 animate-blob"
+          style={{
+            background: `linear-gradient(135deg, ${currentTheme.primary} 0%, ${currentTheme.secondary} 100%)`,
+            animationDelay: '0s',
+          }}
+        />
+        <div
+          className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full opacity-30 animate-blob"
+          style={{
+            background: `linear-gradient(135deg, ${currentTheme.secondary} 0%, ${currentTheme.accent2} 100%)`,
+            animationDelay: '2s',
+          }}
+        />
+        <div
+          className="absolute top-1/2 left-1/2 w-80 h-80 rounded-full opacity-20 animate-blob"
+          style={{
+            background: `linear-gradient(135deg, ${currentTheme.accent1} 0%, ${currentTheme.primary} 100%)`,
+            animationDelay: '4s',
+          }}
+        />
+      </div>
 
-      {/* Header */}
-      <header className="sticky top-0 z-20 backdrop-blur-xl bg-white/60 border-b border-white/20 px-6 pt-6 pb-4">
-        <div className="flex items-center justify-between max-w-4xl mx-auto">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">
-              Tu día
-            </h1>
-            <p className="text-sm text-slate-600">
-              Cada paso cuenta, sin presión
-            </p>
+      <div className="max-w-2xl mx-auto px-6 relative z-10 space-y-6">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-4xl">{greeting.emoji}</span>
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900">{greeting.text}</h1>
+              <p className={`text-sm ${currentTheme.textMuted}`}>{username || 'Usuario'}</p>
+            </div>
           </div>
-          <button
-            onClick={() => router.push('/perfil')}
-            className="w-12 h-12 rounded-full bg-white/60 backdrop-blur-md border border-white/40 flex items-center justify-center hover:bg-white/80 transition-all"
-          >
-            <Settings size={20} className="text-slate-600" />
-          </button>
-        </div>
-      </header>
+        </motion.div>
 
-      {/* Main Content */}
-      <main className="px-6 py-6 max-w-4xl mx-auto pb-32 space-y-5">
-
-        {/* Tu semana - Con barras verticales */}
-        <div className="glass-card rounded-2xl p-6 backdrop-blur-xl bg-white/60 border border-white/40 hover:shadow-xl transition-all">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-slate-900">Tu semana</h2>
-            <Link href="/calendario">
-              <button className="text-sm font-semibold text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
-                Ver todo →
-              </button>
-            </Link>
+        {/* Tu Semana Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className={`${currentTheme.bgGlass} rounded-3xl p-6 border ${currentTheme.border}`}
+        >
+          <div className="flex items-center gap-3 mb-4">
+            <div className={`w-10 h-10 rounded-lg ${currentTheme.primary} flex items-center justify-center`}>
+              <Calendar size={20} className="text-white" />
+            </div>
+            <div className="flex-1">
+              <h2 className="text-lg font-bold text-slate-900">Tu Semana</h2>
+            </div>
           </div>
-
-          {/* Week bars */}
-          <div className="flex items-end justify-between gap-2 h-32">
-            {daysOfWeek.map((day, i) => {
-              const isToday = i === (today === 0 ? 6 : today - 1);
-              const height = Math.random() * 100; // TODO: usar datos reales
-
-              return (
-                <div key={i} className="flex-1 flex flex-col items-center gap-2">
-                  <div className="flex-1 w-full flex items-end justify-center">
-                    <motion.div
-                      initial={{ height: 0 }}
-                      animate={{ height: `${height}%` }}
-                      transition={{ delay: i * 0.1, duration: 0.5 }}
-                      className={`w-3 rounded-full ${
-                        isToday
-                          ? 'bg-indigo-600'
-                          : percentage > 50
-                            ? 'bg-indigo-400'
-                            : 'bg-indigo-200'
-                      }`}
-                    />
-                  </div>
-                  <span className={`text-xs font-medium ${
-                    isToday ? 'text-indigo-600 font-bold' : 'text-slate-500'
-                  }`}>
-                    {day}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* Racha + Balance */}
-        <div className="grid grid-cols-2 gap-4">
-          {/* Tu Racha */}
-          <div className="glass-card rounded-2xl p-6 backdrop-blur-xl bg-white/60 border border-white/40 hover:shadow-xl transition-all">
-            <h3 className="text-sm font-medium text-slate-600 mb-2">Tu Racha</h3>
-            <div className="flex items-center gap-2">
-              <Flame className="text-orange-500" size={32} />
-              <div>
-                <p className="text-3xl font-bold text-slate-900">{streak}</p>
-                <p className="text-xs text-slate-600">días</p>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className={`text-xs ${currentTheme.textMuted} mb-1`}>Consistencia</p>
+              <p className="text-2xl font-bold text-slate-900">{stats.habitConsistency}%</p>
+            </div>
+            <div>
+              <p className={`text-xs ${currentTheme.textMuted} mb-1`}>Tiempo invertido</p>
+              <div className="flex items-baseline gap-1">
+                <p className="text-2xl font-bold text-slate-900">{stats.activityTime}</p>
+                <p className="text-xs text-slate-500">min</p>
               </div>
             </div>
           </div>
+        </motion.div>
 
-          {/* Balance */}
-          <Link href="/balance">
-            <div className="glass-card rounded-2xl p-6 backdrop-blur-xl bg-white/60 border border-white/40 hover:shadow-xl transition-all cursor-pointer">
-              <h3 className="text-sm font-medium text-slate-600 mb-2">Balance</h3>
-              <div className="flex items-center gap-2">
-                <PieChart className="text-indigo-600" size={32} />
-                <div>
-                  <p className="text-3xl font-bold text-slate-900">{Math.round(percentage)}%</p>
-                </div>
+        {/* Racha Actual Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className={`${currentTheme.gradient} rounded-3xl p-6 text-white`}
+        >
+          <div className="flex items-center gap-4">
+            <Flame size={32} className="flex-shrink-0" />
+            <div>
+              <p className="text-sm opacity-90 mb-1">Racha Actual</p>
+              <div className="flex items-baseline gap-2">
+                <p className="text-4xl font-bold">{stats.currentStreak}</p>
+                <p className="text-sm opacity-75">días</p>
               </div>
             </div>
-          </Link>
-        </div>
+          </div>
+        </motion.div>
 
-        {/* Mensaje de la semana */}
-        <div className="glass-card rounded-2xl p-6 backdrop-blur-xl bg-gradient-to-br from-indigo-50/80 to-purple-50/80 border border-white/40">
-          <h3 className="font-bold text-slate-900 mb-2">Mensaje de la semana</h3>
-          <p className="text-sm text-slate-700 leading-relaxed">
-            "La creatividad no se gasta. Cuanta más usas, más tienes." - Maya Angelou
+        {/* Motivational Message */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className={`${currentTheme.bgCard} rounded-3xl p-6 border ${currentTheme.border}`}
+        >
+          <p className="text-sm leading-relaxed text-slate-700">
+            💭 {message}
           </p>
-        </div>
+        </motion.div>
 
-        {/* Modo Ciclo - Active or Promotional */}
-        {cycleData.isActive ? (
-          <Link href="/modo-ciclo">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{ y: -4 }}
-              className="glass-card rounded-2xl p-5 backdrop-blur-xl bg-gradient-to-br from-pink-50/80 to-rose-50/80 border border-rose-200/40 hover:shadow-lg transition-all cursor-pointer"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center text-3xl flex-shrink-0">
-                  {getPhaseInfo(cycleData.currentPhase).emoji}
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-slate-900">Modo Ciclo Activo</h3>
-                  <p className="text-sm text-slate-600">
-                    Fase {getPhaseInfo(cycleData.currentPhase).name} · Día {cycleData.currentDay}
-                  </p>
-                  <div className="flex gap-2 mt-2">
-                    <div className="text-xs px-2 py-1 rounded-full bg-rose-100 text-rose-700 font-medium">
-                      Próximo periodo: {Math.ceil((new Date(cycleData.nextPeriodDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))}d
-                    </div>
-                  </div>
-                </div>
-                <ArrowRight size={20} className="text-slate-400 flex-shrink-0" />
+        {/* Modo Ciclo Card */}
+        {cycleData.isActive && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            onClick={() => router.push('/modo-ciclo')}
+            className={`${currentTheme.bgCard} rounded-3xl p-6 border ${currentTheme.border} cursor-pointer hover:shadow-lg transition-shadow`}
+          >
+            <div className="flex items-center gap-4">
+              <div className="text-3xl">🌺</div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-slate-900">Modo Ciclo Activo</h3>
+                <p className="text-sm text-slate-600">Día {cycleData.currentDay} del ciclo</p>
               </div>
-            </motion.div>
-          </Link>
-        ) : (
-          <Link href="/perfil">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{ y: -4 }}
-              className="glass-card rounded-2xl p-5 backdrop-blur-xl bg-gradient-to-br from-pink-50/80 to-rose-50/80 border border-rose-200/40 hover:shadow-lg transition-all cursor-pointer"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center flex-shrink-0">
-                  <Heart size={28} className="text-white" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-slate-900">Modo Ciclo 🌸</h3>
-                  <p className="text-sm text-slate-600">
-                    Adapta tus hábitos a tu ciclo menstrual
-                  </p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Recibe recomendaciones personalizadas según tu fase del ciclo
-                  </p>
-                </div>
-                <ArrowRight size={20} className="text-slate-400 flex-shrink-0" />
-              </div>
-            </motion.div>
-          </Link>
+            </div>
+          </motion.div>
         )}
 
-        {/* Quick Access Shortcuts */}
-        <div className="grid grid-cols-2 gap-4">
-          {/* Reflexiones */}
-          <Link href="/reflexiones">
-            <motion.div
-              whileHover={{ y: -4 }}
-              className="glass-card rounded-2xl p-5 backdrop-blur-xl bg-white/60 border border-white/40 hover:shadow-lg transition-all cursor-pointer"
-            >
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-indigo-500 flex items-center justify-center mb-3">
-                <BookOpen size={24} className="text-white" />
-              </div>
-              <h3 className="font-bold text-slate-900 mb-1">Reflexiones</h3>
-              <p className="text-xs text-slate-600">Tu diario semanal</p>
-            </motion.div>
-          </Link>
-
-          {/* Pausados */}
-          <Link href="/pausados">
-            <motion.div
-              whileHover={{ y: -4 }}
-              className="glass-card rounded-2xl p-5 backdrop-blur-xl bg-white/60 border border-white/40 hover:shadow-lg transition-all cursor-pointer"
-            >
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center mb-3">
-                <PauseCircle size={24} className="text-white" />
-              </div>
-              <h3 className="font-bold text-slate-900 mb-1">En pausa</h3>
-              <p className="text-xs text-slate-600">
-                {pausedCount > 0 ? `${pausedCount} hábitos` : 'Sin pausas'}
-              </p>
-            </motion.div>
-          </Link>
-        </div>
-
-        {/* Historial */}
-        <Link href="/historial">
-          <div className="glass-card rounded-2xl p-5 backdrop-blur-xl bg-white/60 border border-white/40 hover:shadow-xl transition-all cursor-pointer flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center">
-                <TrendingUp className="text-orange-600" size={24} />
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-900">Historial</h3>
-                <p className="text-sm text-slate-600">Revisa tu progreso semanal</p>
-              </div>
-            </div>
-            <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center">
-              →
-            </div>
-          </div>
-        </Link>
-
-        {/* Actividades Recientes */}
-        <div className="glass-card rounded-2xl p-6 backdrop-blur-xl bg-white/60 border border-white/40">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-slate-900">Recientes</h2>
-            <Link href="/actividades">
-              <button className="text-sm font-semibold text-indigo-600">Ver todas →</button>
-            </Link>
-          </div>
-          {/* TODO: mostrar últimas 3 actividades */}
-          <p className="text-sm text-slate-600">No hay actividades recientes</p>
-        </div>
-      </main>
-
-      <BottomNav />
-
-      <style jsx global>{`
-        .glass-card {
-          transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .glass-card:hover {
-          transform: translateY(-2px);
-        }
-      `}</style>
-    </div>
+        {/* Quick Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="grid grid-cols-2 gap-4"
+        >
+          <button
+            onClick={() => router.push('/reflexiones')}
+            className={`${currentTheme.bgCard} rounded-2xl p-4 border ${currentTheme.border} text-left hover:shadow-lg transition-shadow`}
+          >
+            <p className="text-sm font-semibold text-slate-900">📝 Reflexiones</p>
+            <p className="text-xs text-slate-500 mt-1">Tu diario</p>
+          </button>
+          <button
+            onClick={() => router.push('/calendario')}
+            className={`${currentTheme.bgCard} rounded-2xl p-4 border ${currentTheme.border} text-left hover:shadow-lg transition-shadow`}
+          >
+            <p className="text-sm font-semibold text-slate-900">📅 Calendario</p>
+            <p className="text-xs text-slate-500 mt-1">Visualiza todo</p>
+          </button>
+        </motion.div>
+      </div>
+    </main>
   );
 }
