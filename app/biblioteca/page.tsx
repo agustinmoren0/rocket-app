@@ -2,57 +2,47 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronDown, ChevronRight, Plus, X, Check, Droplet, Dumbbell, BookOpen, Brain, Users, Heart, Sparkles } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, X, Check, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { LUCIDE_ICONS } from '../utils/icons';
 
 const HABIT_LIBRARY = {
   fisica: {
     name: 'Física',
-    icon: Dumbbell,
-    color: '#FF8C66',
+    icon: 'Dumbbell',
     habits: [
-      { id: 'run', name: 'Correr por la mañana', description: 'Energiza tu día desde el inicio', icon: Dumbbell },
-      { id: 'water', name: 'Beber 2L de agua', description: 'Mantén tu cuerpo hidratado', icon: Droplet },
-      { id: 'exercise', name: 'Hacer ejercicio 30 min', description: 'Mantén tu cuerpo activo', icon: Dumbbell },
-      { id: 'stretch', name: 'Estirar 10 minutos', description: 'Mejora tu flexibilidad', icon: Sparkles },
-      { id: 'walk', name: 'Caminar 10,000 pasos', description: 'Muévete durante el día', icon: Dumbbell },
+      { id: 'run', name: 'Correr por la mañana', description: 'Energiza tu día', icon: 'Dumbbell' },
+      { id: 'water', name: 'Beber 2L de agua', description: 'Mantén tu cuerpo hidratado', icon: 'Droplet' },
+      { id: 'exercise', name: 'Hacer ejercicio 30 min', description: 'Mantén tu cuerpo activo', icon: 'Activity' },
     ]
   },
   mental: {
     name: 'Mental',
-    icon: Brain,
-    color: '#9B87F5',
+    icon: 'Brain',
     habits: [
-      { id: 'meditate', name: 'Meditar 10 min', description: 'Calma tu mente', icon: Brain },
-      { id: 'read', name: 'Leer un capítulo', description: 'Expande tu conocimiento', icon: BookOpen },
-      { id: 'journal', name: 'Escribir diario', description: 'Reflexiona sobre tu día', icon: BookOpen },
+      { id: 'meditate', name: 'Meditar 10 min', description: 'Calma tu mente', icon: 'Brain' },
+      { id: 'read', name: 'Leer un capítulo', description: 'Expande tu conocimiento', icon: 'BookOpen' },
     ]
   },
   creatividad: {
     name: 'Creatividad',
-    icon: Sparkles,
-    color: '#F97316',
+    icon: 'Sparkles',
     habits: [
-      { id: 'draw', name: 'Dibujar 15 min', description: 'Expresa tu creatividad', icon: Sparkles },
-      { id: 'write', name: 'Escribir 500 palabras', description: 'Desarrolla tu escritura', icon: BookOpen },
+      { id: 'draw', name: 'Dibujar 15 min', description: 'Expresa tu creatividad', icon: 'Palette' },
     ]
   },
   bienestar: {
     name: 'Bienestar',
-    icon: Heart,
-    color: '#FF99AC',
+    icon: 'Heart',
     habits: [
-      { id: 'sleep', name: 'Dormir 8 horas', description: 'Descansa bien', icon: Heart },
-      { id: 'gratitude', name: 'Lista de gratitud', description: 'Aprecia lo que tienes', icon: Heart },
+      { id: 'sleep', name: 'Dormir 8 horas', description: 'Descansa bien', icon: 'Moon' },
     ]
   },
   social: {
     name: 'Social',
-    icon: Users,
-    color: '#8B5CF6',
+    icon: 'Users',
     habits: [
-      { id: 'call', name: 'Llamar a un amigo', description: 'Mantén tus conexiones', icon: Users },
-      { id: 'family', name: 'Tiempo en familia', description: 'Fortalece vínculos', icon: Users },
+      { id: 'call', name: 'Llamar a un amigo', description: 'Mantén tus conexiones', icon: 'Phone' },
     ]
   }
 };
@@ -64,19 +54,12 @@ export default function BibliotecaPage() {
   const [selectedHabit, setSelectedHabit] = useState<any>(null);
 
   const handleSelectHabit = (categoryId: string, habit: any) => {
-    const category = HABIT_LIBRARY[categoryId as keyof typeof HABIT_LIBRARY];
-    setSelectedHabit({
-      ...habit,
-      category: categoryId,
-      categoryName: category.name,
-      categoryColor: category.color
-    });
+    setSelectedHabit({ ...habit, category: categoryId });
     setShowCreateModal(true);
   };
 
   return (
     <div className="min-h-screen bg-[#FFF5F0] pb-32">
-      {/* Header */}
       <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-10">
         <div className="max-w-md mx-auto px-6 py-4">
           <h1 className="text-2xl font-bold text-[#3D2C28]">Elige tu próximo hábito</h1>
@@ -84,7 +67,6 @@ export default function BibliotecaPage() {
         </div>
       </header>
 
-      {/* Tabs */}
       <div className="max-w-md mx-auto px-6 py-4 flex gap-3">
         <button className="px-4 py-2 rounded-full bg-[#FF8C66] text-white font-medium text-sm">
           Formar Hábito
@@ -94,10 +76,9 @@ export default function BibliotecaPage() {
         </button>
       </div>
 
-      {/* Categories */}
       <div className="max-w-md mx-auto px-6 space-y-3 pb-6">
         {Object.entries(HABIT_LIBRARY).map(([categoryId, category]) => {
-          const Icon = category.icon;
+          const Icon = LUCIDE_ICONS[category.icon];
           const isExpanded = expandedCategory === categoryId;
 
           return (
@@ -107,16 +88,12 @@ export default function BibliotecaPage() {
                 className="w-full flex items-center justify-between p-4"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: `${category.color}20` }}>
-                    <Icon className="w-5 h-5" style={{ color: category.color }} />
+                  <div className="w-10 h-10 rounded-full bg-[#FFF5F0] flex items-center justify-center">
+                    <Icon className="w-5 h-5 text-[#FF8C66]" />
                   </div>
                   <span className="font-semibold text-[#3D2C28]">{category.name}</span>
                 </div>
-                {isExpanded ? (
-                  <ChevronDown className="w-5 h-5 text-gray-400" />
-                ) : (
-                  <ChevronRight className="w-5 h-5 text-gray-400" />
-                )}
+                {isExpanded ? <ChevronDown className="w-5 h-5 text-gray-400" /> : <ChevronRight className="w-5 h-5 text-gray-400" />}
               </button>
 
               <AnimatePresence>
@@ -128,12 +105,12 @@ export default function BibliotecaPage() {
                     className="border-t border-gray-100"
                   >
                     {category.habits.map((habit) => {
-                      const HabitIcon = habit.icon;
+                      const HabitIcon = LUCIDE_ICONS[habit.icon];
                       return (
                         <button
                           key={habit.id}
                           onClick={() => handleSelectHabit(categoryId, habit)}
-                          className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+                          className="w-full flex items-center justify-between p-4 hover:bg-gray-50"
                         >
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-[#FFF5F0] flex items-center justify-center">
@@ -156,20 +133,18 @@ export default function BibliotecaPage() {
         })}
       </div>
 
-      {/* Custom Habit Button */}
       <div className="max-w-md mx-auto px-6 pb-6">
         <button
           onClick={() => {
             setSelectedHabit(null);
             setShowCreateModal(true);
           }}
-          className="w-full bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white py-4 rounded-full font-semibold shadow-lg hover:scale-105 transition-transform"
+          className="w-full bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white py-4 rounded-full font-semibold shadow-lg"
         >
           Crear hábito personalizado
         </button>
       </div>
 
-      {/* Create Modal */}
       <AnimatePresence>
         {showCreateModal && (
           <CreateHabitModal
@@ -180,8 +155,7 @@ export default function BibliotecaPage() {
             }}
             onSuccess={() => {
               setShowCreateModal(false);
-              setSelectedHabit(null);
-              router.push('/mis-habitos');
+              router.push('/habitos');
             }}
           />
         )}
@@ -193,12 +167,17 @@ export default function BibliotecaPage() {
 function CreateHabitModal({ habit, onClose, onSuccess }: any) {
   const [formData, setFormData] = useState({
     name: habit?.name || '',
-    category: habit?.category || 'fisica',
+    icon: habit?.icon || 'Star',
     type: 'formar',
     frequency: 'diario',
+    selectedDays: [] as number[],
+    selectedDates: [] as number[],
     goal: 30,
-    reminder: false
   });
+  const [showIconPicker, setShowIconPicker] = useState(false);
+
+  const WEEKDAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+  const MONTH_DATES = Array.from({ length: 31 }, (_, i) => i + 1);
 
   const handleSave = () => {
     const habits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
@@ -207,12 +186,31 @@ function CreateHabitModal({ habit, onClose, onSuccess }: any) {
       ...formData,
       status: 'active',
       createdAt: new Date().toISOString(),
-      icon: habit?.icon || 'star'
     };
     habits.push(newHabit);
     localStorage.setItem('habika_custom_habits', JSON.stringify(habits));
     onSuccess();
   };
+
+  const toggleDay = (day: number) => {
+    setFormData(prev => ({
+      ...prev,
+      selectedDays: prev.selectedDays.includes(day)
+        ? prev.selectedDays.filter(d => d !== day)
+        : [...prev.selectedDays, day]
+    }));
+  };
+
+  const toggleDate = (date: number) => {
+    setFormData(prev => ({
+      ...prev,
+      selectedDates: prev.selectedDates.includes(date)
+        ? prev.selectedDates.filter(d => d !== date)
+        : [...prev.selectedDates, date]
+    }));
+  };
+
+  const SelectedIcon = LUCIDE_ICONS[formData.icon];
 
   return (
     <motion.div
@@ -229,19 +227,43 @@ function CreateHabitModal({ habit, onClose, onSuccess }: any) {
         onClick={(e) => e.stopPropagation()}
         className="w-full bg-white rounded-t-3xl p-6 max-h-[90vh] overflow-y-auto"
       >
-        {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <button onClick={onClose} className="text-[#A67B6B]">
-            <X className="w-6 h-6" />
-          </button>
+          <button onClick={onClose}><X className="w-6 h-6 text-[#A67B6B]" /></button>
           <h2 className="text-lg font-bold text-[#3D2C28]">Nuevo hábito</h2>
-          <button onClick={handleSave} className="text-[#FF8C66] font-semibold">
-            <Check className="w-6 h-6" />
-          </button>
+          <button onClick={handleSave}><Check className="w-6 h-6 text-[#FF8C66]" /></button>
         </div>
 
-        {/* Form */}
         <div className="space-y-6">
+          {/* Icon Picker */}
+          <div>
+            <label className="block text-sm font-medium text-[#A67B6B] mb-2">Icono</label>
+            <button
+              onClick={() => setShowIconPicker(!showIconPicker)}
+              className="w-16 h-16 rounded-full bg-[#FFF5F0] flex items-center justify-center"
+            >
+              <SelectedIcon className="w-8 h-8 text-[#FF8C66]" />
+            </button>
+            {showIconPicker && (
+              <div className="grid grid-cols-6 gap-2 mt-3 p-3 bg-[#FFF5F0] rounded-xl max-h-48 overflow-y-auto">
+                {Object.keys(LUCIDE_ICONS).map((iconName) => {
+                  const Icon = LUCIDE_ICONS[iconName];
+                  return (
+                    <button
+                      key={iconName}
+                      onClick={() => {
+                        setFormData({ ...formData, icon: iconName });
+                        setShowIconPicker(false);
+                      }}
+                      className="w-10 h-10 rounded-full bg-white flex items-center justify-center hover:bg-[#FF8C66]/10"
+                    >
+                      <Icon className="w-5 h-5 text-[#FF8C66]" />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
           {/* Name */}
           <div>
             <label className="block text-sm font-medium text-[#A67B6B] mb-2">Nombre del hábito</label>
@@ -260,23 +282,21 @@ function CreateHabitModal({ habit, onClose, onSuccess }: any) {
             <div className="flex gap-3">
               <button
                 onClick={() => setFormData({ ...formData, type: 'formar' })}
-                className={`flex-1 py-3 rounded-xl font-medium ${
-                  formData.type === 'formar'
-                    ? 'bg-[#FF8C66] text-white'
-                    : 'bg-white border border-gray-200 text-gray-600'
+                className={`flex-1 py-3 rounded-xl font-medium flex items-center justify-center gap-2 ${
+                  formData.type === 'formar' ? 'bg-[#FF8C66] text-white' : 'bg-white border border-gray-200 text-gray-600'
                 }`}
               >
-                ✨ A Formar
+                <Sparkles className="w-4 h-4" />
+                A Formar
               </button>
               <button
                 onClick={() => setFormData({ ...formData, type: 'dejar' })}
-                className={`flex-1 py-3 rounded-xl font-medium ${
-                  formData.type === 'dejar'
-                    ? 'bg-[#FF8C66] text-white'
-                    : 'bg-white border border-gray-200 text-gray-600'
+                className={`flex-1 py-3 rounded-xl font-medium flex items-center justify-center gap-2 ${
+                  formData.type === 'dejar' ? 'bg-[#FF8C66] text-white' : 'bg-white border border-gray-200 text-gray-600'
                 }`}
               >
-                🚫 A Dejar
+                <X className="w-4 h-4" />
+                A Dejar
               </button>
             </div>
           </div>
@@ -286,38 +306,103 @@ function CreateHabitModal({ habit, onClose, onSuccess }: any) {
             <label className="block text-sm font-medium text-[#A67B6B] mb-2">Repetir</label>
             <select
               value={formData.frequency}
-              onChange={(e) => setFormData({ ...formData, frequency: e.target.value })}
+              onChange={(e) => setFormData({ ...formData, frequency: e.target.value, selectedDays: [], selectedDates: [] })}
               className="w-full px-4 py-3 rounded-xl bg-[#FFF5F0] border-none focus:ring-2 focus:ring-[#FF8C66] text-[#3D2C28]"
             >
               <option value="diario">Todos los días</option>
-              <option value="semanal">Días específicos</option>
+              <option value="semanal">Días específicos (semana)</option>
+              <option value="mensual">Días específicos (mes)</option>
             </select>
           </div>
 
+          {/* Weekly Selection */}
+          {formData.frequency === 'semanal' && (
+            <div>
+              <label className="block text-sm font-medium text-[#A67B6B] mb-2">Selecciona los días</label>
+              <div className="grid grid-cols-7 gap-2">
+                {WEEKDAYS.map((day, index) => (
+                  <button
+                    key={index}
+                    onClick={() => toggleDay(index)}
+                    className={`py-2 rounded-lg text-sm font-medium ${
+                      formData.selectedDays.includes(index)
+                        ? 'bg-[#FF8C66] text-white'
+                        : 'bg-white border border-gray-200 text-gray-600'
+                    }`}
+                  >
+                    {day}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2 mt-2">
+                <button
+                  onClick={() => setFormData({ ...formData, selectedDays: [0, 1, 2, 3, 4, 5, 6] })}
+                  className="text-xs text-[#FF8C66]"
+                >
+                  Seleccionar todos
+                </button>
+                <button
+                  onClick={() => setFormData({ ...formData, selectedDays: [] })}
+                  className="text-xs text-[#A67B6B]"
+                >
+                  Limpiar
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Monthly Selection */}
+          {formData.frequency === 'mensual' && (
+            <div>
+              <label className="block text-sm font-medium text-[#A67B6B] mb-2">Selecciona los días del mes</label>
+              <div className="grid grid-cols-7 gap-2 max-h-64 overflow-y-auto">
+                {MONTH_DATES.map((date) => (
+                  <button
+                    key={date}
+                    onClick={() => toggleDate(date)}
+                    className={`py-2 rounded-lg text-sm font-medium ${
+                      formData.selectedDates.includes(date)
+                        ? 'bg-[#FF8C66] text-white'
+                        : 'bg-white border border-gray-200 text-gray-600'
+                    }`}
+                  >
+                    {date}
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-2 mt-2">
+                <button
+                  onClick={() => setFormData({ ...formData, selectedDates: MONTH_DATES })}
+                  className="text-xs text-[#FF8C66]"
+                >
+                  Seleccionar todos
+                </button>
+                <button
+                  onClick={() => setFormData({ ...formData, selectedDates: [] })}
+                  className="text-xs text-[#A67B6B]"
+                >
+                  Limpiar
+                </button>
+              </div>
+              <p className="text-xs text-[#A67B6B] mt-2">
+                Nota: Si el día no existe en un mes, se omite ese mes.
+              </p>
+            </div>
+          )}
+
           {/* Goal */}
           <div>
-            <label className="block text-sm font-medium text-[#A67B6B] mb-2">Objetivo</label>
+            <label className="block text-sm font-medium text-[#A67B6B] mb-2">Objetivo (min por día)</label>
             <input
               type="range"
-              min="10"
+              min="5"
               max="120"
-              step="10"
+              step="5"
               value={formData.goal}
               onChange={(e) => setFormData({ ...formData, goal: parseInt(e.target.value) })}
               className="w-full"
             />
-            <p className="text-center text-sm text-[#3D2C28] mt-2">{formData.goal} min por día</p>
-          </div>
-
-          {/* Reminder */}
-          <div>
-            <label className="block text-sm font-medium text-[#A67B6B] mb-2">Recordatorio</label>
-            <button
-              onClick={() => setFormData({ ...formData, reminder: !formData.reminder })}
-              className="w-full px-4 py-3 rounded-xl bg-[#FFF5F0] text-[#A67B6B] text-left"
-            >
-              {formData.reminder ? 'Activado' : 'Próximamente'}
-            </button>
+            <p className="text-center text-sm text-[#3D2C28] mt-2">{formData.goal} min</p>
           </div>
         </div>
       </motion.div>
