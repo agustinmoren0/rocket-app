@@ -2,197 +2,325 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { ChevronDown, ChevronRight, Plus, X, Check, Droplet, Dumbbell, BookOpen, Brain, Users, Heart, Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const habitTemplates = [
-  // FÍSICA
-  { id: '1', name: 'Correr por la mañana', desc: 'Energiza tu día desde el inicio', category: 'fisica', icon: 'directions_run', type: 'formar' },
-  { id: '2', name: 'Beber 2L de agua', desc: 'Mantén tu cuerpo hidratado', category: 'fisica', icon: 'water_drop', type: 'formar' },
-  { id: '3', name: 'Hacer ejercicio 30 min', desc: 'Mantén tu cuerpo activo', category: 'fisica', icon: 'fitness_center', type: 'formar' },
-  { id: '4', name: 'Estirar 10 minutos', desc: 'Mejora tu flexibilidad', category: 'fisica', icon: 'self_improvement', type: 'formar' },
-  { id: '5', name: 'Caminar 10,000 pasos', desc: 'Muévete durante el día', category: 'fisica', icon: 'directions_walk', type: 'formar' },
-
-  // MENTAL
-  { id: '6', name: 'Meditar 10 min', desc: 'Calma tu mente', category: 'mental', icon: 'spa', type: 'formar' },
-  { id: '7', name: 'Leer un capítulo', desc: 'Expande tu conocimiento', category: 'mental', icon: 'menu_book', type: 'formar' },
-  { id: '8', name: 'Practicar gratitud', desc: 'Aprecia lo que tienes', category: 'mental', icon: 'favorite', type: 'formar' },
-  { id: '9', name: 'Aprender algo nuevo', desc: 'Nunca dejes de crecer', category: 'mental', icon: 'school', type: 'formar' },
-
-  // CREATIVIDAD
-  { id: '10', name: 'Escribir 500 palabras', desc: 'Desarrolla tu creatividad', category: 'creatividad', icon: 'edit_note', type: 'formar' },
-  { id: '11', name: 'Dibujar 15 minutos', desc: 'Expresa tu arte', category: 'creatividad', icon: 'brush', type: 'formar' },
-  { id: '12', name: 'Tocar un instrumento', desc: 'Practica música', category: 'creatividad', icon: 'music_note', type: 'formar' },
-  { id: '13', name: 'Hacer fotografía', desc: 'Captura momentos', category: 'creatividad', icon: 'photo_camera', type: 'formar' },
-
-  // BIENESTAR
-  { id: '14', name: 'Dormir 8 horas', desc: 'Descansa bien', category: 'bienestar', icon: 'hotel', type: 'formar' },
-  { id: '15', name: 'Desayunar saludable', desc: 'Comienza bien el día', category: 'bienestar', icon: 'restaurant', type: 'formar' },
-  { id: '16', name: 'Desconectar 1 hora', desc: 'Tiempo sin pantallas', category: 'bienestar', icon: 'phonelink_off', type: 'formar' },
-  { id: '17', name: 'Tomar el sol 15 min', desc: 'Vitamina D natural', category: 'bienestar', icon: 'wb_sunny', type: 'formar' },
-
-  // SOCIAL
-  { id: '18', name: 'Llamar a familia', desc: 'Mantén tus conexiones', category: 'social', icon: 'call', type: 'formar' },
-  { id: '19', name: 'Mensaje a un amigo', desc: 'Cultiva amistades', category: 'social', icon: 'chat', type: 'formar' },
-  { id: '20', name: 'Tiempo en pareja', desc: 'Fortalece tu relación', category: 'social', icon: 'favorite', type: 'formar' },
-
-  // DEJAR
-  { id: '21', name: 'No fumar', desc: 'Mejora tu salud', category: 'fisica', icon: 'smoke_free', type: 'dejar' },
-  { id: '22', name: 'Sin redes antes de dormir', desc: 'Mejor descanso', category: 'bienestar', icon: 'bedtime', type: 'dejar' },
-  { id: '23', name: 'Evitar comida chatarra', desc: 'Alimentación saludable', category: 'fisica', icon: 'no_meals', type: 'dejar' },
-  { id: '24', name: 'No postergar tareas', desc: 'Más productividad', category: 'mental', icon: 'schedule', type: 'dejar' },
-  { id: '25', name: 'Reducir cafeína', desc: 'Mejor sueño', category: 'bienestar', icon: 'no_drinks', type: 'dejar' },
-];
-
-const categories = [
-  { id: 'fisica', name: 'Física', icon: 'fitness_center' },
-  { id: 'mental', name: 'Mental', icon: 'psychology' },
-  { id: 'creatividad', name: 'Creatividad', icon: 'palette' },
-  { id: 'bienestar', name: 'Bienestar', icon: 'favorite' },
-  { id: 'social', name: 'Social', icon: 'people' },
-];
+const HABIT_LIBRARY = {
+  fisica: {
+    name: 'Física',
+    icon: Dumbbell,
+    color: '#FF8C66',
+    habits: [
+      { id: 'run', name: 'Correr por la mañana', description: 'Energiza tu día desde el inicio', icon: Dumbbell },
+      { id: 'water', name: 'Beber 2L de agua', description: 'Mantén tu cuerpo hidratado', icon: Droplet },
+      { id: 'exercise', name: 'Hacer ejercicio 30 min', description: 'Mantén tu cuerpo activo', icon: Dumbbell },
+      { id: 'stretch', name: 'Estirar 10 minutos', description: 'Mejora tu flexibilidad', icon: Sparkles },
+      { id: 'walk', name: 'Caminar 10,000 pasos', description: 'Muévete durante el día', icon: Dumbbell },
+    ]
+  },
+  mental: {
+    name: 'Mental',
+    icon: Brain,
+    color: '#9B87F5',
+    habits: [
+      { id: 'meditate', name: 'Meditar 10 min', description: 'Calma tu mente', icon: Brain },
+      { id: 'read', name: 'Leer un capítulo', description: 'Expande tu conocimiento', icon: BookOpen },
+      { id: 'journal', name: 'Escribir diario', description: 'Reflexiona sobre tu día', icon: BookOpen },
+    ]
+  },
+  creatividad: {
+    name: 'Creatividad',
+    icon: Sparkles,
+    color: '#F97316',
+    habits: [
+      { id: 'draw', name: 'Dibujar 15 min', description: 'Expresa tu creatividad', icon: Sparkles },
+      { id: 'write', name: 'Escribir 500 palabras', description: 'Desarrolla tu escritura', icon: BookOpen },
+    ]
+  },
+  bienestar: {
+    name: 'Bienestar',
+    icon: Heart,
+    color: '#FF99AC',
+    habits: [
+      { id: 'sleep', name: 'Dormir 8 horas', description: 'Descansa bien', icon: Heart },
+      { id: 'gratitude', name: 'Lista de gratitud', description: 'Aprecia lo que tienes', icon: Heart },
+    ]
+  },
+  social: {
+    name: 'Social',
+    icon: Users,
+    color: '#8B5CF6',
+    habits: [
+      { id: 'call', name: 'Llamar a un amigo', description: 'Mantén tus conexiones', icon: Users },
+      { id: 'family', name: 'Tiempo en familia', description: 'Fortalece vínculos', icon: Users },
+    ]
+  }
+};
 
 export default function BibliotecaPage() {
   const router = useRouter();
-  const [filter, setFilter] = useState<'formar' | 'dejar'>('formar');
   const [expandedCategory, setExpandedCategory] = useState<string>('fisica');
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [selectedHabit, setSelectedHabit] = useState<any>(null);
 
-  const addHabitFromTemplate = (template: any) => {
-    const habits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
-
-    const newHabit = {
-      id: `habit_${Date.now()}`,
-      name: template.name,
-      category: template.category,
-      icon: template.icon,
-      duration: 30,
-      frequency: 'diario',
-      type: template.type,
-      status: 'active',
-      createdAt: new Date().toISOString(),
-      streak: 0,
-      bestStreak: 0,
-      totalCompletions: 0,
-    };
-
-    habits.push(newHabit);
-    localStorage.setItem('habika_custom_habits', JSON.stringify(habits));
-
-    alert(`✓ Hábito "${template.name}" agregado!`);
-    router.push('/mis-habitos');
+  const handleSelectHabit = (categoryId: string, habit: any) => {
+    const category = HABIT_LIBRARY[categoryId as keyof typeof HABIT_LIBRARY];
+    setSelectedHabit({
+      ...habit,
+      category: categoryId,
+      categoryName: category.name,
+      categoryColor: category.color
+    });
+    setShowCreateModal(true);
   };
 
-  const filteredTemplates = habitTemplates.filter(t => t.type === filter);
-  const groupedByCategory = categories.map(cat => ({
-    ...cat,
-    habits: filteredTemplates.filter(h => h.category === cat.id)
-  })).filter(cat => cat.habits.length > 0);
-
   return (
-    <div className="relative min-h-screen w-full flex flex-col pb-32 bg-[#FFF5F0]">
-      {/* Background blobs */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden -z-10">
-        <div className="absolute -top-20 -left-20 w-80 h-80 bg-[#FF99AC]/30 rounded-full filter blur-3xl opacity-60" />
-        <div className="absolute -top-10 right-0 w-80 h-80 bg-[#FFC0A9]/30 rounded-full filter blur-3xl opacity-60" />
-        <div className="absolute top-40 -right-20 w-80 h-80 bg-[#FDF0D5]/30 rounded-full filter blur-3xl opacity-60" />
-      </div>
-
-      {/* Header sticky */}
-      <header className="sticky top-0 z-20 p-4 pt-16 glass-stitch">
-        <div className="text-center max-w-sm mx-auto">
-          <h1 className="text-3xl font-bold tracking-tight text-[#3D2C28]">
-            Elige tu próximo hábito
-          </h1>
-          <p className="mt-2 text-[#A67B6B]">Explora por categoría o crea uno propio.</p>
+    <div className="min-h-screen bg-[#FFF5F0] pb-32">
+      {/* Header */}
+      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-10">
+        <div className="max-w-md mx-auto px-6 py-4">
+          <h1 className="text-2xl font-bold text-[#3D2C28]">Elige tu próximo hábito</h1>
+          <p className="text-sm text-[#A67B6B] mt-1">Explora por categoría o crea uno propio.</p>
         </div>
       </header>
 
-      <main className="flex-grow flex flex-col p-4 pb-32">
-        {/* Tabs */}
-        <div className="p-1.5 glass-stitch rounded-full flex justify-center items-center w-full max-w-sm mx-auto mb-6">
-          <button
-            onClick={() => setFilter('formar')}
-            className={`flex-1 text-center py-2.5 px-4 rounded-full font-semibold text-sm transition-all ${
-              filter === 'formar' ? 'bg-white/70 text-[#3D2C28] shadow' : 'text-[#A67B6B]'
-            }`}
-          >
-            Formar Hábito
-          </button>
-          <button
-            onClick={() => setFilter('dejar')}
-            className={`flex-1 text-center py-2.5 px-4 rounded-full font-medium text-sm transition-all ${
-              filter === 'dejar' ? 'bg-white/70 text-[#3D2C28] shadow' : 'text-[#A67B6B]'
-            }`}
-          >
-            Dejar
-          </button>
-        </div>
+      {/* Tabs */}
+      <div className="max-w-md mx-auto px-6 py-4 flex gap-3">
+        <button className="px-4 py-2 rounded-full bg-[#FF8C66] text-white font-medium text-sm">
+          Formar Hábito
+        </button>
+        <button className="px-4 py-2 rounded-full bg-white text-[#A67B6B] font-medium text-sm">
+          Dejar
+        </button>
+      </div>
 
-        {/* Categories */}
-        <div className="space-y-4 w-full max-w-sm mx-auto">
-          {groupedByCategory.map((category, index) => {
-            const isExpanded = expandedCategory === category.id;
+      {/* Categories */}
+      <div className="max-w-md mx-auto px-6 space-y-3 pb-6">
+        {Object.entries(HABIT_LIBRARY).map(([categoryId, category]) => {
+          const Icon = category.icon;
+          const isExpanded = expandedCategory === categoryId;
 
-            return (
-              <motion.details
-                key={category.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-                className="glass-stitch rounded-xl overflow-hidden"
-                open={isExpanded}
+          return (
+            <div key={categoryId} className="bg-white rounded-xl overflow-hidden shadow-sm">
+              <button
+                onClick={() => setExpandedCategory(isExpanded ? '' : categoryId)}
+                className="w-full flex items-center justify-between p-4"
               >
-                <summary
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setExpandedCategory(isExpanded ? '' : category.id);
-                  }}
-                  className="flex items-center justify-between p-4 cursor-pointer"
-                >
-                  <h3 className="text-lg font-semibold text-[#3D2C28]">{category.name}</h3>
-                  <span className={`material-symbols-outlined transition-transform ${isExpanded ? 'rotate-180' : ''}`}>
-                    expand_more
-                  </span>
-                </summary>
-
-                {isExpanded && (
-                  <div className="px-3 pb-3 space-y-2">
-                    {category.habits.map((habit) => (
-                      <div
-                        key={habit.id}
-                        className="glass-stitch rounded-lg p-3 flex items-center space-x-4"
-                      >
-                        <div className="w-12 h-12 rounded-lg bg-[#FFC0A9]/50 flex items-center justify-center">
-                          <span className="material-symbols-outlined text-[#3D2C28]">{habit.icon}</span>
-                        </div>
-                        <div className="flex-grow">
-                          <h4 className="font-semibold text-[#3D2C28]">{habit.name}</h4>
-                          <p className="text-xs text-[#A67B6B]">{habit.desc}</p>
-                        </div>
-                        <button
-                          onClick={() => addHabitFromTemplate(habit)}
-                          className="w-10 h-10 flex items-center justify-center rounded-full bg-[#FF8C66]/20 text-[#FF8C66] transition-transform hover:scale-110 active:scale-95"
-                        >
-                          <span className="material-symbols-outlined text-2xl">add</span>
-                        </button>
-                      </div>
-                    ))}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: `${category.color}20` }}>
+                    <Icon className="w-5 h-5" style={{ color: category.color }} />
                   </div>
+                  <span className="font-semibold text-[#3D2C28]">{category.name}</span>
+                </div>
+                {isExpanded ? (
+                  <ChevronDown className="w-5 h-5 text-gray-400" />
+                ) : (
+                  <ChevronRight className="w-5 h-5 text-gray-400" />
                 )}
-              </motion.details>
-            );
-          })}
-        </div>
+              </button>
 
-        {/* Crear hábito personalizado */}
-        <div className="mt-8 w-full max-w-sm mx-auto">
-          <button
-            onClick={() => router.push('/crear-habito')}
-            className="w-full text-center py-3.5 px-5 rounded-xl bg-gradient-to-br from-[#FF8C66] to-[#FF99AC] text-white font-bold shadow-lg transition-transform hover:scale-105 active:scale-95"
-          >
-            Crear hábito personalizado
+              <AnimatePresence>
+                {isExpanded && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="border-t border-gray-100"
+                  >
+                    {category.habits.map((habit) => {
+                      const HabitIcon = habit.icon;
+                      return (
+                        <button
+                          key={habit.id}
+                          onClick={() => handleSelectHabit(categoryId, habit)}
+                          className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-[#FFF5F0] flex items-center justify-center">
+                              <HabitIcon className="w-5 h-5 text-[#FF8C66]" />
+                            </div>
+                            <div className="text-left">
+                              <p className="font-medium text-[#3D2C28]">{habit.name}</p>
+                              <p className="text-xs text-[#A67B6B]">{habit.description}</p>
+                            </div>
+                          </div>
+                          <Plus className="w-5 h-5 text-[#FF8C66]" />
+                        </button>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Custom Habit Button */}
+      <div className="max-w-md mx-auto px-6 pb-6">
+        <button
+          onClick={() => {
+            setSelectedHabit(null);
+            setShowCreateModal(true);
+          }}
+          className="w-full bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white py-4 rounded-full font-semibold shadow-lg hover:scale-105 transition-transform"
+        >
+          Crear hábito personalizado
+        </button>
+      </div>
+
+      {/* Create Modal */}
+      <AnimatePresence>
+        {showCreateModal && (
+          <CreateHabitModal
+            habit={selectedHabit}
+            onClose={() => {
+              setShowCreateModal(false);
+              setSelectedHabit(null);
+            }}
+            onSuccess={() => {
+              setShowCreateModal(false);
+              setSelectedHabit(null);
+              router.push('/mis-habitos');
+            }}
+          />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function CreateHabitModal({ habit, onClose, onSuccess }: any) {
+  const [formData, setFormData] = useState({
+    name: habit?.name || '',
+    category: habit?.category || 'fisica',
+    type: 'formar',
+    frequency: 'diario',
+    goal: 30,
+    reminder: false
+  });
+
+  const handleSave = () => {
+    const habits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
+    const newHabit = {
+      id: `habit_${Date.now()}`,
+      ...formData,
+      status: 'active',
+      createdAt: new Date().toISOString(),
+      icon: habit?.icon || 'star'
+    };
+    habits.push(newHabit);
+    localStorage.setItem('habika_custom_habits', JSON.stringify(habits));
+    onSuccess();
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-end"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: '100%' }}
+        animate={{ y: 0 }}
+        exit={{ y: '100%' }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full bg-white rounded-t-3xl p-6 max-h-[90vh] overflow-y-auto"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <button onClick={onClose} className="text-[#A67B6B]">
+            <X className="w-6 h-6" />
+          </button>
+          <h2 className="text-lg font-bold text-[#3D2C28]">Nuevo hábito</h2>
+          <button onClick={handleSave} className="text-[#FF8C66] font-semibold">
+            <Check className="w-6 h-6" />
           </button>
         </div>
-      </main>
-    </div>
+
+        {/* Form */}
+        <div className="space-y-6">
+          {/* Name */}
+          <div>
+            <label className="block text-sm font-medium text-[#A67B6B] mb-2">Nombre del hábito</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full px-4 py-3 rounded-xl bg-[#FFF5F0] border-none focus:ring-2 focus:ring-[#FF8C66] text-[#3D2C28]"
+              placeholder="Ej: Meditar 10 minutos"
+            />
+          </div>
+
+          {/* Type */}
+          <div>
+            <label className="block text-sm font-medium text-[#A67B6B] mb-2">Tipo</label>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setFormData({ ...formData, type: 'formar' })}
+                className={`flex-1 py-3 rounded-xl font-medium ${
+                  formData.type === 'formar'
+                    ? 'bg-[#FF8C66] text-white'
+                    : 'bg-white border border-gray-200 text-gray-600'
+                }`}
+              >
+                ✨ A Formar
+              </button>
+              <button
+                onClick={() => setFormData({ ...formData, type: 'dejar' })}
+                className={`flex-1 py-3 rounded-xl font-medium ${
+                  formData.type === 'dejar'
+                    ? 'bg-[#FF8C66] text-white'
+                    : 'bg-white border border-gray-200 text-gray-600'
+                }`}
+              >
+                🚫 A Dejar
+              </button>
+            </div>
+          </div>
+
+          {/* Frequency */}
+          <div>
+            <label className="block text-sm font-medium text-[#A67B6B] mb-2">Repetir</label>
+            <select
+              value={formData.frequency}
+              onChange={(e) => setFormData({ ...formData, frequency: e.target.value })}
+              className="w-full px-4 py-3 rounded-xl bg-[#FFF5F0] border-none focus:ring-2 focus:ring-[#FF8C66] text-[#3D2C28]"
+            >
+              <option value="diario">Todos los días</option>
+              <option value="semanal">Días específicos</option>
+            </select>
+          </div>
+
+          {/* Goal */}
+          <div>
+            <label className="block text-sm font-medium text-[#A67B6B] mb-2">Objetivo</label>
+            <input
+              type="range"
+              min="10"
+              max="120"
+              step="10"
+              value={formData.goal}
+              onChange={(e) => setFormData({ ...formData, goal: parseInt(e.target.value) })}
+              className="w-full"
+            />
+            <p className="text-center text-sm text-[#3D2C28] mt-2">{formData.goal} min por día</p>
+          </div>
+
+          {/* Reminder */}
+          <div>
+            <label className="block text-sm font-medium text-[#A67B6B] mb-2">Recordatorio</label>
+            <button
+              onClick={() => setFormData({ ...formData, reminder: !formData.reminder })}
+              className="w-full px-4 py-3 rounded-xl bg-[#FFF5F0] text-[#A67B6B] text-left"
+            >
+              {formData.reminder ? 'Activado' : 'Próximamente'}
+            </button>
+          </div>
+        </div>
+      </motion.div>
+    </motion.div>
   );
 }
