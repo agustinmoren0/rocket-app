@@ -3,13 +3,16 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Flame, Plus } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import confetti from 'canvas-confetti';
 import { LUCIDE_ICONS } from '../utils/icons';
 
 export default function HabitosPage() {
   const router = useRouter();
   const [filter, setFilter] = useState<'formar' | 'dejar' | 'todos'>('formar');
   const [habits, setHabits] = useState<any[]>([]);
+  const [swipedHabit, setSwipedHabit] = useState<string | null>(null);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
 
   useEffect(() => {
     loadHabits();
@@ -49,11 +52,58 @@ export default function HabitosPage() {
     if (existing >= 0) {
       completions[habitId].splice(existing, 1);
     } else {
-      completions[habitId].push({ date: today, status: 'completed' });
+      completions[habitId].push({ date: today, status: 'completed', timestamp: new Date().toISOString() });
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
     }
 
     localStorage.setItem('habika_completions', JSON.stringify(completions));
     loadHabits();
+  };
+
+  const handleTouchStart = (e: React.TouchEvent, habitId: string) => {
+    setTouchStart(e.touches[0].clientX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent, habitId: string) => {
+    if (!touchStart) return;
+    const touchEnd = e.changedTouches[0].clientX;
+    const diff = touchStart - touchEnd;
+
+    if (Math.abs(diff) > 50) {
+      if (diff > 0) setSwipedHabit(habitId);
+      else setSwipedHabit(null);
+    }
+    setTouchStart(null);
+  };
+
+  const handlePause = (habitId: string) => {
+    const reason = prompt('¿Por qué pausas este hábito?');
+    if (!reason) return;
+
+    const allHabits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
+    const updated = allHabits.map((h: any) =>
+      h.id === habitId
+        ? { ...h, status: 'paused', pausedAt: new Date().toISOString(), pausedReason: reason }
+        : h
+    );
+
+    localStorage.setItem('habika_custom_habits', JSON.stringify(updated));
+    loadHabits();
+    setSwipedHabit(null);
+  };
+
+  const handleDelete = (habitId: string) => {
+    if (confirm('¿Eliminar este hábito?\nSe perderá todo el historial.')) {
+      const allHabits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
+      const updated = allHabits.filter((h: any) => h.id !== habitId);
+      localStorage.setItem('habika_custom_habits', JSON.stringify(updated));
+      loadHabits();
+      setSwipedHabit(null);
+    }
   };
 
   const isCompletedToday = (habitId: string) => {
@@ -113,9 +163,36 @@ export default function HabitosPage() {
                 key={habit.id}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-xl p-4 shadow-sm"
+                onTouchStart={(e) => handleTouchStart(e as any, habit.id)}
+                onTouchEnd={(e) => handleTouchEnd(e as any, habit.id)}
+                className="relative bg-white rounded-xl shadow-sm overflow-hidden"
               >
-                <div className="flex items-center justify-between">
+                {/* Swipe Actions */}
+                <AnimatePresence>
+                  {swipedHabit === habit.id && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      className="absolute inset-0 flex items-center justify-end gap-2 px-4 bg-red-50 z-10"
+                    >
+                      <button
+                        onClick={() => handlePause(habit.id)}
+                        className="px-3 py-2 bg-yellow-500 text-white rounded-lg text-xs font-medium"
+                      >
+                        Pausar
+                      </button>
+                      <button
+                        onClick={() => handleDelete(habit.id)}
+                        className="px-3 py-2 bg-red-500 text-white rounded-lg text-xs font-medium"
+                      >
+                        Eliminar
+                      </button>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <div className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3 flex-1">
                     <div className="w-12 h-12 rounded-full bg-[#FFF5F0] flex items-center justify-center">
                       <Icon className="w-6 h-6 text-[#FF8C66]" />

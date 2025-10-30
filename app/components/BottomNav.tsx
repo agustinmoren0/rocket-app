@@ -13,7 +13,7 @@ export default function BottomNav() {
   const navItems = [
     { icon: Home, label: 'Hoy', path: '/' },
     { icon: Rocket, label: 'Actividades', path: '/actividades' },
-    { icon: CheckSquare, label: 'Hábitos', path: '/mis-habitos' },
+    { icon: CheckSquare, label: 'Hábitos', path: '/habitos' },
     { icon: User, label: 'Perfil', path: '/perfil' },
   ];
 

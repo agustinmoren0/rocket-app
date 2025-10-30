@@ -31,7 +31,7 @@ export default function DesktopSidebar() {
   const allMenuItems: MenuItem[] = [
     { icon: Home, label: 'Inicio', path: '/', hotkey: '1' },
     { icon: Activity, label: 'Actividades', path: '/actividades', hotkey: '2' },
-    { icon: FileText, label: 'Mis Hábitos', path: '/mis-habitos', hotkey: '3' },
+    { icon: FileText, label: 'Mis Hábitos', path: '/habitos', hotkey: '3' },
     { icon: Calendar, label: 'Calendario', path: '/calendario', hotkey: '4' },
     { icon: TrendingUp, label: 'Progreso', path: '/progreso', hotkey: '5' },
     { icon: BookOpen, label: 'Reflexiones', path: '/reflexiones', hotkey: '6' },

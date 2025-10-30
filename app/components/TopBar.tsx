@@ -4,7 +4,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useTheme } from '../context/ThemeContext';
 import { useCycle } from '../context/CycleContext';
 import { useUser } from '../context/UserContext';
-import { Settings, Heart } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function TopBar() {
@@ -18,7 +18,7 @@ export default function TopBar() {
   if (pathname === '/onboarding') return null;
 
   return (
-    <div className="lg:hidden fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-b border-slate-200 z-30">
+    <div className="hidden lg:block fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-b border-slate-200 z-30">
       <div className="flex items-center justify-between px-6 h-16">
         {/* Logo/Brand */}
         <div className="flex items-center gap-3">
@@ -40,7 +40,7 @@ export default function TopBar() {
               onClick={() => router.push('/modo-ciclo')}
               className="relative p-2 bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl border border-rose-200"
             >
-              <Heart size={20} className="text-rose-500" />
+              <span className="text-xl">🌸</span>
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-rose-500 rounded-full border-2 border-white" />
             </motion.button>
           )}

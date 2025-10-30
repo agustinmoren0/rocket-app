@@ -15,6 +15,9 @@ const HABIT_LIBRARY = {
         { id: 'run', name: 'Correr por la mañana', description: 'Energiza tu día', icon: 'Dumbbell' },
         { id: 'water', name: 'Beber 2L de agua', description: 'Mantén hidratado', icon: 'Droplet' },
         { id: 'exercise', name: 'Hacer ejercicio', description: 'Mantén activo', icon: 'Activity' },
+        { id: 'yoga', name: 'Práctica de yoga', description: 'Flexibilidad y paz', icon: 'Sprout' },
+        { id: 'walk', name: 'Caminar 30 min', description: 'Movimiento diario', icon: 'Footprints' },
+        { id: 'stretch', name: 'Estiramientos', description: 'Reduce tensión muscular', icon: 'Wind' },
       ]
     },
     mental: {
@@ -23,17 +26,77 @@ const HABIT_LIBRARY = {
       habits: [
         { id: 'meditate', name: 'Meditar', description: 'Calma tu mente', icon: 'Brain' },
         { id: 'read', name: 'Leer un capítulo', description: 'Expande conocimiento', icon: 'BookOpen' },
+        { id: 'journal', name: 'Escribir en diario', description: 'Reflexión personal', icon: 'Pen' },
+        { id: 'mindfulness', name: 'Mindfulness', description: 'Presencia en el momento', icon: 'Zap' },
+        { id: 'learn', name: 'Aprender algo nuevo', description: 'Desarrollo continuo', icon: 'Lightbulb' },
+      ]
+    },
+    creatividad: {
+      name: 'Creatividad',
+      icon: 'Palette',
+      habits: [
+        { id: 'draw', name: 'Dibujar', description: 'Expresión artística', icon: 'Palette' },
+        { id: 'write', name: 'Escribir historias', description: 'Narrativa creativa', icon: 'PenTool' },
+        { id: 'music', name: 'Tocar instrumento', description: 'Música y expresión', icon: 'Music' },
+        { id: 'photo', name: 'Fotografía', description: 'Captura momentos', icon: 'Camera' },
+        { id: 'craft', name: 'Manualidades', description: 'Crear con tus manos', icon: 'Hammer' },
+        { id: 'poetry', name: 'Escribir poesía', description: 'Verso y ritmo', icon: 'Bookmark' },
+      ]
+    },
+    bienestar: {
+      name: 'Bienestar',
+      icon: 'Heart',
+      habits: [
+        { id: 'sleep', name: '8 horas de sueño', description: 'Descanso reparador', icon: 'Moon' },
+        { id: 'skincare', name: 'Rutina de cuidado', description: 'Cuida tu piel', icon: 'Sparkles' },
+        { id: 'bath', name: 'Baño relajante', description: 'Momento de relax', icon: 'Droplets' },
+        { id: 'massage', name: 'Auto-masaje', description: 'Relieve de tensión', icon: 'Hand' },
+        { id: 'nature', name: 'Tiempo en naturaleza', description: 'Conexión verde', icon: 'Trees' },
+        { id: 'gratitude', name: 'Lista de gratitud', description: 'Aprecia la vida', icon: 'Smile' },
+      ]
+    },
+    social: {
+      name: 'Social',
+      icon: 'Users',
+      habits: [
+        { id: 'call', name: 'Llamar a un amigo', description: 'Mantén conexiones', icon: 'Phone' },
+        { id: 'volunteer', name: 'Voluntariado', description: 'Ayuda a otros', icon: 'Heart' },
+        { id: 'hobby_group', name: 'Club de hobbs', description: 'Comunidad y diversión', icon: 'Users' },
+        { id: 'family_time', name: 'Tiempo familiar', description: 'Conexión cercana', icon: 'Users2' },
+        { id: 'mentor', name: 'Mentoría', description: 'Comparte conocimiento', icon: 'Briefcase' },
+        { id: 'dinner', name: 'Cena con amigos', description: 'Socializa', icon: 'UtensilsCrossed' },
+      ]
+    },
+    productividad: {
+      name: 'Productividad',
+      icon: 'Zap',
+      habits: [
+        { id: 'goal_plan', name: 'Planificar metas', description: 'Establece objetivos', icon: 'Target' },
+        { id: 'focus_work', name: 'Trabajo sin distracciones', description: 'Deep work', icon: 'Zap' },
+        { id: 'organize', name: 'Organizar espacio', description: 'Limpieza y orden', icon: 'Inbox' },
+        { id: 'admin', name: 'Tareas administrativas', description: 'Papelería al día', icon: 'FileText' },
+        { id: 'budget', name: 'Revisar presupuesto', description: 'Control financiero', icon: 'DollarSign' },
+        { id: 'plan_week', name: 'Planificar semana', description: 'Organización semanal', icon: 'Calendar' },
       ]
     },
   },
   dejar: {
     malos_habitos: {
-      name: 'Malos Hábitos',
+      name: 'Hábitos a Dejar',
       icon: 'Flame',
       habits: [
-        { id: 'smoke', name: 'Dejar de fumar', description: 'Mejora tu salud', icon: 'Flame' },
+        { id: 'smoke', name: 'Dejar de fumar', description: 'Salud pulmón', icon: 'Wind' },
+        { id: 'alcohol', name: 'Reducir alcohol', description: 'Salud integral', icon: 'Wine2' },
         { id: 'junk_food', name: 'Evitar comida chatarra', description: 'Alimentación saludable', icon: 'Pizza' },
-        { id: 'procrastinate', name: 'Dejar de procrastinar', description: 'Ser más productivo', icon: 'Clock' },
+        { id: 'sugar', name: 'Reducir azúcares', description: 'Energía estable', icon: 'Candy' },
+        { id: 'soda', name: 'Evitar refrescos', description: 'Menos calorías', icon: 'Droplet' },
+        { id: 'junk_snacks', name: 'Evitar snacks ultraprocesados', description: 'Nutrición mejor', icon: 'Zap' },
+        { id: 'social_media', name: 'Reducir redes sociales', description: 'Menos distracción', icon: 'MessageCircle' },
+        { id: 'phone_bed', name: 'No teléfono en cama', description: 'Mejor sueño', icon: 'Smartphone' },
+        { id: 'late_night', name: 'No trasnochar', description: 'Ritmo circadiano', icon: 'Clock' },
+        { id: 'procrastinate', name: 'Dejar de procrastinar', description: 'Ser más productivo', icon: 'AlertCircle' },
+        { id: 'negative_talk', name: 'Autocrítica negativa', description: 'Amor propio', icon: 'Brain' },
+        { id: 'comparison', name: 'Dejar de compararse', description: 'Aceptación propia', icon: 'Smile' },
       ]
     },
   }
@@ -203,10 +266,15 @@ function CreateHabitModal({ habit, onClose, onSuccess }: any) {
 
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [showUnitPicker, setShowUnitPicker] = useState(false);
+  const [unitScroll, setUnitScroll] = useState(0);
 
   const WEEKDAYS = ['DO', 'LU', 'MA', 'MI', 'JU', 'VI', 'SA'];
 
   const handleSave = () => {
+    if (!formData.name.trim()) {
+      alert('Por favor ingresa un nombre para el hábito');
+      return;
+    }
     const habits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
     const newHabit = {
       id: `habit_${Date.now()}`,
@@ -316,46 +384,68 @@ function CreateHabitModal({ habit, onClose, onSuccess }: any) {
 
           {/* Step 2: Goal */}
           {step === 2 && (
-            <div className="space-y-6">
-              <div className="text-center">
-                <div className="text-6xl font-bold text-[#3D2C28] mb-2">{formData.goalValue}</div>
-                <button
-                  onClick={() => setShowUnitPicker(!showUnitPicker)}
-                  className="text-[#A67B6B] text-lg"
-                >
-                  {GOAL_UNITS.find(u => u.value === formData.goalUnit)?.label} →
-                </button>
+            <div className="space-y-8">
+              <div className="flex items-baseline justify-center gap-3">
+                <input
+                  type="number"
+                  value={formData.goalValue}
+                  onChange={(e) => setFormData({ ...formData, goalValue: parseInt(e.target.value) || 0 })}
+                  className="w-24 text-5xl font-bold text-[#3D2C28] bg-[#FFF5F0] rounded-xl py-3 px-2 text-center outline-none border-2 border-transparent focus:border-[#FF8C66]"
+                />
+                <div className="flex flex-col items-start">
+                  <button
+                    onClick={() => setShowUnitPicker(!showUnitPicker)}
+                    className="text-[#FF8C66] font-bold text-lg px-4 py-2 rounded-lg bg-[#FFF5F0] hover:bg-[#FFE0D5] transition-colors"
+                  >
+                    {GOAL_UNITS.find(u => u.value === formData.goalUnit)?.label}
+                  </button>
+                  <p className="text-xs text-[#A67B6B] mt-1 px-4">por día</p>
+                </div>
               </div>
 
               {showUnitPicker && (
-                <div className="grid grid-cols-3 gap-2 p-3 bg-[#FFF5F0] rounded-xl max-h-64 overflow-y-auto">
-                  {GOAL_UNITS.map((unit) => (
-                    <button
-                      key={unit.value}
-                      onClick={() => {
-                        setFormData({ ...formData, goalUnit: unit.value });
-                        setShowUnitPicker(false);
-                      }}
-                      className={`py-2 px-3 rounded-lg text-sm ${
-                        formData.goalUnit === unit.value
-                          ? 'bg-[#FF8C66] text-white'
-                          : 'bg-white text-[#3D2C28]'
-                      }`}
-                    >
-                      {unit.label}
-                    </button>
-                  ))}
-                </div>
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  exit={{ opacity: 0, height: 0 }}
+                  className="p-4 bg-[#FFF5F0] rounded-2xl space-y-2"
+                >
+                  <p className="text-xs font-semibold text-[#A67B6B] uppercase mb-3">Selecciona unidad</p>
+                  <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
+                    {GOAL_UNITS.map((unit) => (
+                      <button
+                        key={unit.value}
+                        onClick={() => {
+                          setFormData({ ...formData, goalUnit: unit.value });
+                          setShowUnitPicker(false);
+                        }}
+                        className={`py-3 px-2 rounded-lg text-sm font-medium transition-all ${
+                          formData.goalUnit === unit.value
+                            ? 'bg-[#FF8C66] text-white scale-105'
+                            : 'bg-white text-[#3D2C28] hover:bg-gray-50'
+                        }`}
+                      >
+                        {unit.label}
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
               )}
 
-              <input
-                type="range"
-                min="1"
-                max="240"
-                value={formData.goalValue}
-                onChange={(e) => setFormData({ ...formData, goalValue: parseInt(e.target.value) })}
-                className="w-full h-2 bg-[#FFF5F0] rounded-lg appearance-none cursor-pointer accent-[#FF8C66]"
-              />
+              <div className="space-y-3">
+                <input
+                  type="range"
+                  min="1"
+                  max="240"
+                  value={formData.goalValue}
+                  onChange={(e) => setFormData({ ...formData, goalValue: parseInt(e.target.value) })}
+                  className="w-full h-3 bg-[#FFF5F0] rounded-lg appearance-none cursor-pointer accent-[#FF8C66]"
+                />
+                <div className="flex justify-between text-xs text-[#A67B6B]">
+                  <span>1</span>
+                  <span>240</span>
+                </div>
+              </div>
             </div>
           )}
 

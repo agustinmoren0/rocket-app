@@ -71,7 +71,7 @@ export default function CrearHabitoPage() {
     habits.push(newHabit);
     localStorage.setItem('habika_custom_habits', JSON.stringify(habits));
 
-    router.push('/mis-habitos');
+    router.push('/habitos');
   };
 
   return (

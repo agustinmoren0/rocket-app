@@ -51,7 +51,7 @@ export default function EditarHabitoPage() {
         : h
     );
     localStorage.setItem('habika_custom_habits', JSON.stringify(updatedHabits));
-    router.push('/mis-habitos');
+    router.push('/habitos');
   };
 
   if (!habit) {
