@@ -110,14 +110,14 @@ export default function DashboardPage() {
         <div className="absolute top-20 -right-20 w-80 h-80 bg-[#FDF0D5]/30 rounded-full filter blur-3xl opacity-60 animate-float" style={{ animationDelay: '4s' }} />
       </div>
 
-      <header className="relative flex items-center justify-between p-6 pb-2 pt-8 z-10">
+      <header className="relative flex items-center justify-between px-6 pt-6 pb-4 z-10">
         <div className="flex flex-col">
-          <p className="text-[#A67B6B] text-base">Hola, {username}</p>
-          <p className="text-[#3D2C28] text-2xl font-bold tracking-tight">{getGreeting()}</p>
+          <p className="text-[#A67B6B] text-sm leading-none">Hola, {username}</p>
+          <p className="text-[#3D2C28] text-xl font-bold tracking-tight">{getGreeting()}</p>
         </div>
         <button
           onClick={() => router.push('/estadisticas')}
-          className="flex items-center justify-center h-12 w-12 rounded-full glass-stitch hover:scale-105 transition-transform"
+          className="flex items-center justify-center h-10 w-10 rounded-full glass-stitch hover:scale-105 transition-transform"
         >
           <TrendingUp className="w-5 h-5 text-[#3D2C28]" />
         </button>
