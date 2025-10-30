@@ -437,23 +437,23 @@ function PersonalizarHabitModal({ habit, type, onClose, onSuccess }: any) {
 }
 
 // ========== CREAR HÁBITO PERSONALIZADO MODAL ==========
-function CrearHabitoModal({ type: defaultType, onClose, onSuccess }: any) {
+function CrearHabitoModal({ defaultType, onClose, onSuccess, editingHabit }: any) {
   const [formData, setFormData] = useState({
-    name: '',
-    icon: 'Star',
-    color: '#FF8C66',
-    type: defaultType || 'formar',
-    goalValue: 1,
-    goalUnit: 'veces',
-    frequency: 'diario',
-    frequencyInterval: 1,
-    selectedDays: [] as number[],
-    selectedDates: [] as number[],
+    name: editingHabit?.name || '',
+    icon: editingHabit?.icon || 'Star',
+    color: editingHabit?.color || '#FFC0A9',
+    type: editingHabit?.type || defaultType || 'formar',
+    goalValue: editingHabit?.goalValue || 1,
+    goalUnit: editingHabit?.goalUnit || 'veces',
+    frequency: editingHabit?.frequency || 'diario',
+    frequencyInterval: editingHabit?.frequencyInterval || 1,
+    selectedDays: editingHabit?.daysOfWeek || [],
+    selectedDates: editingHabit?.datesOfMonth || [],
   });
 
   const [showIconPicker, setShowIconPicker] = useState(false);
 
-  const COLORS = ['#FF8C66', '#FF99AC', '#FFC0A9', '#9C6B98', '#6B9B9E', '#FFD166'];
+  const COLORS = ['#FFC0A9', '#FF99AC', '#FFB4A8', '#E8A598', '#D4A5A5', '#C9A0A0'];
   const WEEKDAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
   const MONTH_DATES = Array.from({ length: 31 }, (_, i) => i + 1);
 
@@ -464,22 +464,45 @@ function CrearHabitoModal({ type: defaultType, onClose, onSuccess }: any) {
     }
 
     const habits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
-    habits.push({
-      id: `habit_${Date.now()}`,
-      name: formData.name,
-      icon: formData.icon,
-      color: formData.color,
-      type: formData.type,
-      goalValue: formData.goalValue,
-      goalUnit: formData.goalUnit,
-      frequency: formData.frequency,
-      frequencyInterval: formData.frequencyInterval,
-      daysOfWeek: formData.selectedDays,
-      datesOfMonth: formData.selectedDates,
-      status: 'active',
-      createdAt: new Date().toISOString(),
-      completedDates: [],
-    });
+
+    if (editingHabit) {
+      // Editar hábito existente
+      const index = habits.findIndex((h: any) => h.id === editingHabit.id);
+      if (index !== -1) {
+        habits[index] = {
+          ...habits[index],
+          name: formData.name,
+          icon: formData.icon,
+          color: formData.color,
+          type: formData.type,
+          goalValue: formData.goalValue,
+          goalUnit: formData.goalUnit,
+          frequency: formData.frequency,
+          frequencyInterval: formData.frequencyInterval,
+          daysOfWeek: formData.selectedDays,
+          datesOfMonth: formData.selectedDates,
+        };
+      }
+    } else {
+      // Crear nuevo hábito
+      habits.push({
+        id: `habit_${Date.now()}`,
+        name: formData.name,
+        icon: formData.icon,
+        color: formData.color,
+        type: formData.type,
+        goalValue: formData.goalValue,
+        goalUnit: formData.goalUnit,
+        frequency: formData.frequency,
+        frequencyInterval: formData.frequencyInterval,
+        daysOfWeek: formData.selectedDays,
+        datesOfMonth: formData.selectedDates,
+        status: 'active',
+        createdAt: new Date().toISOString(),
+        completedDates: [],
+      });
+    }
+
     localStorage.setItem('habika_custom_habits', JSON.stringify(habits));
     onSuccess();
   };
@@ -506,43 +529,46 @@ function CrearHabitoModal({ type: defaultType, onClose, onSuccess }: any) {
           <button onClick={onClose} className="text-[#A67B6B] font-medium">
             Cancelar
           </button>
-          <h2 className="text-lg font-bold text-[#3D2C28]">Nuevo hábito</h2>
+          <h2 className="text-lg font-bold text-[#3D2C28]">
+            {editingHabit ? 'Editar hábito' : 'Nuevo hábito'}
+          </h2>
           <button
             onClick={handleSave}
-            className="px-4 py-2 bg-[#FF8C66] text-white rounded-full text-sm font-semibold"
+            className="px-4 py-2 rounded-full text-white text-sm font-semibold"
+            style={{ backgroundColor: '#FF99AC' }}
           >
             Guardar
           </button>
         </div>
 
         {/* Contenido scrolleable */}
-        <div className="flex-1 overflow-y-auto pb-6">
+        <div className="flex-1 overflow-y-auto pb-28">
           <div className="p-6 space-y-6">
 
-            {/* Icono + Nombre en la misma línea */}
+            {/* Icono + Nombre */}
             <div>
               <label className="block text-sm font-semibold text-[#3D2C28] mb-2">Nombre del hábito</label>
-              <div className="flex items-center gap-3 bg-[#FFF5F0] rounded-xl p-3">
+              <div className="flex items-center gap-3 rounded-xl p-3" style={{ backgroundColor: '#FFF5F0' }}>
                 <button
                   onClick={() => setShowIconPicker(!showIconPicker)}
                   className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 transition-transform hover:scale-110"
-                  style={{ backgroundColor: `${formData.color}20` }}
+                  style={{ backgroundColor: formData.color }}
                 >
-                  <SelectedIcon className="w-6 h-6" style={{ color: formData.color }} />
+                  <SelectedIcon className="w-6 h-6 text-white" />
                 </button>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="Ej: Meditar 10 minutos"
-                  className="flex-1 bg-transparent border-none text-[#3D2C28] placeholder:text-[#A67B6B] focus:outline-none text-base"
+                  className="flex-1 bg-transparent border-none text-[#3D2C28] placeholder:text-[#A67B6B] focus:outline-none"
                 />
               </div>
 
-              {/* Selector de iconos expandible */}
+              {/* Selector de iconos */}
               {showIconPicker && (
-                <div className="mt-3 grid grid-cols-6 gap-2 bg-[#FFF5F0] rounded-xl p-3">
-                  {['Star', 'Heart', 'Zap', 'Flame', 'Target', 'Sparkles', 'Brain', 'Dumbbell', 'Music', 'Camera', 'Book', 'Coffee'].map((iconName) => {
+                <div className="mt-3 grid grid-cols-6 gap-2 rounded-xl p-3" style={{ backgroundColor: '#FFF5F0' }}>
+                  {Object.keys(LUCIDE_ICONS).slice(0, 36).map((iconName) => {
                     const Icon = LUCIDE_ICONS[iconName];
                     return (
                       <button
@@ -551,11 +577,18 @@ function CrearHabitoModal({ type: defaultType, onClose, onSuccess }: any) {
                           setFormData({ ...formData, icon: iconName });
                           setShowIconPicker(false);
                         }}
-                        className={`w-full aspect-square rounded-lg flex items-center justify-center transition-all ${
-                          formData.icon === iconName ? 'bg-white shadow-md ring-2 ring-[#FF8C66]' : 'bg-transparent hover:bg-white/50'
-                        }`}
+                        className={`w-full aspect-square rounded-lg flex items-center justify-center transition-all`}
+                        style={{
+                          backgroundColor: formData.icon === iconName ? formData.color : 'white',
+                          outline: formData.icon === iconName ? `2px solid ${formData.color}` : 'none',
+                        }}
                       >
-                        {Icon && <Icon className="w-5 h-5" style={{ color: formData.color }} />}
+                        {Icon && (
+                          <Icon
+                            className="w-5 h-5"
+                            style={{ color: formData.icon === iconName ? 'white' : formData.color }}
+                          />
+                        )}
                       </button>
                     );
                   })}
@@ -571,10 +604,12 @@ function CrearHabitoModal({ type: defaultType, onClose, onSuccess }: any) {
                   <button
                     key={color}
                     onClick={() => setFormData({ ...formData, color })}
-                    className={`w-12 h-12 rounded-full transition-all flex items-center justify-center ${
+                    className={`w-12 h-12 rounded-full transition-transform flex items-center justify-center ${
                       formData.color === color ? 'ring-4 ring-offset-2 scale-110' : ''
                     }`}
-                    style={{ backgroundColor: color }}
+                    style={{
+                      backgroundColor: color,
+                    }}
                   >
                     {formData.color === color && (
                       <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
@@ -592,23 +627,23 @@ function CrearHabitoModal({ type: defaultType, onClose, onSuccess }: any) {
               <div className="flex gap-3">
                 <button
                   onClick={() => setFormData({ ...formData, type: 'formar' })}
-                  className={`flex-1 py-3 rounded-xl font-medium transition-colors ${
-                    formData.type === 'formar'
-                      ? 'bg-[#FF8C66] text-white'
-                      : 'bg-[#FFF5F0] text-[#A67B6B]'
-                  }`}
+                  className={`flex-1 py-3 rounded-xl font-medium transition-colors text-white`}
+                  style={{
+                    backgroundColor: formData.type === 'formar' ? '#FF99AC' : '#FFF5F0',
+                    color: formData.type === 'formar' ? 'white' : '#A67B6B',
+                  }}
                 >
-                  ✨ A Formar
+                  A Formar
                 </button>
                 <button
                   onClick={() => setFormData({ ...formData, type: 'dejar' })}
-                  className={`flex-1 py-3 rounded-xl font-medium transition-colors ${
-                    formData.type === 'dejar'
-                      ? 'bg-[#FF8C66] text-white'
-                      : 'bg-[#FFF5F0] text-[#A67B6B]'
-                  }`}
+                  className={`flex-1 py-3 rounded-xl font-medium transition-colors`}
+                  style={{
+                    backgroundColor: formData.type === 'dejar' ? '#FF99AC' : '#FFF5F0',
+                    color: formData.type === 'dejar' ? 'white' : '#A67B6B',
+                  }}
                 >
-                  🚫 A Dejar
+                  A Dejar
                 </button>
               </div>
             </div>
@@ -622,19 +657,32 @@ function CrearHabitoModal({ type: defaultType, onClose, onSuccess }: any) {
                   min="1"
                   value={formData.goalValue}
                   onChange={(e) => setFormData({ ...formData, goalValue: parseInt(e.target.value) || 1 })}
-                  className="w-20 px-4 py-3 rounded-xl bg-[#FFF5F0] text-center font-semibold text-[#3D2C28] border-2 border-transparent focus:border-[#FF8C66] focus:outline-none"
+                  className="w-20 px-4 py-3 rounded-xl text-center font-semibold text-[#3D2C28] border-2 focus:outline-none"
+                  style={{
+                    backgroundColor: '#FFF5F0',
+                    borderColor: formData.color,
+                  }}
                 />
                 <select
                   value={formData.goalUnit}
                   onChange={(e) => setFormData({ ...formData, goalUnit: e.target.value })}
-                  className="flex-1 px-4 py-3 rounded-xl bg-[#FFF5F0] text-[#3D2C28] font-medium border-none focus:outline-none focus:ring-2 focus:ring-[#FF8C66]"
+                  className="flex-1 px-4 py-3 rounded-xl text-[#3D2C28] font-medium border-none focus:outline-none"
+                  style={{ backgroundColor: '#FFF5F0' }}
                 >
                   <option value="veces">Veces</option>
                   <option value="min">Minutos</option>
-                  <option value="horas">Horas</option>
+                  <option value="hora(s)">Hora(s)</option>
                   <option value="km">Kilómetros</option>
-                  <option value="litros">Litros</option>
+                  <option value="milla(s)">Milla(s)</option>
+                  <option value="litro(s)">Litro(s)</option>
+                  <option value="ml">Mililitros</option>
+                  <option value="vaso(s)">Vaso(s)</option>
+                  <option value="kg">Kilogramos</option>
+                  <option value="gramo(s)">Gramo(s)</option>
+                  <option value="libra(s)">Libra(s)</option>
+                  <option value="onza(s)">Onza(s)</option>
                   <option value="páginas">Páginas</option>
+                  <option value="pedazo(s)">Pedazo(s)</option>
                 </select>
               </div>
             </div>
@@ -647,38 +695,38 @@ function CrearHabitoModal({ type: defaultType, onClose, onSuccess }: any) {
               <div className="flex gap-2 mb-4">
                 <button
                   onClick={() => setFormData({ ...formData, frequency: 'diario' })}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    formData.frequency === 'diario'
-                      ? 'bg-[#FF8C66] text-white'
-                      : 'bg-[#FFF5F0] text-[#A67B6B]'
-                  }`}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors`}
+                  style={{
+                    backgroundColor: formData.frequency === 'diario' ? '#FF99AC' : '#FFF5F0',
+                    color: formData.frequency === 'diario' ? 'white' : '#A67B6B',
+                  }}
                 >
                   Diario
                 </button>
                 <button
                   onClick={() => setFormData({ ...formData, frequency: 'semanal', selectedDays: [] })}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    formData.frequency === 'semanal'
-                      ? 'bg-[#FF8C66] text-white'
-                      : 'bg-[#FFF5F0] text-[#A67B6B]'
-                  }`}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors`}
+                  style={{
+                    backgroundColor: formData.frequency === 'semanal' ? '#FF99AC' : '#FFF5F0',
+                    color: formData.frequency === 'semanal' ? 'white' : '#A67B6B',
+                  }}
                 >
                   Semanal
                 </button>
                 <button
                   onClick={() => setFormData({ ...formData, frequency: 'mensual', selectedDates: [] })}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    formData.frequency === 'mensual'
-                      ? 'bg-[#FF8C66] text-white'
-                      : 'bg-[#FFF5F0] text-[#A67B6B]'
-                  }`}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors`}
+                  style={{
+                    backgroundColor: formData.frequency === 'mensual' ? '#FF99AC' : '#FFF5F0',
+                    color: formData.frequency === 'mensual' ? 'white' : '#A67B6B',
+                  }}
                 >
                   Mensual
                 </button>
               </div>
 
-              {/* Intervalo personalizable */}
-              <div className="flex items-center justify-center gap-3 bg-[#FFF5F0] rounded-xl p-4 mb-4">
+              {/* Intervalo */}
+              <div className="flex items-center justify-center gap-3 rounded-xl p-4 mb-4" style={{ backgroundColor: '#FFF5F0' }}>
                 <span className="text-[#A67B6B] text-sm">Cada</span>
                 <input
                   type="number"
@@ -686,7 +734,8 @@ function CrearHabitoModal({ type: defaultType, onClose, onSuccess }: any) {
                   max="365"
                   value={formData.frequencyInterval}
                   onChange={(e) => setFormData({ ...formData, frequencyInterval: parseInt(e.target.value) || 1 })}
-                  className="w-16 px-3 py-2 rounded-lg bg-white text-center font-bold text-[#3D2C28] border-2 border-[#FF8C66]"
+                  className="w-16 px-3 py-2 rounded-lg bg-white text-center font-bold text-[#3D2C28] border-2"
+                  style={{ borderColor: formData.color }}
                 />
                 <span className="text-[#A67B6B] text-sm">
                   {formData.frequency === 'diario' && (formData.frequencyInterval === 1 ? 'día' : 'días')}
@@ -695,7 +744,7 @@ function CrearHabitoModal({ type: defaultType, onClose, onSuccess }: any) {
                 </span>
               </div>
 
-              {/* Selector de días (semanal) */}
+              {/* Días (semanal) */}
               {formData.frequency === 'semanal' && (
                 <div>
                   <p className="text-xs text-[#A67B6B] mb-2 font-medium">Días</p>
@@ -705,15 +754,15 @@ function CrearHabitoModal({ type: defaultType, onClose, onSuccess }: any) {
                         key={index}
                         onClick={() => {
                           const days = formData.selectedDays.includes(index)
-                            ? formData.selectedDays.filter(d => d !== index)
+                            ? formData.selectedDays.filter((d: number) => d !== index)
                             : [...formData.selectedDays, index];
                           setFormData({ ...formData, selectedDays: days });
                         }}
-                        className={`py-2 rounded-lg text-xs font-semibold transition-colors ${
-                          formData.selectedDays.includes(index)
-                            ? 'bg-[#FF8C66] text-white'
-                            : 'bg-[#FFF5F0] text-[#A67B6B]'
-                        }`}
+                        className={`py-2 rounded-lg text-xs font-semibold transition-colors`}
+                        style={{
+                          backgroundColor: formData.selectedDays.includes(index) ? formData.color : '#FFF5F0',
+                          color: formData.selectedDays.includes(index) ? 'white' : '#A67B6B',
+                        }}
                       >
                         {day}
                       </button>
@@ -726,21 +775,21 @@ function CrearHabitoModal({ type: defaultType, onClose, onSuccess }: any) {
               {formData.frequency === 'mensual' && (
                 <div>
                   <p className="text-xs text-[#A67B6B] mb-2 font-medium">Días del mes</p>
-                  <div className="grid grid-cols-7 gap-2 max-h-48 overflow-y-auto bg-[#FFF5F0] rounded-xl p-3">
+                  <div className="grid grid-cols-7 gap-2 max-h-48 overflow-y-auto rounded-xl p-3" style={{ backgroundColor: '#FFF5F0' }}>
                     {MONTH_DATES.map((date) => (
                       <button
                         key={date}
                         onClick={() => {
                           const dates = formData.selectedDates.includes(date)
-                            ? formData.selectedDates.filter(d => d !== date)
+                            ? formData.selectedDates.filter((d: number) => d !== date)
                             : [...formData.selectedDates, date];
                           setFormData({ ...formData, selectedDates: dates });
                         }}
-                        className={`aspect-square rounded-lg text-sm font-semibold transition-colors ${
-                          formData.selectedDates.includes(date)
-                            ? 'bg-[#FF8C66] text-white'
-                            : 'bg-white text-[#A67B6B] hover:bg-gray-100'
-                        }`}
+                        className={`aspect-square rounded-lg text-sm font-semibold transition-colors`}
+                        style={{
+                          backgroundColor: formData.selectedDates.includes(date) ? formData.color : 'white',
+                          color: formData.selectedDates.includes(date) ? 'white' : '#A67B6B',
+                        }}
                       >
                         {date}
                       </button>
