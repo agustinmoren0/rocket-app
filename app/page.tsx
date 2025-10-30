@@ -103,14 +103,14 @@ export default function DashboardPage() {
     : '"Cada día es una nueva oportunidad para crecer."';
 
   return (
-    <div className="relative min-h-screen w-full flex flex-col pb-32 bg-[#FFF5F0]">
+    <div className="relative min-h-screen w-full flex flex-col pb-32 pt-0 bg-[#FFF5F0]">
       <div className="absolute top-0 left-0 w-full h-96 overflow-hidden pointer-events-none">
         <div className="absolute -top-20 -left-20 w-80 h-80 bg-[#FF99AC]/30 rounded-full filter blur-3xl opacity-60 animate-float" />
         <div className="absolute -top-10 right-0 w-80 h-80 bg-[#FFC0A9]/30 rounded-full filter blur-3xl opacity-60 animate-float" style={{ animationDelay: '2s' }} />
         <div className="absolute top-20 -right-20 w-80 h-80 bg-[#FDF0D5]/30 rounded-full filter blur-3xl opacity-60 animate-float" style={{ animationDelay: '4s' }} />
       </div>
 
-      <header className="relative flex items-center justify-between px-6 pt-6 pb-4 z-10">
+      <header className="relative flex items-center justify-between px-6 py-4 z-10">
         <div className="flex flex-col">
           <p className="text-[#A67B6B] text-sm leading-none">Hola, {username}</p>
           <p className="text-[#3D2C28] text-xl font-bold tracking-tight">{getGreeting()}</p>
