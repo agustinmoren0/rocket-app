@@ -48,11 +48,9 @@ export default function RootLayout({
               <QuickPeriodTracker />
               <TopBar />
               <DesktopLayout>
-                <div className="pt-16 lg:pt-0">
-                  <PageTransition>
-                    {children}
-                  </PageTransition>
-                </div>
+                <PageTransition>
+                  {children}
+                </PageTransition>
               </DesktopLayout>
               <ToastContainer />
               <RegisterSW />

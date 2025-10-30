@@ -37,7 +37,7 @@ export default function BottomNav() {
             initial={{ opacity: 0, scale: 0.8, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.8, y: 20 }}
-            className="fixed bottom-32 left-1/2 -translate-x-1/2 flex flex-col gap-3 z-50"
+            className="fixed bottom-32 left-1/2 -translate-x-1/2 flex flex-col gap-3 z-[45]"
           >
             <button
               onClick={() => {
@@ -63,7 +63,7 @@ export default function BottomNav() {
         )}
       </AnimatePresence>
 
-      <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-gray-200/50 pb-safe z-50">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-md border-t border-gray-200/50 pb-safe z-40">
         <div className="max-w-md mx-auto px-4">
           <div className="flex items-center justify-around h-16 relative">
             {navItems.slice(0, 2).map((item) => {
