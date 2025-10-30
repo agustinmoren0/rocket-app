@@ -3,7 +3,11 @@ import {
   Coffee, Moon, Sun, Flame, Zap, Target, TrendingUp,
   Activity, Award, CheckCircle, Circle, Star, Music,
   Palette, Camera, Code, Gamepad2, Laptop, Phone,
-  ShoppingBag, Utensils, Apple, Salad, Pizza, Wine
+  ShoppingBag, Utensils, Apple, Salad, Pizza, Wine,
+  Smile, Battery, Bed, Book, Briefcase, Calendar,
+  Clock, Cloud, Compass, Gift, Home, Key, Mail,
+  Map, Package, Scissors, Shield, Thermometer, Umbrella,
+  Watch, Wifi, Wind, Feather, Leaf, Mountain
 } from 'lucide-react';
 
 export const LUCIDE_ICONS: Record<string, any> = {
@@ -11,7 +15,11 @@ export const LUCIDE_ICONS: Record<string, any> = {
   Coffee, Moon, Sun, Flame, Zap, Target, TrendingUp,
   Activity, Award, CheckCircle, Circle, Star, Music,
   Palette, Camera, Code, Gamepad2, Laptop, Phone,
-  ShoppingBag, Utensils, Apple, Salad, Pizza, Wine
+  ShoppingBag, Utensils, Apple, Salad, Pizza, Wine,
+  Smile, Battery, Bed, Book, Briefcase, Calendar,
+  Clock, Cloud, Compass, Gift, Home, Key, Mail,
+  Map, Package, Scissors, Shield, Thermometer, Umbrella,
+  Watch, Wifi, Wind, Feather, Leaf, Mountain
 };
 
 export const ICON_LIST = Object.keys(LUCIDE_ICONS);

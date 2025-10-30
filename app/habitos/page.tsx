@@ -98,54 +98,59 @@ export default function HabitosPage() {
       </div>
 
       <div className="max-w-md mx-auto px-6 space-y-3 pb-6">
-        {getFilteredHabits().map((habit) => {
-          const Icon = LUCIDE_ICONS[habit.icon] || LUCIDE_ICONS.Star;
-          const stats = getHabitStats(habit.id);
-          const completed = isCompletedToday(habit.id);
+        {getFilteredHabits().length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-[#A67B6B] text-sm">No tienes hábitos en esta categoría</p>
+          </div>
+        ) : (
+          getFilteredHabits().map((habit) => {
+            const Icon = LUCIDE_ICONS[habit.icon] || LUCIDE_ICONS.Star;
+            const stats = getHabitStats(habit.id);
+            const completed = isCompletedToday(habit.id);
 
-          return (
-            <motion.div
-              key={habit.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-xl p-4 shadow-sm"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-12 h-12 rounded-full bg-[#FFF5F0] flex items-center justify-center">
-                    <Icon className="w-6 h-6 text-[#FF8C66]" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-[#3D2C28]">{habit.name}</p>
-                    <p className="text-xs text-[#A67B6B]">
-                      {habit.frequency === 'diario' ? 'Cada día' :
-                       habit.frequency === 'semanal' ? 'Días específicos' : 'Días del mes'}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Flame className="w-4 h-4 text-orange-500" />
-                      <span className="text-xs text-[#3D2C28]">{stats.streak}</span>
-                      <span className="text-xs text-[#A67B6B]">| {stats.consistency}% constancia</span>
+            return (
+              <motion.div
+                key={habit.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-xl p-4 shadow-sm"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="w-12 h-12 rounded-full bg-[#FFF5F0] flex items-center justify-center">
+                      <Icon className="w-6 h-6 text-[#FF8C66]" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-semibold text-[#3D2C28]">{habit.name}</p>
+                      <p className="text-xs text-[#A67B6B]">
+                        {habit.goalValue} {habit.goalUnit} • {habit.frequency === 'diario' ? 'Diario' : habit.frequency === 'semanal' ? 'Semanal' : 'Mensual'}
+                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Flame className="w-4 h-4 text-orange-500" />
+                        <span className="text-xs text-[#3D2C28]">{stats.streak}</span>
+                        <span className="text-xs text-[#A67B6B]">| {stats.consistency}% constancia</span>
+                      </div>
                     </div>
                   </div>
+                  <button
+                    onClick={() => toggleHabit(habit.id)}
+                    className={`w-12 h-12 rounded-full transition-all ${
+                      completed
+                        ? 'bg-[#FF8C66] scale-100'
+                        : 'bg-white border-2 border-[#FF8C66]/30 scale-90'
+                    }`}
+                  >
+                    {completed && (
+                      <svg className="w-6 h-6 text-white mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <polyline points="20 6 9 17 4 12" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </button>
                 </div>
-                <button
-                  onClick={() => toggleHabit(habit.id)}
-                  className={`w-12 h-12 rounded-full transition-all ${
-                    completed
-                      ? 'bg-[#FF8C66] scale-100'
-                      : 'bg-white border-2 border-[#FF8C66]/30 scale-90'
-                  }`}
-                >
-                  {completed && (
-                    <svg className="w-6 h-6 text-white mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <polyline points="20 6 9 17 4 12" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  )}
-                </button>
-              </div>
-            </motion.div>
-          );
-        })}
+              </motion.div>
+            );
+          })
+        )}
       </div>
 
       <div className="max-w-md mx-auto px-6 pb-6">
