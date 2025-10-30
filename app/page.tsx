@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useUser } from './context/UserContext';
 import { useCycle } from './context/CycleContext';
 import { motion } from 'framer-motion';
-import { TrendingUp, Clock, Flame, Edit3, Calendar, Flower2, CheckSquare } from 'lucide-react';
+import { TrendingUp, Clock, Flame, Edit3, Calendar, CheckSquare } from 'lucide-react';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -134,9 +134,9 @@ export default function DashboardPage() {
             {cycleData.isActive && (
               <button
                 onClick={() => router.push('/modo-ciclo')}
-                className="flex items-center gap-2 bg-pink-100 px-2.5 py-1 rounded-full"
+                className="flex items-center justify-center w-10 h-10 bg-pink-100 rounded-full"
               >
-                <Flower2 className="w-4 h-4 text-pink-500" />
+                <span className="text-xl">🌸</span>
               </button>
             )}
           </div>

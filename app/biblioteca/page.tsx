@@ -81,24 +81,51 @@ const HABIT_LIBRARY = {
     },
   },
   dejar: {
-    malos_habitos: {
-      name: 'Hábitos a Dejar',
-      icon: 'Flame',
+    digital: {
+      name: 'Digital',
+      icon: 'Phone',
       habits: [
-        { id: 'smoke', name: 'Dejar de fumar', description: 'Salud pulmón', icon: 'Wind' },
-        { id: 'alcohol', name: 'Reducir alcohol', description: 'Salud integral', icon: 'Wine2' },
-        { id: 'junk_food', name: 'Evitar comida chatarra', description: 'Alimentación saludable', icon: 'Pizza' },
-        { id: 'sugar', name: 'Reducir azúcares', description: 'Energía estable', icon: 'Candy' },
-        { id: 'soda', name: 'Evitar refrescos', description: 'Menos calorías', icon: 'Droplet' },
-        { id: 'junk_snacks', name: 'Evitar snacks ultraprocesados', description: 'Nutrición mejor', icon: 'Zap' },
-        { id: 'social_media', name: 'Reducir redes sociales', description: 'Menos distracción', icon: 'MessageCircle' },
-        { id: 'phone_bed', name: 'No teléfono en cama', description: 'Mejor sueño', icon: 'Smartphone' },
-        { id: 'late_night', name: 'No trasnochar', description: 'Ritmo circadiano', icon: 'Clock' },
-        { id: 'procrastinate', name: 'Dejar de procrastinar', description: 'Ser más productivo', icon: 'AlertCircle' },
-        { id: 'negative_talk', name: 'Autocrítica negativa', description: 'Amor propio', icon: 'Brain' },
-        { id: 'comparison', name: 'Dejar de compararse', description: 'Aceptación propia', icon: 'Smile' },
+        { id: 'social_media', name: 'Reducir redes sociales', description: 'Usa tu tiempo mejor', icon: 'Phone' },
+        { id: 'notifications', name: 'Desactivar notificaciones', description: 'Menos distracciones', icon: 'Phone' },
+        { id: 'screen_time', name: 'Limitar tiempo de pantalla', description: 'Protege tus ojos', icon: 'Phone' },
       ]
     },
+    alimentacion: {
+      name: 'Alimentación',
+      icon: 'Apple',
+      habits: [
+        { id: 'sugar', name: 'Reducir azúcar', description: 'Mejora tu salud', icon: 'Apple' },
+        { id: 'junk_food', name: 'Evitar comida chatarra', description: 'Come más sano', icon: 'Pizza' },
+        { id: 'soda', name: 'Dejar refrescos', description: 'Bebe más agua', icon: 'Wine' },
+      ]
+    },
+    vicios: {
+      name: 'Vicios',
+      icon: 'Ban',
+      habits: [
+        { id: 'smoking', name: 'Dejar de fumar', description: 'Cuida tus pulmones', icon: 'Ban' },
+        { id: 'alcohol', name: 'Reducir alcohol', description: 'Vive más sano', icon: 'Wine' },
+        { id: 'caffeine', name: 'Menos cafeína', description: 'Duerme mejor', icon: 'Coffee' },
+      ]
+    },
+    habitos_negativos: {
+      name: 'Hábitos Negativos',
+      icon: 'Circle',
+      habits: [
+        { id: 'procrastinate', name: 'Dejar de procrastinar', description: 'Actúa ahora', icon: 'Zap' },
+        { id: 'complain', name: 'No quejarse', description: 'Sé más positivo', icon: 'Smile' },
+        { id: 'compare', name: 'No compararse', description: 'Sé tú mismo', icon: 'Heart' },
+      ]
+    },
+    consumo: {
+      name: 'Consumo',
+      icon: 'ShoppingBag',
+      habits: [
+        { id: 'impulse_buy', name: 'Compras impulsivas', description: 'Ahorra dinero', icon: 'ShoppingBag' },
+        { id: 'fast_fashion', name: 'Moda rápida', description: 'Compra consciente', icon: 'ShoppingBag' },
+        { id: 'plastic', name: 'Uso de plástico', description: 'Cuida el planeta', icon: 'ShoppingBag' },
+      ]
+    }
   }
 };
 
