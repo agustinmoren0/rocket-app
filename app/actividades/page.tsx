@@ -363,32 +363,30 @@ function ActivityModal({ activity, onSave, onClose }: any) {
             <div className="grid grid-cols-3 gap-2">
               {CATEGORIAS.map((cat) => {
                 const Icon = LUCIDE_ICONS[cat.icon];
+                const isSelected = formData.categoria === cat.id;
                 return (
                   <button
                     key={cat.id}
                     onClick={() => setFormData({ ...formData, categoria: cat.id })}
-                    className={`p-3 rounded-xl flex flex-col items-center gap-2 transition-all ${
-                      formData.categoria === cat.id ? 'ring-2 ring-offset-2' : ''
-                    }`}
+                    className="p-3 rounded-xl flex flex-col items-center gap-2 transition-all"
                     style={{
-                      backgroundColor:
-                        formData.categoria === cat.id ? cat.color : '#FFF5F0',
-                      ringColor: cat.color,
+                      backgroundColor: isSelected ? cat.color : '#FFF5F0',
+                      boxShadow: isSelected
+                        ? `0 0 0 2px white, 0 0 0 4px ${cat.color}`
+                        : 'none',
                     }}
                   >
                     <Icon
                       className="w-5 h-5"
                       style={{
-                        color:
-                          formData.categoria === cat.id ? 'white' : cat.color,
+                        color: isSelected ? 'white' : cat.color,
                       }}
                     />
                     <span
-                      className={`text-xs font-medium ${
-                        formData.categoria === cat.id
-                          ? 'text-white'
-                          : 'text-[#3D2C28]'
-                      }`}
+                      className="text-xs font-medium"
+                      style={{
+                        color: isSelected ? 'white' : '#3D2C28',
+                      }}
                     >
                       {cat.name}
                     </span>
