@@ -10,7 +10,8 @@
       "Bash(xargs sed:*)",
       "Bash(find:*)",
       "Bash(git checkout:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Read(//private/tmp/**)"
     ],
     "deny": [],
     "ask": []
