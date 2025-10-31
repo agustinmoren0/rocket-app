@@ -14,10 +14,11 @@ export default function HabitosPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'formar' | 'dejar' | 'pausados'>('formar');
   const [habits, setHabits] = useState<any[]>([]);
-  const [showEditModal, setShowEditModal] = useState(false);
-  const [editingHabit, setEditingHabit] = useState<any>(null);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
+  const [confirmAction, setConfirmAction] = useState<any>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingActivity, setEditingActivity] = useState<any>(null);
 
   useEffect(() => {
     loadHabits();
@@ -64,8 +65,20 @@ export default function HabitosPage() {
   };
 
   const pauseHabit = (habitId: string) => {
+    const habit = habits.find(h => h.id === habitId);
+    const action = habit?.status === 'paused' ? 'reactivar' : 'pausar';
+
+    setConfirmAction({
+      type: 'pause',
+      habitId,
+      message: `¿Seguro que quieres ${action} este hábito?`,
+      confirmText: action === 'pausar' ? 'Pausar' : 'Reactivar'
+    });
+  };
+
+  const confirmPause = () => {
     const updatedHabits = habits.map(h => {
-      if (h.id === habitId) {
+      if (h.id === confirmAction.habitId) {
         return {
           ...h,
           status: h.status === 'paused' ? 'active' : 'paused',
@@ -77,18 +90,27 @@ export default function HabitosPage() {
 
     setHabits(updatedHabits);
     localStorage.setItem('habika_custom_habits', JSON.stringify(updatedHabits));
+    setConfirmAction(null);
   };
 
   const deleteHabit = (habitId: string) => {
-    if (confirm('¿Estás seguro de eliminar este hábito?')) {
-      const updatedHabits = habits.filter(h => h.id !== habitId);
-      setHabits(updatedHabits);
-      localStorage.setItem('habika_custom_habits', JSON.stringify(updatedHabits));
-    }
+    setConfirmAction({
+      type: 'delete',
+      habitId,
+      message: '¿Estás seguro de eliminar este hábito? Esta acción no se puede deshacer.',
+      confirmText: 'Eliminar'
+    });
+  };
+
+  const confirmDelete = () => {
+    const updatedHabits = habits.filter(h => h.id !== confirmAction.habitId);
+    setHabits(updatedHabits);
+    localStorage.setItem('habika_custom_habits', JSON.stringify(updatedHabits));
+    setConfirmAction(null);
   };
 
   const editHabit = (habit: any) => {
-    setEditingHabit(habit);
+    setEditingActivity(habit);
     setShowEditModal(true);
   };
 
@@ -203,55 +225,20 @@ export default function HabitosPage() {
         </button>
       </div>
 
-      {/* Alert Modal */}
-      {showAlert && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/50 z-[70] flex items-center justify-center px-6"
-          onClick={() => setShowAlert(false)}
-        >
-          <motion.div
-            initial={{ scale: 0.9, y: 20 }}
-            animate={{ scale: 1, y: 0 }}
-            className="bg-white rounded-2xl p-6 max-w-sm w-full"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-start gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-[#FFC0A9]/20 flex items-center justify-center shrink-0">
-                <AlertCircle className="w-5 h-5 text-[#FF99AC]" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold text-[#3D2C28] mb-1">Hábito pausado</h3>
-                <p className="text-sm text-[#A67B6B]">{alertMessage}</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowAlert(false)}
-              className="w-full py-3 bg-[#FF99AC] text-white rounded-xl font-semibold"
-            >
-              Entendido
-            </button>
-          </motion.div>
-        </motion.div>
-      )}
+      <AnimatePresence>
+        {showAlert && (
+          <AlertModal message={alertMessage} onClose={() => setShowAlert(false)} />
+        )}
 
-      {/* Edit Modal */}
-      {showEditModal && editingHabit && (
-        <CreateHabitModal
-          editingHabit={editingHabit}
-          onClose={() => {
-            setShowEditModal(false);
-            setEditingHabit(null);
-          }}
-          onSuccess={() => {
-            setShowEditModal(false);
-            setEditingHabit(null);
-            loadHabits();
-          }}
-        />
-      )}
+        {confirmAction && (
+          <ConfirmModal
+            message={confirmAction.message}
+            confirmText={confirmAction.confirmText}
+            onConfirm={confirmAction.type === 'delete' ? confirmDelete : confirmPause}
+            onCancel={() => setConfirmAction(null)}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -310,6 +297,11 @@ function HabitCard({ habit, onToggleComplete, onPause, onEdit, onDelete, streak,
     x.set(0);
   };
 
+  const handleEdit = () => {
+    onEdit(habit);
+    closeSwipe();
+  };
+
   const Icon = LUCIDE_ICONS[habit.icon] || LUCIDE_ICONS['Star'];
   const today = new Date().toISOString().split('T')[0];
   const isCompleted = habit.completedDates?.includes(today);
@@ -327,10 +319,7 @@ function HabitCard({ habit, onToggleComplete, onPause, onEdit, onDelete, streak,
             className="absolute left-0 top-0 bottom-0 flex items-center pl-4"
           >
             <button
-              onClick={() => {
-                onEdit(habit);
-                closeSwipe();
-              }}
+              onClick={handleEdit}
               className="w-20 h-16 rounded-2xl bg-[#6B9B9E] flex flex-col items-center justify-center shadow-md"
             >
               <Edit2 className="w-5 h-5 text-white mb-1" />
@@ -827,6 +816,85 @@ function CreateHabitModal({ editingHabit, onClose, onSuccess }: any) {
             </div>
 
           </div>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// ALERT MODAL
+// ═══════════════════════════════════════════════════════════════════
+
+function AlertModal({ message, onClose }: any) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/50 z-[70] flex items-center justify-center px-6"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        className="bg-white rounded-2xl p-6 max-w-sm w-full"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start gap-3 mb-4">
+          <div className="w-10 h-10 rounded-full bg-[#FFC0A9]/20 flex items-center justify-center shrink-0">
+            <AlertCircle className="w-5 h-5 text-[#FF99AC]" />
+          </div>
+          <div className="flex-1">
+            <h3 className="font-semibold text-[#3D2C28] mb-1">Hábito pausado</h3>
+            <p className="text-sm text-[#A67B6B]">{message}</p>
+          </div>
+        </div>
+        <button
+          onClick={onClose}
+          className="w-full py-3 bg-[#FF99AC] text-white rounded-xl font-semibold"
+        >
+          Entendido
+        </button>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CONFIRM MODAL
+// ═══════════════════════════════════════════════════════════════════
+
+function ConfirmModal({ message, confirmText, onConfirm, onCancel }: any) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 bg-black/50 z-[70] flex items-center justify-center px-6"
+      onClick={onCancel}
+    >
+      <motion.div
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        className="bg-white rounded-2xl p-6 max-w-sm w-full"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <h3 className="font-semibold text-[#3D2C28] mb-2">Confirmar acción</h3>
+        <p className="text-sm text-[#A67B6B] mb-6">{message}</p>
+        <div className="flex gap-3">
+          <button
+            onClick={onCancel}
+            className="flex-1 py-3 bg-[#FFF5F0] text-[#A67B6B] rounded-xl font-semibold"
+          >
+            Cancelar
+          </button>
+          <button
+            onClick={onConfirm}
+            className="flex-1 py-3 bg-[#FF99AC] text-white rounded-xl font-semibold"
+          >
+            {confirmText}
+          </button>
         </div>
       </motion.div>
     </motion.div>
