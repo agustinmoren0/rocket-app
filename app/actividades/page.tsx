@@ -1,21 +1,25 @@
-// ═══════════════════════════════════════════════════════════════════
-// app/actividades/page.tsx - REDISEÑO COMPLETO
-// ═══════════════════════════════════════════════════════════════════
-
 'use client'
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Clock, Edit2, Trash2 } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Plus, Clock, Edit2, Trash2, Sparkles } from 'lucide-react';
 import { LUCIDE_ICONS } from '../utils/icons';
 
 const CATEGORIAS = [
-  { id: 'bienestar', name: 'Bienestar', icon: 'Heart', color: '#6B9B9E' },
-  { id: 'trabajo', name: 'Trabajo', icon: 'Briefcase', color: '#FFD166' },
-  { id: 'creatividad', name: 'Creatividad', icon: 'Palette', color: '#FF99AC' },
-  { id: 'social', name: 'Social', icon: 'Users', color: '#9C6B98' },
-  { id: 'aprendizaje', name: 'Aprendizaje', icon: 'Book', color: '#6B8BB6' },
-  { id: 'otro', name: 'Otro', icon: 'Circle', color: '#C9A0A0' },
+  { id: 'bienestar', name: 'Bienestar', icon: 'Heart' },
+  { id: 'trabajo', name: 'Trabajo', icon: 'Briefcase' },
+  { id: 'creatividad', name: 'Creatividad', icon: 'Palette' },
+  { id: 'social', name: 'Social', icon: 'Users' },
+  { id: 'aprendizaje', name: 'Aprendizaje', icon: 'Book' },
+  { id: 'deporte', name: 'Deporte', icon: 'Dumbbell' },
+  { id: 'hogar', name: 'Hogar', icon: 'Home' },
+  { id: 'otro', name: 'Otro', icon: 'Circle' },
+];
+
+const COLORES = [
+  '#FFD166', '#FF99AC', '#FFC0A9', '#9C6B98',
+  '#6B9B9E', '#6B8BB6', '#E8A598', '#C9A0A0',
+  '#A8D8EA', '#FFB4A8', '#B8E6B8', '#D4A5A5'
 ];
 
 export default function ActividadesPage() {
@@ -31,7 +35,10 @@ export default function ActividadesPage() {
   const loadTodayActivities = () => {
     const today = new Date().toISOString().split('T')[0];
     const allActivities = JSON.parse(localStorage.getItem('habika_activities') || '{}');
-    setActivities(allActivities[today] || []);
+    const todayActivities = allActivities[today] || [];
+    setActivities(todayActivities.sort((a: any, b: any) =>
+      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    ));
   };
 
   const checkMidnight = () => {
@@ -71,7 +78,11 @@ export default function ActividadesPage() {
     if (editingActivity) {
       const index = todayActivities.findIndex((a: any) => a.id === editingActivity.id);
       if (index !== -1) {
-        todayActivities[index] = activity;
+        todayActivities[index] = {
+          ...activity,
+          id: editingActivity.id,
+          timestamp: editingActivity.timestamp
+        };
       }
     } else {
       todayActivities.push({
@@ -121,21 +132,34 @@ export default function ActividadesPage() {
           <h1 className="text-2xl font-bold text-[#3D2C28]">Actividades</h1>
           <p className="text-sm text-[#A67B6B] mt-1">
             {activities.length === 0
-              ? 'Comienza registrando tus momentos de hoy.'
-              : `${formatTime(getTotalMinutes())} en actividades`}
+              ? 'Tu bitácora diaria te espera'
+              : `${formatTime(getTotalMinutes())} registrados hoy`}
           </p>
         </div>
       </header>
 
-      {/* Lista de actividades */}
       <div className="px-6 py-4 space-y-3">
         {activities.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 rounded-full bg-[#FFC0A9]/20 flex items-center justify-center mx-auto mb-4">
-              <Clock className="w-8 h-8 text-[#FF99AC]" />
+          <div className="text-center py-12 px-6">
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#FFC0A9] to-[#FF99AC] flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <Sparkles className="w-10 h-10 text-white" />
             </div>
-            <p className="text-[#A67B6B] mb-2">Tu día está vacío</p>
-            <p className="text-sm text-[#A67B6B]">Registra tu primera actividad</p>
+            <h3 className="text-xl font-bold text-[#3D2C28] mb-2">
+              Comienza tu día
+            </h3>
+            <p className="text-[#A67B6B] mb-1 max-w-xs mx-auto">
+              Registra cada momento importante: trabajo, deporte, creatividad, descanso...
+            </p>
+            <p className="text-sm text-[#A67B6B] mb-6">
+              Al final del día, todo se guarda automáticamente en tu calendario. Mañana empiezas con una página en blanco.
+            </p>
+            <button
+              onClick={() => setShowModal(true)}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white rounded-full font-semibold shadow-md"
+            >
+              <Plus className="w-5 h-5" />
+              Registrar primera actividad
+            </button>
           </div>
         ) : (
           activities.map((activity) => (
@@ -152,55 +176,46 @@ export default function ActividadesPage() {
         )}
       </div>
 
-      {/* Botón registrar */}
-      <div className="fixed bottom-20 left-0 right-0 px-6 z-10">
-        <button
-          onClick={() => {
-            setEditingActivity(null);
-            setShowModal(true);
-          }}
-          className="w-full bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white py-4 rounded-full font-semibold shadow-lg flex items-center justify-center gap-2"
-        >
-          <Plus className="w-5 h-5" />
-          Registrar Actividad
-        </button>
-      </div>
-
-      {/* Modal */}
-      <AnimatePresence>
-        {showModal && (
-          <ActivityModal
-            activity={editingActivity}
-            onSave={saveActivity}
-            onClose={() => {
-              setShowModal(false);
+      {activities.length > 0 && (
+        <div className="fixed bottom-20 left-0 right-0 px-6 z-10">
+          <button
+            onClick={() => {
               setEditingActivity(null);
+              setShowModal(true);
             }}
-          />
-        )}
-      </AnimatePresence>
+            className="w-full bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white py-4 rounded-full font-semibold shadow-lg flex items-center justify-center gap-2"
+          >
+            <Plus className="w-5 h-5" />
+            Registrar Actividad
+          </button>
+        </div>
+      )}
+
+      {showModal && (
+        <ActivityModal
+          activity={editingActivity}
+          onSave={saveActivity}
+          onClose={() => {
+            setShowModal(false);
+            setEditingActivity(null);
+          }}
+        />
+      )}
     </div>
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// ACTIVITY CARD
-// ═══════════════════════════════════════════════════════════════════
-
 function ActivityCard({ activity, onEdit, onDelete }: any) {
   const categoria = CATEGORIAS.find(c => c.id === activity.categoria);
   const Icon = categoria ? LUCIDE_ICONS[categoria.icon] : LUCIDE_ICONS['Circle'];
-  const time = new Date(activity.timestamp).toLocaleTimeString('es-ES', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const time = new Date(activity.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
 
   return (
     <div className="bg-white rounded-2xl p-4 shadow-sm">
       <div className="flex items-start gap-3">
         <div
-          className="w-12 h-12 rounded-full flex items-center justify-center shrink-0"
-          style={{ backgroundColor: categoria?.color || '#C9A0A0' }}
+          className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-sm"
+          style={{ backgroundColor: activity.color }}
         >
           <Icon className="w-6 h-6 text-white" />
         </div>
@@ -217,8 +232,8 @@ function ActivityCard({ activity, onEdit, onDelete }: any) {
           <span
             className="inline-block px-2 py-1 rounded-lg text-xs font-medium"
             style={{
-              backgroundColor: `${categoria?.color}20`,
-              color: categoria?.color,
+              backgroundColor: `${activity.color}20`,
+              color: activity.color
             }}
           >
             {categoria?.name}
@@ -228,7 +243,7 @@ function ActivityCard({ activity, onEdit, onDelete }: any) {
           )}
         </div>
 
-        <div className="flex gap-1 shrink-0">
+        <div className="flex gap-1">
           <button
             onClick={onEdit}
             className="w-8 h-8 rounded-lg bg-[#FFF5F0] flex items-center justify-center hover:bg-[#FFE5D9] transition-colors"
@@ -247,16 +262,13 @@ function ActivityCard({ activity, onEdit, onDelete }: any) {
   );
 }
 
-// ═══════════════════════════════════════════════════════════════════
-// MODAL REGISTRAR ACTIVIDAD
-// ═══════════════════════════════════════════════════════════════════
-
 function ActivityModal({ activity, onSave, onClose }: any) {
   const [formData, setFormData] = useState({
     name: activity?.name || '',
     duration: activity?.duration || 30,
     unit: activity?.unit || 'min',
     categoria: activity?.categoria || 'bienestar',
+    color: activity?.color || '#6B9B9E',
     notes: activity?.notes || '',
   });
 
@@ -265,25 +277,22 @@ function ActivityModal({ activity, onSave, onClose }: any) {
       alert('Ingresa el nombre de la actividad');
       return;
     }
-    onSave(activity ? { ...activity, ...formData } : formData);
+    onSave(formData);
   };
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
       className="fixed inset-0 bg-black/50 z-[60] flex items-end"
       onClick={onClose}
     >
       <motion.div
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
-        exit={{ y: '100%' }}
         onClick={(e) => e.stopPropagation()}
         className="w-full bg-white rounded-t-3xl max-h-[85vh] overflow-hidden flex flex-col"
       >
-        {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100 shrink-0">
           <button onClick={onClose} className="text-[#A67B6B] font-medium">
             Cancelar
@@ -299,13 +308,10 @@ function ActivityModal({ activity, onSave, onClose }: any) {
           </button>
         </div>
 
-        {/* Contenido */}
-        <div className="flex-1 overflow-y-auto pb-28 p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto pb-6 p-6 space-y-6">
           {/* Actividad */}
           <div>
-            <label className="block text-sm font-semibold text-[#3D2C28] mb-2">
-              Actividad
-            </label>
+            <label className="block text-sm font-semibold text-[#3D2C28] mb-2">Actividad</label>
             <input
               type="text"
               value={formData.name}
@@ -317,36 +323,28 @@ function ActivityModal({ activity, onSave, onClose }: any) {
 
           {/* Duración */}
           <div>
-            <label className="block text-sm font-semibold text-[#3D2C28] mb-2">
-              Duración
-            </label>
+            <label className="block text-sm font-semibold text-[#3D2C28] mb-2">Duración</label>
             <div className="flex gap-3">
               <input
                 type="number"
                 min="1"
                 value={formData.duration}
-                onChange={(e) =>
-                  setFormData({ ...formData, duration: parseInt(e.target.value) || 1 })
-                }
+                onChange={(e) => setFormData({ ...formData, duration: parseInt(e.target.value) || 1 })}
                 className="w-24 px-4 py-3 rounded-xl bg-[#FFF5F0] text-center font-semibold text-[#3D2C28] border-2 border-[#FF99AC] focus:outline-none"
               />
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-1">
                 <button
                   onClick={() => setFormData({ ...formData, unit: 'min' })}
-                  className={`px-6 py-3 rounded-xl font-medium transition-colors ${
-                    formData.unit === 'min'
-                      ? 'bg-[#FF99AC] text-white'
-                      : 'bg-[#FFF5F0] text-[#A67B6B]'
+                  className={`flex-1 py-3 rounded-xl font-medium transition-colors ${
+                    formData.unit === 'min' ? 'bg-[#FF99AC] text-white' : 'bg-[#FFF5F0] text-[#A67B6B]'
                   }`}
                 >
-                  Minutos
+                  Min
                 </button>
                 <button
                   onClick={() => setFormData({ ...formData, unit: 'hora(s)' })}
-                  className={`px-6 py-3 rounded-xl font-medium transition-colors ${
-                    formData.unit === 'hora(s)'
-                      ? 'bg-[#FF99AC] text-white'
-                      : 'bg-[#FFF5F0] text-[#A67B6B]'
+                  className={`flex-1 py-3 rounded-xl font-medium transition-colors ${
+                    formData.unit === 'hora(s)' ? 'bg-[#FF99AC] text-white' : 'bg-[#FFF5F0] text-[#A67B6B]'
                   }`}
                 >
                   Horas
@@ -357,10 +355,8 @@ function ActivityModal({ activity, onSave, onClose }: any) {
 
           {/* Categoría */}
           <div>
-            <label className="block text-sm font-semibold text-[#3D2C28] mb-3">
-              Categoría
-            </label>
-            <div className="grid grid-cols-3 gap-2">
+            <label className="block text-sm font-semibold text-[#3D2C28] mb-3">Categoría</label>
+            <div className="grid grid-cols-4 gap-2">
               {CATEGORIAS.map((cat) => {
                 const Icon = LUCIDE_ICONS[cat.icon];
                 const isSelected = formData.categoria === cat.id;
@@ -368,26 +364,12 @@ function ActivityModal({ activity, onSave, onClose }: any) {
                   <button
                     key={cat.id}
                     onClick={() => setFormData({ ...formData, categoria: cat.id })}
-                    className="p-3 rounded-xl flex flex-col items-center gap-2 transition-all"
-                    style={{
-                      backgroundColor: isSelected ? cat.color : '#FFF5F0',
-                      boxShadow: isSelected
-                        ? `0 0 0 2px white, 0 0 0 4px ${cat.color}`
-                        : 'none',
-                    }}
+                    className={`p-3 rounded-xl flex flex-col items-center gap-2 transition-all ${
+                      isSelected ? 'bg-[#FF99AC] text-white shadow-md' : 'bg-[#FFF5F0] text-[#A67B6B]'
+                    }`}
                   >
-                    <Icon
-                      className="w-5 h-5"
-                      style={{
-                        color: isSelected ? 'white' : cat.color,
-                      }}
-                    />
-                    <span
-                      className="text-xs font-medium"
-                      style={{
-                        color: isSelected ? 'white' : '#3D2C28',
-                      }}
-                    >
+                    <Icon className="w-5 h-5" />
+                    <span className="text-xs font-medium text-center leading-tight">
                       {cat.name}
                     </span>
                   </button>
@@ -396,11 +378,35 @@ function ActivityModal({ activity, onSave, onClose }: any) {
             </div>
           </div>
 
+          {/* Color */}
+          <div>
+            <label className="block text-sm font-semibold text-[#3D2C28] mb-3">Color</label>
+            <div className="grid grid-cols-6 gap-3">
+              {COLORES.map((color) => (
+                <button
+                  key={color}
+                  onClick={() => setFormData({ ...formData, color })}
+                  className={`w-full aspect-square rounded-full transition-transform ${
+                    formData.color === color ? 'scale-110 ring-4 ring-offset-2' : ''
+                  }`}
+                  style={{
+                    backgroundColor: color,
+                    ringColor: color
+                  }}
+                >
+                  {formData.color === color && (
+                    <svg className="w-4 h-4 text-white mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
           {/* Notas */}
           <div>
-            <label className="block text-sm font-semibold text-[#3D2C28] mb-2">
-              Notas (Opcional)
-            </label>
+            <label className="block text-sm font-semibold text-[#3D2C28] mb-2">Notas (Opcional)</label>
             <textarea
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
