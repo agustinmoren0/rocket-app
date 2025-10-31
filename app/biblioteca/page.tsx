@@ -11,41 +11,50 @@ const HABIT_LIBRARY_FORMAR = {
     name: 'Física',
     icon: 'Dumbbell',
     habits: [
-      { id: 'run', name: 'Correr', icon: 'Activity' },
-      { id: 'gym', name: 'Gym', icon: 'Dumbbell' },
-      { id: 'yoga', name: 'Yoga', icon: 'Heart' },
-      { id: 'swim', name: 'Nadar', icon: 'Droplet' },
-      { id: 'walk', name: 'Caminar', icon: 'Footprints' },
+      { id: 'run', name: 'Correr por la mañana', description: 'Energiza tu día desde el inicio.', icon: 'Dumbbell' },
+      { id: 'water', name: 'Beber 2L de agua', description: 'Mantén tu cuerpo hidratado.', icon: 'Droplet' },
+      { id: 'gym', name: 'Gym', description: 'Fortalece tu cuerpo.', icon: 'Dumbbell' },
+      { id: 'yoga', name: 'Yoga', description: 'Equilibrio físico y mental.', icon: 'Heart' },
+      { id: 'swim', name: 'Nadar', description: 'Ejercicio de bajo impacto.', icon: 'Droplet' },
     ]
   },
   mental: {
     name: 'Mental',
     icon: 'Brain',
     habits: [
-      { id: 'meditate', name: 'Meditación', icon: 'Brain' },
-      { id: 'read', name: 'Lectura', icon: 'BookOpen' },
-      { id: 'journal', name: 'Journaling', icon: 'Pen' },
-      { id: 'learn', name: 'Aprender algo nuevo', icon: 'Lightbulb' },
-    ]
-  },
-  social: {
-    name: 'Social',
-    icon: 'Users',
-    habits: [
-      { id: 'call', name: 'Llamar a un amigo', icon: 'Phone' },
-      { id: 'family', name: 'Pasar tiempo en familia', icon: 'Heart' },
-      { id: 'volunteer', name: 'Hacer voluntariado', icon: 'HandHeart' },
-      { id: 'network', name: 'Networking', icon: 'Users' },
+      { id: 'meditate', name: 'Meditación', description: 'Calma tu mente.', icon: 'Brain' },
+      { id: 'read', name: 'Lectura', description: 'Expande tu conocimiento.', icon: 'BookOpen' },
+      { id: 'journal', name: 'Journaling', description: 'Reflexiona sobre tu día.', icon: 'BookOpen' },
+      { id: 'learn', name: 'Aprender algo nuevo', description: 'Crece constantemente.', icon: 'Lightbulb' },
     ]
   },
   creatividad: {
     name: 'Creatividad',
     icon: 'Palette',
     habits: [
-      { id: 'draw', name: 'Dibujar', icon: 'Palette' },
-      { id: 'write', name: 'Escribir', icon: 'Pen' },
-      { id: 'music', name: 'Tocar instrumento', icon: 'Music' },
-      { id: 'photo', name: 'Fotografía', icon: 'Camera' },
+      { id: 'draw', name: 'Dibujar', description: 'Expresa tu creatividad.', icon: 'Palette' },
+      { id: 'write', name: 'Escribir', description: 'Plasma tus ideas.', icon: 'Pen' },
+      { id: 'music', name: 'Tocar instrumento', description: 'Desarrolla talento musical.', icon: 'Music' },
+      { id: 'photo', name: 'Fotografía', description: 'Captura momentos.', icon: 'Camera' },
+    ]
+  },
+  bienestar: {
+    name: 'Bienestar',
+    icon: 'Heart',
+    habits: [
+      { id: 'sleep', name: 'Dormir 8 horas', description: 'Descansa bien.', icon: 'Moon' },
+      { id: 'gratitude', name: 'Lista de gratitud', description: 'Aprecia lo que tienes.', icon: 'Heart' },
+      { id: 'breathe', name: 'Respiración profunda', description: 'Reduce estrés.', icon: 'Heart' },
+    ]
+  },
+  social: {
+    name: 'Social',
+    icon: 'Users',
+    habits: [
+      { id: 'call', name: 'Llamar a un amigo', description: 'Mantén tus conexiones.', icon: 'Phone' },
+      { id: 'family', name: 'Pasar tiempo en familia', description: 'Fortalece vínculos.', icon: 'Heart' },
+      { id: 'volunteer', name: 'Hacer voluntariado', description: 'Contribuye a tu comunidad.', icon: 'HandHeart' },
+      { id: 'network', name: 'Networking', description: 'Expande tu red.', icon: 'Users' },
     ]
   }
 };
@@ -55,27 +64,27 @@ const HABIT_LIBRARY_DEJAR = {
     name: 'Digital',
     icon: 'Smartphone',
     habits: [
-      { id: 'social', name: 'Redes sociales', icon: 'Smartphone' },
-      { id: 'games', name: 'Videojuegos', icon: 'Gamepad2' },
-      { id: 'youtube', name: 'YouTube excesivo', icon: 'Tv' },
+      { id: 'social', name: 'Redes sociales', description: 'Menos tiempo en pantallas.', icon: 'Smartphone' },
+      { id: 'games', name: 'Videojuegos', description: 'Controla tu tiempo.', icon: 'Gamepad2' },
+      { id: 'youtube', name: 'YouTube excesivo', description: 'Usa tu tiempo mejor.', icon: 'Tv' },
     ]
   },
   alimentacion: {
     name: 'Alimentación',
     icon: 'Apple',
     habits: [
-      { id: 'sugar', name: 'Azúcar', icon: 'Candy' },
-      { id: 'junk', name: 'Comida chatarra', icon: 'Pizza' },
-      { id: 'soda', name: 'Refrescos', icon: 'Wine' },
+      { id: 'sugar', name: 'Azúcar', description: 'Mejora tu salud.', icon: 'Candy' },
+      { id: 'junk', name: 'Comida chatarra', description: 'Come más sano.', icon: 'Pizza' },
+      { id: 'soda', name: 'Refrescos', description: 'Bebe más agua.', icon: 'Wine' },
     ]
   },
   vicios: {
     name: 'Vicios',
     icon: 'Ban',
     habits: [
-      { id: 'smoking', name: 'Fumar', icon: 'Cigarette' },
-      { id: 'alcohol', name: 'Alcohol', icon: 'Wine' },
-      { id: 'caffeine', name: 'Cafeína', icon: 'Coffee' },
+      { id: 'smoking', name: 'Fumar', description: 'Cuida tus pulmones.', icon: 'Cigarette' },
+      { id: 'alcohol', name: 'Alcohol', description: 'Vive más sano.', icon: 'Wine' },
+      { id: 'caffeine', name: 'Cafeína', description: 'Duerme mejor.', icon: 'Coffee' },
     ]
   }
 };
@@ -84,62 +93,53 @@ export default function BibliotecaPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'formar' | 'dejar'>('formar');
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
-  const [showCustomModal, setShowCustomModal] = useState(false);
-  const [selectedHabit, setSelectedHabit] = useState<any>(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [editingHabit, setEditingHabit] = useState<any>(null);
 
   const currentLibrary = activeTab === 'formar' ? HABIT_LIBRARY_FORMAR : HABIT_LIBRARY_DEJAR;
 
   const handleSelectHabit = (habit: any) => {
-    setSelectedHabit(habit);
-  };
-
-  const handleAddCustom = () => {
-    setSelectedHabit(null);
-    setShowCustomModal(true);
+    setEditingHabit({
+      name: habit.name,
+      icon: habit.icon,
+      type: activeTab,
+      isPreset: true,
+    });
+    setShowCreateModal(true);
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF5F0] pb-32">
-      {/* Header */}
-      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-20">
+    <div className="min-h-screen bg-[#FFF5F0] pb-32 pt-0">
+      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-10">
         <div className="px-6 py-4">
-          <h1 className="text-2xl font-bold text-[#3D2C28]">Biblioteca de Hábitos</h1>
+          <h1 className="text-2xl font-bold text-[#3D2C28]">Elige tu próximo hábito</h1>
+          <p className="text-sm text-[#A67B6B] mt-1">Explora por categoría o crea uno propio.</p>
         </div>
       </header>
 
-      {/* Tabs */}
       <div className="px-6 py-4 flex gap-3">
         <button
-          onClick={() => {
-            setActiveTab('formar');
-            setExpandedCategory(null);
-          }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+          onClick={() => setActiveTab('formar')}
+          className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${
             activeTab === 'formar'
-              ? 'bg-[#FF8C66] text-white'
-              : 'bg-white text-[#A67B6B] border border-gray-200'
+              ? 'bg-white text-[#3D2C28] shadow-sm'
+              : 'bg-transparent text-[#A67B6B]'
           }`}
         >
-          <Plus className="w-4 h-4" />
-          A Formar
+          Formar Hábito
         </button>
         <button
-          onClick={() => {
-            setActiveTab('dejar');
-            setExpandedCategory(null);
-          }}
-          className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+          onClick={() => setActiveTab('dejar')}
+          className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${
             activeTab === 'dejar'
-              ? 'bg-[#FF8C66] text-white'
-              : 'bg-white text-[#A67B6B] border border-gray-200'
+              ? 'bg-white text-[#3D2C28] shadow-sm'
+              : 'bg-transparent text-[#A67B6B]'
           }`}
         >
-          <X className="w-4 h-4" />
-          A Dejar
+          Dejar
         </button>
       </div>
 
-      {/* Categories */}
       <div className="px-6 space-y-3 pb-6">
         {Object.entries(currentLibrary).map(([categoryId, category]) => {
           const Icon = LUCIDE_ICONS[category.icon] || LUCIDE_ICONS['Star'];
@@ -147,52 +147,48 @@ export default function BibliotecaPage() {
 
           return (
             <div key={categoryId} className="bg-white rounded-2xl overflow-hidden shadow-sm">
-              {/* Category Header */}
               <button
                 onClick={() => setExpandedCategory(isExpanded ? null : categoryId)}
-                className="w-full flex items-center justify-between p-4 hover:bg-[#FFF5F0] transition-colors"
+                className="w-full flex items-center justify-between p-4"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-[#FFF5F0] flex items-center justify-center">
-                    {Icon && <Icon className="w-5 h-5 text-[#FF8C66]" />}
+                  <div className="w-10 h-10 rounded-full bg-[#FFC0A9]/20 flex items-center justify-center">
+                    <Icon className="w-5 h-5 text-[#E8A598]" />
                   </div>
-                  <h3 className="text-lg font-semibold text-[#3D2C28]">{category.name}</h3>
+                  <span className="font-semibold text-[#3D2C28]">{category.name}</span>
                 </div>
-                <motion.div
-                  animate={{ rotate: isExpanded ? 180 : 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  {isExpanded ? (
-                    <ChevronDown className="w-5 h-5 text-[#FF8C66]" />
-                  ) : (
-                    <ChevronRight className="w-5 h-5 text-[#A67B6B]" />
-                  )}
-                </motion.div>
+                {isExpanded ?
+                  <ChevronDown className="w-5 h-5 text-[#E8A598]" /> :
+                  <ChevronRight className="w-5 h-5 text-[#E8A598]" />
+                }
               </button>
 
-              {/* Category Content */}
               <AnimatePresence>
                 {isExpanded && (
                   <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    animate={{ height: 'auto', opacity: 1 }}
-                    exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="overflow-hidden border-t border-gray-100"
+                    initial={{ height: 0 }}
+                    animate={{ height: 'auto' }}
+                    exit={{ height: 0 }}
+                    className="overflow-hidden"
                   >
-                    <div className="grid grid-cols-2 gap-2 p-4">
+                    <div className="px-4 pb-4 space-y-2">
                       {category.habits.map((habit) => {
                         const HabitIcon = LUCIDE_ICONS[habit.icon] || LUCIDE_ICONS['Star'];
                         return (
-                          <motion.button
+                          <button
                             key={habit.id}
-                            whileTap={{ scale: 0.95 }}
                             onClick={() => handleSelectHabit(habit)}
-                            className="flex flex-col items-center gap-2 p-3 rounded-xl bg-[#FFF5F0] hover:bg-[#FFE5D9] transition-colors active:scale-95"
+                            className="w-full flex items-center gap-3 p-3 rounded-xl bg-[#FFF5F0] hover:bg-[#FFE5D9] transition-colors"
                           >
-                            {HabitIcon && <HabitIcon className="w-5 h-5 text-[#FF8C66]" />}
-                            <span className="text-xs text-[#3D2C28] font-medium text-center">{habit.name}</span>
-                          </motion.button>
+                            <div className="w-12 h-12 rounded-full bg-[#FFC0A9]/30 flex items-center justify-center shrink-0">
+                              <HabitIcon className="w-5 h-5 text-[#E8A598]" />
+                            </div>
+                            <div className="flex-1 text-left">
+                              <p className="font-semibold text-[#3D2C28] text-sm">{habit.name}</p>
+                              <p className="text-xs text-[#A67B6B]">{habit.description}</p>
+                            </div>
+                            <Plus className="w-5 h-5 text-[#FFC0A9] shrink-0" />
+                          </button>
                         );
                       })}
                     </div>
@@ -202,40 +198,31 @@ export default function BibliotecaPage() {
             </div>
           );
         })}
-
-        {/* Custom Habit Button */}
-        <motion.button
-          whileTap={{ scale: 0.98 }}
-          onClick={handleAddCustom}
-          className="w-full p-4 border-2 border-dashed border-[#FF8C66] rounded-2xl text-[#FF8C66] font-semibold flex items-center justify-center gap-2 hover:bg-[#FFF5F0] transition-colors mt-4"
-        >
-          <Plus className="w-5 h-5" />
-          Crear hábito personalizado
-        </motion.button>
       </div>
 
-      {/* Modals */}
-      <AnimatePresence>
-        {selectedHabit && (
-          <PersonalizarHabitModal
-            habit={selectedHabit}
-            type={activeTab}
-            onClose={() => setSelectedHabit(null)}
-            onSuccess={() => {
-              setSelectedHabit(null);
-              router.push('/habitos');
-            }}
-          />
-        )}
-      </AnimatePresence>
+      <div className="fixed bottom-20 left-0 right-0 px-6 z-10">
+        <button
+          onClick={() => {
+            setEditingHabit(null);
+            setShowCreateModal(true);
+          }}
+          className="w-full bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white py-4 rounded-full font-semibold shadow-lg"
+        >
+          Crear hábito personalizado
+        </button>
+      </div>
 
       <AnimatePresence>
-        {showCustomModal && (
-          <CrearHabitoModal
-            type={activeTab}
-            onClose={() => setShowCustomModal(false)}
+        {showCreateModal && (
+          <CreateHabitModal
+            editingHabit={editingHabit}
+            onClose={() => {
+              setShowCreateModal(false);
+              setEditingHabit(null);
+            }}
             onSuccess={() => {
-              setShowCustomModal(false);
+              setShowCreateModal(false);
+              setEditingHabit(null);
               router.push('/habitos');
             }}
           />
@@ -245,204 +232,16 @@ export default function BibliotecaPage() {
   );
 }
 
-// ========== PERSONALIZAR HÁBITO MODAL ==========
-function PersonalizarHabitModal({ habit, type, onClose, onSuccess }: any) {
-  const [goalValue, setGoalValue] = useState('1');
-  const [goalUnit, setGoalUnit] = useState('veces');
-  const [frequency, setFrequency] = useState('diario');
-  const [daysOfWeek, setDaysOfWeek] = useState<number[]>([]);
-  const [specificDate, setSpecificDate] = useState('');
+// ═══════════════════════════════════════════════════════════════════
+// MODAL CREAR/EDITAR HÁBITO
+// ═══════════════════════════════════════════════════════════════════
 
-  const DAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
-  const dayIndexMap: { [key: string]: number } = { Lun: 1, Mar: 2, Mié: 3, Jue: 4, Vie: 5, Sáb: 6, Dom: 0 };
-
-  const handleSave = () => {
-    const habits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
-    const newHabit = {
-      id: `habit_${Date.now()}`,
-      name: habit.name,
-      icon: habit.icon,
-      type,
-      goalValue: parseInt(goalValue) || 1,
-      goalUnit,
-      frequency,
-      daysOfWeek: frequency === 'semanal' ? daysOfWeek : undefined,
-      specificDate: frequency === 'mensual' ? specificDate : undefined,
-      status: 'active',
-      createdAt: new Date().toISOString(),
-    };
-
-    habits.push(newHabit);
-    localStorage.setItem('habika_custom_habits', JSON.stringify(habits));
-    onSuccess();
-  };
-
-  const toggleDayOfWeek = (dayIndex: number) => {
-    setDaysOfWeek(prev =>
-      prev.includes(dayIndex) ? prev.filter(d => d !== dayIndex) : [...prev, dayIndex].sort()
-    );
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/50 z-[60] flex items-end"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ y: '100%' }}
-        animate={{ y: 0 }}
-        exit={{ y: '100%' }}
-        transition={{ type: 'spring', damping: 30 }}
-        onClick={(e) => e.stopPropagation()}
-        className="w-full bg-white rounded-t-3xl max-h-[90vh] overflow-y-auto"
-      >
-        {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
-          <h2 className="text-xl font-bold text-[#3D2C28]">{habit.name}</h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <X className="w-5 h-5 text-[#3D2C28]" />
-          </button>
-        </div>
-
-        {/* Content */}
-        <div className="px-6 py-6 space-y-6 pb-32">
-          {/* Meta */}
-          <div>
-            <label className="block text-sm font-semibold text-[#3D2C28] mb-3">Meta</label>
-            <div className="flex gap-2">
-              <input
-                type="number"
-                min="1"
-                value={goalValue}
-                onChange={(e) => setGoalValue(e.target.value)}
-                className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#FF8C66] focus:outline-none"
-              />
-              <select
-                value={goalUnit}
-                onChange={(e) => setGoalUnit(e.target.value)}
-                className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-[#FF8C66] focus:outline-none"
-              >
-                <option value="veces">Veces</option>
-                <option value="minutos">Minutos</option>
-                <option value="horas">Horas</option>
-                <option value="km">Km</option>
-                <option value="páginas">Páginas</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Frecuencia */}
-          <div>
-            <label className="block text-sm font-semibold text-[#3D2C28] mb-3">Frecuencia</label>
-            <div className="flex flex-col gap-2">
-              <button
-                onClick={() => {
-                  setFrequency('diario');
-                  setDaysOfWeek([]);
-                }}
-                className={`px-4 py-3 rounded-lg font-medium transition-colors ${
-                  frequency === 'diario'
-                    ? 'bg-[#FF8C66] text-white'
-                    : 'bg-gray-100 text-[#3D2C28] hover:bg-gray-200'
-                }`}
-              >
-                Diario
-              </button>
-              <button
-                onClick={() => setFrequency('semanal')}
-                className={`px-4 py-3 rounded-lg font-medium transition-colors ${
-                  frequency === 'semanal'
-                    ? 'bg-[#FF8C66] text-white'
-                    : 'bg-gray-100 text-[#3D2C28] hover:bg-gray-200'
-                }`}
-              >
-                Semanal
-              </button>
-              <button
-                onClick={() => setFrequency('mensual')}
-                className={`px-4 py-3 rounded-lg font-medium transition-colors ${
-                  frequency === 'mensual'
-                    ? 'bg-[#FF8C66] text-white'
-                    : 'bg-gray-100 text-[#3D2C28] hover:bg-gray-200'
-                }`}
-              >
-                Mensual
-              </button>
-            </div>
-          </div>
-
-          {/* Días de la semana */}
-          {frequency === 'semanal' && (
-            <div>
-              <label className="block text-sm font-semibold text-[#3D2C28] mb-3">Días</label>
-              <div className="grid grid-cols-7 gap-1">
-                {DAYS.map((day, idx) => (
-                  <button
-                    key={day}
-                    onClick={() => toggleDayOfWeek(idx)}
-                    className={`py-2 rounded-lg font-medium text-xs transition-colors ${
-                      daysOfWeek.includes(idx)
-                        ? 'bg-[#FF8C66] text-white'
-                        : 'bg-gray-100 text-[#3D2C28] hover:bg-gray-200'
-                    }`}
-                  >
-                    {day}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Fecha específica */}
-          {frequency === 'mensual' && (
-            <div>
-              <label className="block text-sm font-semibold text-[#3D2C28] mb-3">Día del mes</label>
-              <input
-                type="number"
-                min="1"
-                max="31"
-                value={specificDate}
-                onChange={(e) => setSpecificDate(e.target.value)}
-                placeholder="Ej: 15"
-                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-[#FF8C66] focus:outline-none"
-              />
-            </div>
-          )}
-        </div>
-
-        {/* Fixed Footer */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-4 flex gap-3 z-10">
-          <button
-            onClick={onClose}
-            className="flex-1 px-4 py-3 border-2 border-[#FF8C66] text-[#FF8C66] rounded-lg font-medium hover:bg-[#FFF5F0] transition-colors"
-          >
-            Cancelar
-          </button>
-          <button
-            onClick={handleSave}
-            className="flex-1 px-4 py-3 bg-[#FF8C66] text-white rounded-lg font-medium hover:scale-105 transition-transform active:scale-95"
-          >
-            Guardar
-          </button>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
-
-// ========== CREAR HÁBITO PERSONALIZADO MODAL ==========
-function CrearHabitoModal({ defaultType, onClose, onSuccess, editingHabit }: any) {
+function CreateHabitModal({ editingHabit, onClose, onSuccess }: any) {
   const [formData, setFormData] = useState({
     name: editingHabit?.name || '',
     icon: editingHabit?.icon || 'Star',
-    color: editingHabit?.color || '#FFC0A9',
-    type: editingHabit?.type || defaultType || 'formar',
+    color: editingHabit?.color || '#FFD166',
+    type: editingHabit?.type || 'formar',
     goalValue: editingHabit?.goalValue || 1,
     goalUnit: editingHabit?.goalUnit || 'veces',
     frequency: editingHabit?.frequency || 'diario',
@@ -453,7 +252,22 @@ function CrearHabitoModal({ defaultType, onClose, onSuccess, editingHabit }: any
 
   const [showIconPicker, setShowIconPicker] = useState(false);
 
-  const COLORS = ['#FFC0A9', '#FF99AC', '#FFB4A8', '#E8A598', '#D4A5A5', '#C9A0A0'];
+  // PALETA DE COLORES PARA LOS GLOBOS DE HÁBITOS
+  const COLORS = [
+    '#FFD166', // Amarillo
+    '#FF99AC', // Rosa
+    '#FFC0A9', // Salmón
+    '#9C6B98', // Morado
+    '#6B9B9E', // Verde azulado
+    '#6B8BB6', // Azul
+    '#E8A598', // Rosa oscuro
+    '#C9A0A0', // Rosa taupe
+    '#A8D8EA', // Celeste
+    '#FFB4A8', // Melocotón
+    '#B8E6B8', // Verde claro
+    '#D4A5A5', // Rosa gris
+  ];
+
   const WEEKDAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
   const MONTH_DATES = Array.from({ length: 31 }, (_, i) => i + 1);
 
@@ -465,38 +279,20 @@ function CrearHabitoModal({ defaultType, onClose, onSuccess, editingHabit }: any
 
     const habits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
 
-    if (editingHabit) {
+    if (editingHabit && !editingHabit.isPreset) {
       // Editar hábito existente
       const index = habits.findIndex((h: any) => h.id === editingHabit.id);
       if (index !== -1) {
         habits[index] = {
           ...habits[index],
-          name: formData.name,
-          icon: formData.icon,
-          color: formData.color,
-          type: formData.type,
-          goalValue: formData.goalValue,
-          goalUnit: formData.goalUnit,
-          frequency: formData.frequency,
-          frequencyInterval: formData.frequencyInterval,
-          daysOfWeek: formData.selectedDays,
-          datesOfMonth: formData.selectedDates,
+          ...formData,
         };
       }
     } else {
       // Crear nuevo hábito
       habits.push({
         id: `habit_${Date.now()}`,
-        name: formData.name,
-        icon: formData.icon,
-        color: formData.color,
-        type: formData.type,
-        goalValue: formData.goalValue,
-        goalUnit: formData.goalUnit,
-        frequency: formData.frequency,
-        frequencyInterval: formData.frequencyInterval,
-        daysOfWeek: formData.selectedDays,
-        datesOfMonth: formData.selectedDates,
+        ...formData,
         status: 'active',
         createdAt: new Date().toISOString(),
         completedDates: [],
@@ -524,13 +320,13 @@ function CrearHabitoModal({ defaultType, onClose, onSuccess, editingHabit }: any
         onClick={(e) => e.stopPropagation()}
         className="w-full bg-white rounded-t-3xl max-h-[85vh] overflow-hidden flex flex-col"
       >
-        {/* Header fijo */}
+        {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-100 shrink-0">
           <button onClick={onClose} className="text-[#A67B6B] font-medium">
             Cancelar
           </button>
           <h2 className="text-lg font-bold text-[#3D2C28]">
-            {editingHabit ? 'Editar hábito' : 'Nuevo hábito'}
+            {editingHabit && !editingHabit.isPreset ? 'Editar hábito' : 'Nuevo hábito'}
           </h2>
           <button
             onClick={handleSave}
@@ -541,7 +337,7 @@ function CrearHabitoModal({ defaultType, onClose, onSuccess, editingHabit }: any
           </button>
         </div>
 
-        {/* Contenido scrolleable */}
+        {/* Contenido */}
         <div className="flex-1 overflow-y-auto pb-28">
           <div className="p-6 space-y-6">
 
@@ -551,7 +347,7 @@ function CrearHabitoModal({ defaultType, onClose, onSuccess, editingHabit }: any
               <div className="flex items-center gap-3 rounded-xl p-3" style={{ backgroundColor: '#FFF5F0' }}>
                 <button
                   onClick={() => setShowIconPicker(!showIconPicker)}
-                  className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 transition-transform hover:scale-110"
+                  className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-sm"
                   style={{ backgroundColor: formData.color }}
                 >
                   <SelectedIcon className="w-6 h-6 text-white" />
@@ -577,18 +373,18 @@ function CrearHabitoModal({ defaultType, onClose, onSuccess, editingHabit }: any
                           setFormData({ ...formData, icon: iconName });
                           setShowIconPicker(false);
                         }}
-                        className={`w-full aspect-square rounded-lg flex items-center justify-center transition-all`}
+                        className={`w-full aspect-square rounded-lg flex items-center justify-center shadow-sm ${
+                          formData.icon === iconName ? 'ring-2 ring-offset-1' : ''
+                        }`}
                         style={{
                           backgroundColor: formData.icon === iconName ? formData.color : 'white',
-                          outline: formData.icon === iconName ? `2px solid ${formData.color}` : 'none',
+                          outlineColor: formData.color
                         }}
                       >
-                        {Icon && (
-                          <Icon
-                            className="w-5 h-5"
-                            style={{ color: formData.icon === iconName ? 'white' : formData.color }}
-                          />
-                        )}
+                        <Icon
+                          className="w-5 h-5"
+                          style={{ color: formData.icon === iconName ? 'white' : formData.color }}
+                        />
                       </button>
                     );
                   })}
@@ -596,15 +392,15 @@ function CrearHabitoModal({ defaultType, onClose, onSuccess, editingHabit }: any
               )}
             </div>
 
-            {/* Color */}
+            {/* Color - PALETA VARIADA PARA LOS GLOBOS */}
             <div>
-              <label className="block text-sm font-semibold text-[#3D2C28] mb-3">Color</label>
-              <div className="flex gap-3">
+              <label className="block text-sm font-semibold text-[#3D2C28] mb-3">Color del hábito</label>
+              <div className="grid grid-cols-6 gap-3">
                 {COLORS.map((color) => (
                   <button
                     key={color}
                     onClick={() => setFormData({ ...formData, color })}
-                    className={`w-12 h-12 rounded-full transition-transform flex items-center justify-center ${
+                    className={`w-12 h-12 rounded-full transition-transform shadow-sm ${
                       formData.color === color ? 'ring-4 ring-offset-2 scale-110' : ''
                     }`}
                     style={{
@@ -612,7 +408,7 @@ function CrearHabitoModal({ defaultType, onClose, onSuccess, editingHabit }: any
                     }}
                   >
                     {formData.color === color && (
-                      <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                      <svg className="w-6 h-6 text-white mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                         <polyline points="20 6 9 17 4 12" />
                       </svg>
                     )}
@@ -621,26 +417,32 @@ function CrearHabitoModal({ defaultType, onClose, onSuccess, editingHabit }: any
               </div>
             </div>
 
-            {/* Tipo de hábito */}
+            {/* Tipo */}
             <div>
               <label className="block text-sm font-semibold text-[#3D2C28] mb-3">Tipo de hábito</label>
               <div className="flex gap-3">
                 <button
                   onClick={() => setFormData({ ...formData, type: 'formar' })}
-                  className={`flex-1 py-3 rounded-xl font-medium transition-colors text-white`}
+                  className={`flex-1 py-3 rounded-xl font-medium transition-colors ${
+                    formData.type === 'formar'
+                      ? 'text-white'
+                      : 'text-[#A67B6B]'
+                  }`}
                   style={{
-                    backgroundColor: formData.type === 'formar' ? '#FF99AC' : '#FFF5F0',
-                    color: formData.type === 'formar' ? 'white' : '#A67B6B',
+                    backgroundColor: formData.type === 'formar' ? '#FF99AC' : '#FFF5F0'
                   }}
                 >
                   A Formar
                 </button>
                 <button
                   onClick={() => setFormData({ ...formData, type: 'dejar' })}
-                  className={`flex-1 py-3 rounded-xl font-medium transition-colors`}
+                  className={`flex-1 py-3 rounded-xl font-medium transition-colors ${
+                    formData.type === 'dejar'
+                      ? 'text-white'
+                      : 'text-[#A67B6B]'
+                  }`}
                   style={{
-                    backgroundColor: formData.type === 'dejar' ? '#FF99AC' : '#FFF5F0',
-                    color: formData.type === 'dejar' ? 'white' : '#A67B6B',
+                    backgroundColor: formData.type === 'dejar' ? '#FF99AC' : '#FFF5F0'
                   }}
                 >
                   A Dejar
@@ -660,7 +462,7 @@ function CrearHabitoModal({ defaultType, onClose, onSuccess, editingHabit }: any
                   className="w-20 px-4 py-3 rounded-xl text-center font-semibold text-[#3D2C28] border-2 focus:outline-none"
                   style={{
                     backgroundColor: '#FFF5F0',
-                    borderColor: formData.color,
+                    borderColor: formData.color
                   }}
                 />
                 <select
@@ -691,41 +493,48 @@ function CrearHabitoModal({ defaultType, onClose, onSuccess, editingHabit }: any
             <div>
               <label className="block text-sm font-semibold text-[#3D2C28] mb-3">Frecuencia</label>
 
-              {/* Selector de tipo */}
               <div className="flex gap-2 mb-4">
                 <button
                   onClick={() => setFormData({ ...formData, frequency: 'diario' })}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors`}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    formData.frequency === 'diario'
+                      ? 'text-white'
+                      : 'text-[#A67B6B]'
+                  }`}
                   style={{
-                    backgroundColor: formData.frequency === 'diario' ? '#FF99AC' : '#FFF5F0',
-                    color: formData.frequency === 'diario' ? 'white' : '#A67B6B',
+                    backgroundColor: formData.frequency === 'diario' ? '#FF99AC' : '#FFF5F0'
                   }}
                 >
                   Diario
                 </button>
                 <button
                   onClick={() => setFormData({ ...formData, frequency: 'semanal', selectedDays: [] })}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors`}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    formData.frequency === 'semanal'
+                      ? 'text-white'
+                      : 'text-[#A67B6B]'
+                  }`}
                   style={{
-                    backgroundColor: formData.frequency === 'semanal' ? '#FF99AC' : '#FFF5F0',
-                    color: formData.frequency === 'semanal' ? 'white' : '#A67B6B',
+                    backgroundColor: formData.frequency === 'semanal' ? '#FF99AC' : '#FFF5F0'
                   }}
                 >
                   Semanal
                 </button>
                 <button
                   onClick={() => setFormData({ ...formData, frequency: 'mensual', selectedDates: [] })}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors`}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    formData.frequency === 'mensual'
+                      ? 'text-white'
+                      : 'text-[#A67B6B]'
+                  }`}
                   style={{
-                    backgroundColor: formData.frequency === 'mensual' ? '#FF99AC' : '#FFF5F0',
-                    color: formData.frequency === 'mensual' ? 'white' : '#A67B6B',
+                    backgroundColor: formData.frequency === 'mensual' ? '#FF99AC' : '#FFF5F0'
                   }}
                 >
                   Mensual
                 </button>
               </div>
 
-              {/* Intervalo */}
               <div className="flex items-center justify-center gap-3 rounded-xl p-4 mb-4" style={{ backgroundColor: '#FFF5F0' }}>
                 <span className="text-[#A67B6B] text-sm">Cada</span>
                 <input
@@ -744,7 +553,6 @@ function CrearHabitoModal({ defaultType, onClose, onSuccess, editingHabit }: any
                 </span>
               </div>
 
-              {/* Días (semanal) */}
               {formData.frequency === 'semanal' && (
                 <div>
                   <p className="text-xs text-[#A67B6B] mb-2 font-medium">Días</p>
@@ -758,10 +566,13 @@ function CrearHabitoModal({ defaultType, onClose, onSuccess, editingHabit }: any
                             : [...formData.selectedDays, index];
                           setFormData({ ...formData, selectedDays: days });
                         }}
-                        className={`py-2 rounded-lg text-xs font-semibold transition-colors`}
+                        className={`py-2 rounded-lg text-xs font-semibold transition-colors ${
+                          formData.selectedDays.includes(index)
+                            ? 'text-white'
+                            : 'text-[#A67B6B]'
+                        }`}
                         style={{
-                          backgroundColor: formData.selectedDays.includes(index) ? formData.color : '#FFF5F0',
-                          color: formData.selectedDays.includes(index) ? 'white' : '#A67B6B',
+                          backgroundColor: formData.selectedDays.includes(index) ? formData.color : '#FFF5F0'
                         }}
                       >
                         {day}
@@ -771,7 +582,6 @@ function CrearHabitoModal({ defaultType, onClose, onSuccess, editingHabit }: any
                 </div>
               )}
 
-              {/* Calendario (mensual) */}
               {formData.frequency === 'mensual' && (
                 <div>
                   <p className="text-xs text-[#A67B6B] mb-2 font-medium">Días del mes</p>
@@ -785,10 +595,13 @@ function CrearHabitoModal({ defaultType, onClose, onSuccess, editingHabit }: any
                             : [...formData.selectedDates, date];
                           setFormData({ ...formData, selectedDates: dates });
                         }}
-                        className={`aspect-square rounded-lg text-sm font-semibold transition-colors`}
+                        className={`aspect-square rounded-lg text-sm font-semibold transition-colors ${
+                          formData.selectedDates.includes(date)
+                            ? 'text-white'
+                            : 'text-[#A67B6B]'
+                        }`}
                         style={{
-                          backgroundColor: formData.selectedDates.includes(date) ? formData.color : 'white',
-                          color: formData.selectedDates.includes(date) ? 'white' : '#A67B6B',
+                          backgroundColor: formData.selectedDates.includes(date) ? formData.color : 'white'
                         }}
                       >
                         {date}
