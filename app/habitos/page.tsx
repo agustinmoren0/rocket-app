@@ -262,21 +262,52 @@ export default function HabitosPage() {
 
 function HabitCard({ habit, onToggleComplete, onPause, onEdit, onDelete, streak, consistency }: any) {
   const x = useMotionValue(0);
+  const [swipeState, setSwipeState] = useState<'closed' | 'edit' | 'actions'>('closed');
 
   const handleDragEnd = (_event: any, info: PanInfo) => {
-    const threshold = 60;
+    const velocity = info.velocity.x;
+    const offset = info.offset.x;
 
-    if (info.offset.x > threshold) {
-      // Deslizar a la derecha - EDITAR
-      onEdit(habit);
-      x.set(0);
-    } else if (info.offset.x < -threshold) {
-      // Deslizar a la izquierda - REVELAR OPCIONES
-      x.set(-150);
-    } else {
-      // Volver a la posición original
-      x.set(0);
+    // Swipe rápido (velocidad alta)
+    if (Math.abs(velocity) > 500) {
+      if (velocity > 0 && swipeState === 'closed') {
+        // Swipe derecha rápido
+        setSwipeState('edit');
+        x.set(100);
+      } else if (velocity < 0 && swipeState === 'closed') {
+        // Swipe izquierda rápido
+        setSwipeState('actions');
+        x.set(-160);
+      } else {
+        // Cerrar
+        setSwipeState('closed');
+        x.set(0);
+      }
+      return;
     }
+
+    // Swipe lento (por distancia)
+    if (offset > 50 && swipeState === 'closed') {
+      setSwipeState('edit');
+      x.set(100);
+    } else if (offset < -50 && swipeState === 'closed') {
+      setSwipeState('actions');
+      x.set(-160);
+    } else if (Math.abs(offset) < 20 && swipeState !== 'closed') {
+      // Cerrar si desliza de vuelta
+      setSwipeState('closed');
+      x.set(0);
+    } else {
+      // Volver al estado actual
+      if (swipeState === 'edit') x.set(100);
+      else if (swipeState === 'actions') x.set(-160);
+      else x.set(0);
+    }
+  };
+
+  const closeSwipe = () => {
+    setSwipeState('closed');
+    x.set(0);
   };
 
   const Icon = LUCIDE_ICONS[habit.icon] || LUCIDE_ICONS['Star'];
@@ -285,39 +316,83 @@ function HabitCard({ habit, onToggleComplete, onPause, onEdit, onDelete, streak,
   const isPaused = habit.status === 'paused';
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-white shadow-sm">
-      {/* Acciones detrás (izquierda) */}
-      <div className="absolute right-0 top-0 bottom-0 flex items-center pr-4 gap-2">
-        <button
-          onClick={() => {
-            onPause(habit.id);
-            x.set(0);
-          }}
-          className={`w-12 h-12 rounded-full flex items-center justify-center shadow-md ${
-            isPaused ? 'bg-[#6B9B9E]' : 'bg-[#FFD166]'
-          }`}
-        >
-          {isPaused ? <Play className="w-5 h-5 text-white" /> : <Pause className="w-5 h-5 text-white" />}
-        </button>
-        <button
-          onClick={() => {
-            onDelete(habit.id);
-            x.set(0);
-          }}
-          className="w-12 h-12 rounded-full bg-[#FF6B6B] flex items-center justify-center shadow-md"
-        >
-          <Trash2 className="w-5 h-5 text-white" />
-        </button>
-      </div>
+    <div className="relative overflow-hidden rounded-2xl">
+      {/* Botón EDITAR (derecha) */}
+      <AnimatePresence>
+        {swipeState === 'edit' && (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="absolute left-0 top-0 bottom-0 flex items-center pl-4"
+          >
+            <button
+              onClick={() => {
+                onEdit(habit);
+                closeSwipe();
+              }}
+              className="w-20 h-16 rounded-2xl bg-[#6B9B9E] flex flex-col items-center justify-center shadow-md"
+            >
+              <Edit2 className="w-5 h-5 text-white mb-1" />
+              <span className="text-xs text-white font-medium">Editar</span>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Botones PAUSAR/ELIMINAR (izquierda) */}
+      <AnimatePresence>
+        {swipeState === 'actions' && (
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 20 }}
+            className="absolute right-0 top-0 bottom-0 flex items-center pr-4 gap-2"
+          >
+            <button
+              onClick={() => {
+                onPause(habit.id);
+                closeSwipe();
+              }}
+              className={`w-20 h-16 rounded-2xl flex flex-col items-center justify-center shadow-md ${
+                isPaused ? 'bg-[#6B9B9E]' : 'bg-[#FFD166]'
+              }`}
+            >
+              {isPaused ? (
+                <>
+                  <Play className="w-5 h-5 text-white mb-1" />
+                  <span className="text-xs text-white font-medium">Activar</span>
+                </>
+              ) : (
+                <>
+                  <Pause className="w-5 h-5 text-white mb-1" />
+                  <span className="text-xs text-white font-medium">Pausar</span>
+                </>
+              )}
+            </button>
+            <button
+              onClick={() => {
+                onDelete(habit.id);
+                closeSwipe();
+              }}
+              className="w-20 h-16 rounded-2xl bg-[#FF6B6B] flex flex-col items-center justify-center shadow-md"
+            >
+              <Trash2 className="w-5 h-5 text-white mb-1" />
+              <span className="text-xs text-white font-medium">Eliminar</span>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Card principal */}
       <motion.div
         drag="x"
-        dragConstraints={{ left: -150, right: 100 }}
+        dragConstraints={{ left: -160, right: 100 }}
         dragElastic={0.1}
+        dragMomentum={false}
         onDragEnd={handleDragEnd}
         style={{ x }}
-        className={`relative bg-white rounded-2xl p-4 flex items-center gap-4 ${
+        className={`relative bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm ${
           isPaused ? 'opacity-60' : ''
         }`}
       >
@@ -352,29 +427,34 @@ function HabitCard({ habit, onToggleComplete, onPause, onEdit, onDelete, streak,
           </div>
         </div>
 
-        {/* Botón completar */}
-        <button
-          onClick={() => onToggleComplete(habit.id)}
-          disabled={isPaused}
-          className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 transition-all ${
-            isPaused
-              ? 'bg-gray-200 cursor-not-allowed'
-              : isCompleted
-                ? 'bg-[#6B9B9E] shadow-md'
-                : 'bg-[#FFF5F0] hover:bg-[#FFE5D9]'
-          }`}
-          style={{
-            backgroundColor: !isPaused && isCompleted ? habit.color : undefined
-          }}
-        >
-          {isCompleted ? (
-            <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-              <polyline points="20 6 9 17 4 12" />
-            </svg>
-          ) : (
-            <div className="w-6 h-6 rounded-full border-2 border-[#A67B6B]" />
-          )}
-        </button>
+        {/* Botón completar O reactivar (si pausado) */}
+        {isPaused ? (
+          <button
+            onClick={() => onPause(habit.id)}
+            className="px-4 py-2 rounded-xl bg-[#6B9B9E] text-white text-sm font-semibold flex items-center gap-2"
+          >
+            <Play className="w-4 h-4" />
+            Reactivar
+          </button>
+        ) : (
+          <button
+            onClick={() => onToggleComplete(habit.id)}
+            className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 transition-all ${
+              isCompleted ? 'shadow-md' : 'bg-[#FFF5F0] hover:bg-[#FFE5D9]'
+            }`}
+            style={{
+              backgroundColor: isCompleted ? habit.color : undefined,
+            }}
+          >
+            {isCompleted ? (
+              <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : (
+              <div className="w-6 h-6 rounded-full border-2 border-[#A67B6B]" />
+            )}
+          </button>
+        )}
       </motion.div>
     </div>
   );
