@@ -1,282 +1,381 @@
+// ═══════════════════════════════════════════════════════════════════
+// app/habitos/page.tsx - CON SWIPE ACTIONS Y LÓGICA DE PAUSAR
+// ═══════════════════════════════════════════════════════════════════
+
 'use client'
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Flame, Plus, Edit2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import confetti from 'canvas-confetti';
+import { motion, useMotionValue, PanInfo } from 'framer-motion';
+import { Plus, Play, Pause, Trash2, AlertCircle } from 'lucide-react';
 import { LUCIDE_ICONS } from '../utils/icons';
 
 export default function HabitosPage() {
   const router = useRouter();
-  const [filter, setFilter] = useState<'formar' | 'dejar' | 'todos'>('formar');
+  const [activeTab, setActiveTab] = useState<'formar' | 'dejar' | 'pausados'>('formar');
   const [habits, setHabits] = useState<any[]>([]);
-  const [swipedHabit, setSwipedHabit] = useState<string | null>(null);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [editingHabit, setEditingHabit] = useState<any>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [editingHabit, setEditingHabit] = useState<any>(null);
+  const [showAlert, setShowAlert] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
 
   useEffect(() => {
     loadHabits();
   }, []);
 
   const loadHabits = () => {
-    const stored = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
-    setHabits(stored.filter((h: any) => h.status === 'active'));
+    const savedHabits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
+    setHabits(savedHabits);
   };
 
-  const getFilteredHabits = () => {
-    if (filter === 'todos') return habits;
-    return habits.filter(h => h.type === filter);
-  };
+  const filteredHabits = habits.filter(h => {
+    if (activeTab === 'pausados') return h.status === 'paused';
+    if (activeTab === 'formar') return h.type === 'formar' && h.status === 'active';
+    if (activeTab === 'dejar') return h.type === 'dejar' && h.status === 'active';
+    return false;
+  });
 
-  const getHabitStats = (habitId: string) => {
-    const completions = JSON.parse(localStorage.getItem('habika_completions') || '{}');
-    const habitComps = completions[habitId] || [];
-    const last30Days = Array.from({ length: 30 }, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - i);
-      return date.toISOString().split('T')[0];
-    });
-    const completed = habitComps.filter((c: any) =>
-      last30Days.includes(c.date) && c.status === 'completed'
-    ).length;
-    const consistency = Math.round((completed / 30) * 100);
-    return { streak: completed, consistency };
-  };
+  const toggleComplete = (habitId: string) => {
+    const habit = habits.find(h => h.id === habitId);
+    if (habit?.status === 'paused') {
+      setAlertMessage('Este hábito está pausado. Reactívalo para registrar progreso.');
+      setShowAlert(true);
+      return;
+    }
 
-  const toggleHabit = (habitId: string) => {
     const today = new Date().toISOString().split('T')[0];
-    const completions = JSON.parse(localStorage.getItem('habika_completions') || '{}');
-    if (!completions[habitId]) completions[habitId] = [];
+    const updatedHabits = habits.map(h => {
+      if (h.id === habitId) {
+        const completedDates = h.completedDates || [];
+        const isCompleted = completedDates.includes(today);
 
-    const existing = completions[habitId].findIndex((c: any) => c.date === today);
-    if (existing >= 0) {
-      completions[habitId].splice(existing, 1);
-    } else {
-      completions[habitId].push({ date: today, status: 'completed', timestamp: new Date().toISOString() });
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
+        return {
+          ...h,
+          completedDates: isCompleted
+            ? completedDates.filter((d: string) => d !== today)
+            : [...completedDates, today]
+        };
+      }
+      return h;
+    });
+
+    setHabits(updatedHabits);
+    localStorage.setItem('habika_custom_habits', JSON.stringify(updatedHabits));
+  };
+
+  const pauseHabit = (habitId: string) => {
+    const updatedHabits = habits.map(h => {
+      if (h.id === habitId) {
+        return {
+          ...h,
+          status: h.status === 'paused' ? 'active' : 'paused',
+          pausedAt: h.status === 'paused' ? null : new Date().toISOString()
+        };
+      }
+      return h;
+    });
+
+    setHabits(updatedHabits);
+    localStorage.setItem('habika_custom_habits', JSON.stringify(updatedHabits));
+  };
+
+  const deleteHabit = (habitId: string) => {
+    if (confirm('¿Estás seguro de eliminar este hábito?')) {
+      const updatedHabits = habits.filter(h => h.id !== habitId);
+      setHabits(updatedHabits);
+      localStorage.setItem('habika_custom_habits', JSON.stringify(updatedHabits));
+    }
+  };
+
+  const editHabit = (habit: any) => {
+    setEditingHabit(habit);
+    setShowEditModal(true);
+  };
+
+  const calculateStreak = (habit: any) => {
+    if (!habit.completedDates || habit.completedDates.length === 0) return 0;
+
+    const sortedDates = [...habit.completedDates].sort().reverse();
+    let streak = 0;
+    const today = new Date();
+
+    for (let i = 0; i < sortedDates.length; i++) {
+      const date = new Date(sortedDates[i]);
+      const expectedDate = new Date(today);
+      expectedDate.setDate(expectedDate.getDate() - i);
+
+      if (date.toISOString().split('T')[0] === expectedDate.toISOString().split('T')[0]) {
+        streak++;
+      } else {
+        break;
+      }
     }
 
-    localStorage.setItem('habika_completions', JSON.stringify(completions));
-    loadHabits();
+    return streak;
   };
 
-  const handleTouchStart = (e: React.TouchEvent, habitId: string) => {
-    setTouchStart(e.touches[0].clientX);
-  };
+  const calculateConsistency = (habit: any) => {
+    if (!habit.completedDates || habit.completedDates.length === 0) return 0;
 
-  const handleTouchEnd = (e: React.TouchEvent, habitId: string) => {
-    if (!touchStart) return;
-    const touchEnd = e.changedTouches[0].clientX;
-    const diff = touchStart - touchEnd;
-
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) setSwipedHabit(habitId);
-      else setSwipedHabit(null);
-    }
-    setTouchStart(null);
-  };
-
-  const handlePause = (habitId: string) => {
-    const reason = prompt('¿Por qué pausas este hábito?');
-    if (!reason) return;
-
-    const allHabits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
-    const updated = allHabits.map((h: any) =>
-      h.id === habitId
-        ? { ...h, status: 'paused', pausedAt: new Date().toISOString(), pausedReason: reason }
-        : h
+    const daysSinceCreation = Math.ceil(
+      (new Date().getTime() - new Date(habit.createdAt).getTime()) / (1000 * 60 * 60 * 24)
     );
 
-    localStorage.setItem('habika_custom_habits', JSON.stringify(updated));
-    loadHabits();
-    setSwipedHabit(null);
-  };
-
-  const handleDelete = (habitId: string) => {
-    if (confirm('¿Eliminar este hábito?\nSe perderá todo el historial.')) {
-      const allHabits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
-      const updated = allHabits.filter((h: any) => h.id !== habitId);
-      localStorage.setItem('habika_custom_habits', JSON.stringify(updated));
-      loadHabits();
-      setSwipedHabit(null);
-    }
-  };
-
-  const isCompletedToday = (habitId: string) => {
-    const today = new Date().toISOString().split('T')[0];
-    const completions = JSON.parse(localStorage.getItem('habika_completions') || '{}');
-    return (completions[habitId] || []).some((c: any) => c.date === today);
+    return Math.min(100, Math.round((habit.completedDates.length / daysSinceCreation) * 100));
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF5F0] pb-32">
+    <div className="min-h-screen bg-[#FFF5F0] pb-32 pt-0">
       <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-10">
-        <div className="max-w-md mx-auto px-6 py-4">
+        <div className="px-6 py-4">
           <h1 className="text-2xl font-bold text-[#3D2C28]">Mis Hábitos</h1>
         </div>
       </header>
 
-      <div className="max-w-md mx-auto px-6 py-4 flex gap-3">
+      {/* Tabs */}
+      <div className="px-6 py-4 flex gap-3">
         <button
-          onClick={() => setFilter('formar')}
-          className={`px-4 py-2 rounded-full font-medium text-sm transition-colors ${
-            filter === 'formar' ? 'bg-[#FF99AC] text-white' : 'bg-white text-[#A67B6B]'
+          onClick={() => setActiveTab('formar')}
+          className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${
+            activeTab === 'formar'
+              ? 'bg-white text-[#3D2C28] shadow-sm'
+              : 'bg-transparent text-[#A67B6B]'
           }`}
         >
           A Formar
         </button>
         <button
-          onClick={() => setFilter('dejar')}
-          className={`px-4 py-2 rounded-full font-medium text-sm transition-colors ${
-            filter === 'dejar' ? 'bg-[#FF99AC] text-white' : 'bg-white text-[#A67B6B]'
+          onClick={() => setActiveTab('dejar')}
+          className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${
+            activeTab === 'dejar'
+              ? 'bg-white text-[#3D2C28] shadow-sm'
+              : 'bg-transparent text-[#A67B6B]'
           }`}
         >
           A Dejar
         </button>
         <button
-          onClick={() => setFilter('todos')}
-          className={`px-4 py-2 rounded-full font-medium text-sm transition-colors ${
-            filter === 'todos' ? 'bg-[#FF99AC] text-white' : 'bg-white text-[#A67B6B]'
+          onClick={() => setActiveTab('pausados')}
+          className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${
+            activeTab === 'pausados'
+              ? 'bg-white text-[#3D2C28] shadow-sm'
+              : 'bg-transparent text-[#A67B6B]'
           }`}
         >
-          Todos
+          Pausados
         </button>
       </div>
 
-      <div className="max-w-md mx-auto px-6 space-y-3 pb-6">
-        {getFilteredHabits().length === 0 ? (
+      {/* Lista de hábitos */}
+      <div className="px-6 space-y-3 pb-6">
+        {filteredHabits.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-[#A67B6B] text-sm">No tienes hábitos en esta categoría</p>
+            <p className="text-[#A67B6B]">
+              {activeTab === 'pausados'
+                ? 'No tienes hábitos pausados'
+                : 'No tienes hábitos en esta categoría'}
+            </p>
           </div>
         ) : (
-          getFilteredHabits().map((habit) => {
-            const Icon = LUCIDE_ICONS[habit.icon] || LUCIDE_ICONS.Star;
-            const stats = getHabitStats(habit.id);
-            const completed = isCompletedToday(habit.id);
-
-            return (
-              <motion.div
-                key={habit.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                onTouchStart={(e) => handleTouchStart(e as any, habit.id)}
-                onTouchEnd={(e) => handleTouchEnd(e as any, habit.id)}
-                className="relative bg-white rounded-xl shadow-sm overflow-hidden"
-              >
-                {/* Swipe Actions */}
-                <AnimatePresence>
-                  {swipedHabit === habit.id && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="absolute inset-0 flex items-center justify-end gap-2 px-4 bg-red-50 z-10"
-                    >
-                      <button
-                        onClick={() => handlePause(habit.id)}
-                        className="px-3 py-2 bg-yellow-500 text-white rounded-lg text-xs font-medium"
-                      >
-                        Pausar
-                      </button>
-                      <button
-                        onClick={() => handleDelete(habit.id)}
-                        className="px-3 py-2 bg-red-500 text-white rounded-lg text-xs font-medium"
-                      >
-                        Eliminar
-                      </button>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-
-                <div className="p-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="w-12 h-12 rounded-full flex items-center justify-center shrink-0" style={{ backgroundColor: habit.color || '#FFD166' }}>
-                        <Icon className="w-6 h-6 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-semibold text-[#3D2C28]">{habit.name}</p>
-                        <p className="text-xs text-[#A67B6B]">
-                          {habit.goalValue} {habit.goalUnit} • {habit.frequency === 'diario' ? 'Diario' : habit.frequency === 'semanal' ? 'Semanal' : 'Mensual'}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Flame className="w-4 h-4" style={{ color: habit.color || '#FFD166' }} />
-                          <span className="text-xs text-[#3D2C28]">{stats.streak}</span>
-                          <span className="text-xs text-[#A67B6B]">| {stats.consistency}% constancia</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <button
-                        onClick={() => {
-                          setEditingHabit(habit);
-                          setShowEditModal(true);
-                          setSwipedHabit(null);
-                        }}
-                        className="p-2 rounded-full transition-colors"
-                        style={{ backgroundColor: '#FFF5F0' }}
-                      >
-                        <Edit2 className="w-4 h-4" style={{ color: habit.color || '#FFD166' }} />
-                      </button>
-                      <button
-                        onClick={() => toggleHabit(habit.id)}
-                        className={`w-12 h-12 rounded-full transition-all ${
-                          completed
-                            ? 'scale-100'
-                            : 'border-2 scale-90'
-                        }`}
-                        style={{
-                          backgroundColor: completed ? (habit.color || '#FFD166') : 'white',
-                          borderColor: completed ? 'transparent' : (habit.color || '#FFD166') + '4d'
-                        }}
-                      >
-                        {completed && (
-                          <svg className="w-6 h-6 text-white mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                            <polyline points="20 6 9 17 4 12" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            );
-          })
+          filteredHabits.map((habit) => (
+            <HabitCard
+              key={habit.id}
+              habit={habit}
+              onToggleComplete={toggleComplete}
+              onPause={pauseHabit}
+              onEdit={editHabit}
+              onDelete={deleteHabit}
+              streak={calculateStreak(habit)}
+              consistency={calculateConsistency(habit)}
+            />
+          ))
         )}
       </div>
 
-      <div className="max-w-md mx-auto px-6 pb-6">
+      {/* Botón crear hábito */}
+      <div className="fixed bottom-20 left-0 right-0 px-6 z-10">
         <button
           onClick={() => router.push('/biblioteca')}
-          className="w-full bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white py-4 rounded-full font-semibold shadow-lg hover:scale-105 transition-transform flex items-center justify-center gap-2"
+          className="w-full bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white py-4 rounded-full font-semibold shadow-lg flex items-center justify-center gap-2"
         >
           <Plus className="w-5 h-5" />
           Crear Hábito
         </button>
       </div>
 
-      <AnimatePresence>
-        {showEditModal && editingHabit && (
-          <CreateHabitModal
-            editingHabit={editingHabit}
-            onClose={() => {
-              setShowEditModal(false);
-              setEditingHabit(null);
-            }}
-            onSuccess={() => {
-              setShowEditModal(false);
-              setEditingHabit(null);
-              loadHabits();
-            }}
-          />
-        )}
-      </AnimatePresence>
+      {/* Alert Modal */}
+      {showAlert && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/50 z-[70] flex items-center justify-center px-6"
+          onClick={() => setShowAlert(false)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, y: 20 }}
+            animate={{ scale: 1, y: 0 }}
+            className="bg-white rounded-2xl p-6 max-w-sm w-full"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-[#FFC0A9]/20 flex items-center justify-center shrink-0">
+                <AlertCircle className="w-5 h-5 text-[#FF99AC]" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-[#3D2C28] mb-1">Hábito pausado</h3>
+                <p className="text-sm text-[#A67B6B]">{alertMessage}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowAlert(false)}
+              className="w-full py-3 bg-[#FF99AC] text-white rounded-xl font-semibold"
+            >
+              Entendido
+            </button>
+          </motion.div>
+        </motion.div>
+      )}
+
+      {/* Edit Modal */}
+      {showEditModal && editingHabit && (
+        <CreateHabitModal
+          editingHabit={editingHabit}
+          onClose={() => {
+            setShowEditModal(false);
+            setEditingHabit(null);
+          }}
+          onSuccess={() => {
+            setShowEditModal(false);
+            setEditingHabit(null);
+            loadHabits();
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// HABIT CARD CON SWIPE ACTIONS
+// ═══════════════════════════════════════════════════════════════════
+
+function HabitCard({ habit, onToggleComplete, onPause, onEdit, onDelete, streak, consistency }: any) {
+  const x = useMotionValue(0);
+
+  const handleDragEnd = (_event: any, info: PanInfo) => {
+    const threshold = 60;
+
+    if (info.offset.x > threshold) {
+      // Deslizar a la derecha - EDITAR
+      onEdit(habit);
+      x.set(0);
+    } else if (info.offset.x < -threshold) {
+      // Deslizar a la izquierda - REVELAR OPCIONES
+      x.set(-150);
+    } else {
+      // Volver a la posición original
+      x.set(0);
+    }
+  };
+
+  const Icon = LUCIDE_ICONS[habit.icon] || LUCIDE_ICONS['Star'];
+  const today = new Date().toISOString().split('T')[0];
+  const isCompleted = habit.completedDates?.includes(today);
+  const isPaused = habit.status === 'paused';
+
+  return (
+    <div className="relative overflow-hidden rounded-2xl bg-white shadow-sm">
+      {/* Acciones detrás (izquierda) */}
+      <div className="absolute right-0 top-0 bottom-0 flex items-center pr-4 gap-2">
+        <button
+          onClick={() => {
+            onPause(habit.id);
+            x.set(0);
+          }}
+          className={`w-12 h-12 rounded-full flex items-center justify-center shadow-md ${
+            isPaused ? 'bg-[#6B9B9E]' : 'bg-[#FFD166]'
+          }`}
+        >
+          {isPaused ? <Play className="w-5 h-5 text-white" /> : <Pause className="w-5 h-5 text-white" />}
+        </button>
+        <button
+          onClick={() => {
+            onDelete(habit.id);
+            x.set(0);
+          }}
+          className="w-12 h-12 rounded-full bg-[#FF6B6B] flex items-center justify-center shadow-md"
+        >
+          <Trash2 className="w-5 h-5 text-white" />
+        </button>
+      </div>
+
+      {/* Card principal */}
+      <motion.div
+        drag="x"
+        dragConstraints={{ left: -150, right: 100 }}
+        dragElastic={0.1}
+        onDragEnd={handleDragEnd}
+        style={{ x }}
+        className={`relative bg-white rounded-2xl p-4 flex items-center gap-4 ${
+          isPaused ? 'opacity-60' : ''
+        }`}
+      >
+        {/* Icono del hábito */}
+        <div
+          className="w-14 h-14 rounded-full flex items-center justify-center shrink-0 shadow-sm relative"
+          style={{ backgroundColor: habit.color }}
+        >
+          <Icon className="w-7 h-7 text-white" />
+          {isPaused && (
+            <div className="absolute -top-1 -right-1 w-5 h-5 bg-[#A67B6B] rounded-full flex items-center justify-center">
+              <Pause className="w-3 h-3 text-white" />
+            </div>
+          )}
+        </div>
+
+        {/* Info del hábito */}
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-[#3D2C28] mb-1 truncate">
+            {habit.name}
+            {isPaused && (
+              <span className="ml-2 text-xs text-[#A67B6B] font-normal">• Pausado</span>
+            )}
+          </h3>
+          <div className="flex items-center gap-1 text-xs text-[#A67B6B]">
+            <span>• {habit.frequency === 'diario' ? 'Diario' : habit.frequency === 'semanal' ? 'Semanal' : 'Mensual'}</span>
+          </div>
+          <div className="flex items-center gap-3 mt-1">
+            <span className="text-xs text-[#A67B6B]">
+              🔥 {streak} | {consistency}% constancia
+            </span>
+          </div>
+        </div>
+
+        {/* Botón completar */}
+        <button
+          onClick={() => onToggleComplete(habit.id)}
+          disabled={isPaused}
+          className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 transition-all ${
+            isPaused
+              ? 'bg-gray-200 cursor-not-allowed'
+              : isCompleted
+                ? 'bg-[#6B9B9E] shadow-md'
+                : 'bg-[#FFF5F0] hover:bg-[#FFE5D9]'
+          }`}
+          style={{
+            backgroundColor: !isPaused && isCompleted ? habit.color : undefined
+          }}
+        >
+          {isCompleted ? (
+            <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          ) : (
+            <div className="w-6 h-6 rounded-full border-2 border-[#A67B6B]" />
+          )}
+        </button>
+      </motion.div>
     </div>
   );
 }
