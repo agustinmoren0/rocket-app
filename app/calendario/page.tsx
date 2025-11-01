@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, ChevronDown, Clock, Edit2, Trash2, X, Droplet, Sparkles } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Clock, Edit2, Trash2, X, Droplet, Sparkles, Activity, CheckCircle2 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useCycle } from '../context/CycleContext';
 import BottomNav from '../components/BottomNav';
@@ -27,9 +27,10 @@ export default function CalendarioPage() {
   const [selectedDay, setSelectedDay] = useState(new Date().getDate());
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [expandedDays, setExpandedDays] = useState<number[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
 
-  // Helper function to get cycle info for a specific day
-  const getCycleDayInfo = (dayNumber: number) => {
+  // Memoized getCycleDayInfo para optimización con 5M+ usuarios
+  const getCycleDayInfo = useCallback((dayNumber: number) => {
     if (!cycleData.isActive) return null;
 
     const lastPeriod = new Date(cycleData.lastPeriodStart);
@@ -42,49 +43,48 @@ export default function CalendarioPage() {
                      cycleDay <= Math.floor(cycleData.cycleLengthDays / 2) + 2;
 
     return { isPeriod, isFertile, cycleDay };
-  };
+  }, [cycleData, currentDate]);
 
-  // Mock events
-  const [events, setEvents] = useState<Event[]>([]);
+  // Función optimizada para cargar eventos
+  const loadEventsFromCalendar = useCallback(() => {
+    try {
+      const calendar = JSON.parse(localStorage.getItem('habika_calendar') || '{}');
+      const dateStr = currentDate.toISOString().split('T')[0];
+      const dayData = calendar[dateStr];
 
-  // Load events from localStorage
-  useEffect(() => {
-    const loadEventsFromCalendar = () => {
-      try {
-        const calendar = JSON.parse(localStorage.getItem('habika_calendar') || '{}');
-        const dateStr = currentDate.toISOString().split('T')[0];
-        const dayData = calendar[dateStr];
+      if (dayData && (dayData.activities || dayData.habits)) {
+        const loadedActivities = (dayData.activities || []).map((act: any) => ({
+          id: act.id,
+          hour: new Date(act.timestamp).getHours(),
+          day: currentDate.getDate(),
+          title: act.name,
+          duration: act.unit === 'hora(s)' ? act.duration * 60 : act.duration,
+          color: act.color || '#FF99AC',
+          type: 'activity' as const
+        }));
 
-        if (dayData && dayData.activities) {
-          const loadedActivities = dayData.activities.map((act: any) => ({
-            id: act.id,
-            hour: new Date(act.timestamp).getHours(),
-            day: currentDate.getDate(),
-            title: act.name,
-            duration: act.unit === 'hora(s)' ? act.duration * 60 : act.duration,
-            color: `bg-[${act.color}]`, // Color dinámico
-            type: 'activity' as const
-          }));
+        const loadedHabits = (dayData.habits || []).map((hab: any) => ({
+          id: hab.id,
+          hour: new Date(hab.timestamp || new Date()).getHours(),
+          day: currentDate.getDate(),
+          title: hab.name,
+          duration: hab.duration || 20,
+          color: hab.color || '#FFC0A9',
+          type: 'habit' as const
+        }));
 
-          // También cargar hábitos si existen
-          const loadedHabits = dayData.habits ? dayData.habits.map((hab: any) => ({
-            id: hab.id,
-            hour: new Date(hab.timestamp || new Date()).getHours(),
-            day: currentDate.getDate(),
-            title: hab.name,
-            duration: 20, // Duración por defecto para hábitos
-            color: `bg-[${hab.color}]`,
-            type: 'habit' as const
-          })) : [];
-
-          setEvents([...loadedActivities, ...loadedHabits]);
-          console.log('📅 Eventos cargados del calendario');
-        }
-      } catch (error) {
-        console.error('❌ Error al cargar eventos:', error);
+        setEvents([...loadedActivities, ...loadedHabits]);
+      } else {
+        setEvents([]);
       }
-    };
+    } catch (error) {
+      console.error('❌ Error al cargar eventos:', error);
+      setEvents([]);
+    }
+  }, [currentDate]);
 
+  // Load events from localStorage con optimización
+  useEffect(() => {
     loadEventsFromCalendar();
 
     // Listener para cambios en storage
@@ -96,7 +96,7 @@ export default function CalendarioPage() {
 
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, [currentDate]);
+  }, [loadEventsFromCalendar]);
 
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
   const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
@@ -139,74 +139,107 @@ export default function CalendarioPage() {
   };
 
   return (
-    <main className={`min-h-screen ${currentTheme.bg} pb-40`}>
+    <main className="min-h-screen bg-gradient-to-br from-[#FFF5F0] via-white to-[#FFF5F0] pb-40">
       <div className="max-w-4xl mx-auto p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <button onClick={() => router.back()} className="text-slate-600">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => router.back()}
+            className="text-[#FF99AC] hover:text-[#FFC0A9] transition-colors"
+          >
             ← Volver
-          </button>
-          <div>
-            <h1 className="text-2xl font-bold text-slate-900">Calendario</h1>
-            <p className="text-sm text-slate-600">Tu progreso mes a mes</p>
+          </motion.button>
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-[#3D2C28]">Calendario</h1>
+            <p className="text-sm text-[#A67B6B]">Tu progreso mes a mes</p>
           </div>
           <div className="w-20" />
         </div>
 
         {/* View Selector */}
-        <div className={`flex gap-2 mb-6 ${currentTheme.bgCard} rounded-2xl p-1 border border-white/40`}>
+        <div className="flex gap-2 mb-6 bg-white rounded-2xl p-1 border border-[#FFB4A8]/30 shadow-sm">
           {[
             { key: 'day', label: 'Diario' },
             { key: 'week', label: 'Semanal' },
             { key: 'month', label: 'Mensual' }
           ].map((v) => (
-            <button
+            <motion.button
               key={v.key}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setView(v.key as any)}
               className={`flex-1 py-2 rounded-xl font-medium text-sm transition-all ${
-                view === v.key ? `bg-indigo-600 text-white` : 'text-slate-600'
+                view === v.key
+                  ? 'bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white shadow-md'
+                  : 'text-[#3D2C28] hover:bg-[#FFF5F0]'
               }`}
             >
               {v.label}
-            </button>
+            </motion.button>
           ))}
         </div>
 
         {/* Period Navigation */}
-        <div className={`flex items-center justify-between mb-6 ${currentTheme.bgCard} rounded-2xl p-4 border border-white/40`}>
-          <button onClick={goToPrevPeriod} className="p-2 hover:bg-white/50 rounded-lg">
+        <div className="flex items-center justify-between mb-6 bg-white rounded-2xl p-4 border border-[#FFB4A8]/30 shadow-sm">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={goToPrevPeriod}
+            className="p-2 hover:bg-[#FFF5F0] rounded-lg transition-colors text-[#3D2C28]"
+          >
             <ChevronLeft size={20} />
-          </button>
-          <h2 className="text-lg font-bold text-slate-900 capitalize">
+          </motion.button>
+          <h2 className="text-lg font-bold text-[#3D2C28] capitalize">
             {view === 'day'
               ? `${selectedDay} de ${currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}`
               : currentDate.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })
             }
           </h2>
-          <button onClick={goToNextPeriod} className="p-2 hover:bg-white/50 rounded-lg">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            onClick={goToNextPeriod}
+            className="p-2 hover:bg-[#FFF5F0] rounded-lg transition-colors text-[#3D2C28]"
+          >
             <ChevronRight size={20} />
-          </button>
+          </motion.button>
         </div>
 
         {/* Vista Diaria */}
         {view === 'day' && (
-          <div className={`${currentTheme.bgCard} rounded-2xl p-6 border border-white/40 space-y-2`}>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-2xl p-6 border border-[#FFB4A8]/30 shadow-sm space-y-2"
+          >
             {Array.from({ length: 24 }).map((_, hour) => {
               const event = events.find(e => e.hour === hour && e.day === selectedDay);
               return (
-                <div key={hour} className="flex items-start gap-3 py-3 border-b border-slate-100">
-                  <span className="text-sm text-slate-500 w-16">
+                <div key={hour} className="flex items-start gap-3 py-3 border-b border-[#FFB4A8]/20 last:border-0">
+                  <span className="text-sm text-[#A67B6B] w-16 font-medium">
                     {hour.toString().padStart(2, '0')}:00
                   </span>
                   <div className="flex-1">
                     {event ? (
-                      <button
+                      <motion.button
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
                         onClick={() => setSelectedEvent(event)}
-                        className={`w-full p-3 rounded-lg ${event.color} text-white text-left hover:opacity-90 transition-opacity`}
+                        className="w-full p-3 rounded-xl text-white text-left transition-all"
+                        style={{ backgroundColor: event.color }}
                       >
-                        <p className="font-medium">{event.title}</p>
-                        <p className="text-xs opacity-80">{event.duration} min</p>
-                      </button>
+                        <div className="flex items-center gap-2">
+                          {event.type === 'habit' ? (
+                            <CheckCircle2 size={16} />
+                          ) : (
+                            <Activity size={16} />
+                          )}
+                          <p className="font-medium flex-1">{event.title}</p>
+                        </div>
+                        <p className="text-xs opacity-80 ml-6">{event.duration} min</p>
+                      </motion.button>
                     ) : (
                       <div className="h-2" />
                     )}
@@ -214,14 +247,17 @@ export default function CalendarioPage() {
                 </div>
               );
             })}
-          </div>
+          </motion.div>
         )}
 
         {/* Vista Semanal */}
         {view === 'week' && (
-          <div className={`${currentTheme.bgCard} rounded-2xl p-6 border border-white/40 space-y-3`}>
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-2xl p-6 border border-[#FFB4A8]/30 shadow-sm space-y-3"
+          >
             {['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'].map((dayName, i) => {
-              // Calcular la fecha específica de cada día de la semana
               const startOfWeek = new Date(currentDate);
               startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
               const dayDate = new Date(startOfWeek);
@@ -232,53 +268,86 @@ export default function CalendarioPage() {
               const isExpanded = expandedDays.includes(i);
 
               return (
-                <div key={i} className="border border-slate-200 rounded-xl overflow-hidden">
-                  <button
+                <motion.div
+                  key={i}
+                  className="border border-[#FFB4A8]/20 rounded-xl overflow-hidden hover:border-[#FFB4A8]/40 transition-colors"
+                >
+                  <motion.button
+                    whileHover={{ backgroundColor: 'rgba(255, 180, 168, 0.05)' }}
                     onClick={() => toggleDayExpand(i)}
-                    className="w-full p-4 flex items-center justify-between hover:bg-white/50 transition-colors"
+                    className="w-full p-4 flex items-center justify-between transition-colors"
                   >
                     <div className="text-left">
-                      <p className="font-bold text-slate-900">
+                      <p className="font-bold text-[#3D2C28]">
                         {dayName} {dayNumber}
                       </p>
-                      <p className="text-sm text-slate-600">
-                        {dayDate.toLocaleDateString('es-ES', { month: 'short' })} - {dayEvents.length} actividades
+                      <p className="text-sm text-[#A67B6B]">
+                        {dayDate.toLocaleDateString('es-ES', { month: 'short' })} · {dayEvents.length} evento{dayEvents.length !== 1 ? 's' : ''}
                       </p>
                     </div>
-                    {isExpanded ? <ChevronDown /> : <ChevronRight />}
-                  </button>
+                    <motion.div
+                      animate={{ rotate: isExpanded ? 180 : 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <ChevronDown size={20} className="text-[#FF99AC]" />
+                    </motion.div>
+                  </motion.button>
 
-                  {isExpanded && dayEvents.length > 0 && (
-                    <div className="px-4 pb-4 space-y-2">
-                      {dayEvents.map(event => (
-                        <button
-                          key={event.id}
-                          onClick={() => setSelectedEvent(event)}
-                          className={`w-full p-3 rounded-lg ${event.color} text-white text-left`}
-                        >
-                          <p className="font-medium">{event.title}</p>
-                          <p className="text-xs opacity-80">{event.hour}:00 - {event.duration} min</p>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                  <AnimatePresence>
+                    {isExpanded && dayEvents.length > 0 && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="px-4 pb-4 space-y-2 bg-[#FFF5F0]/50"
+                      >
+                        {dayEvents.map(event => (
+                          <motion.button
+                            key={event.id}
+                            whileHover={{ scale: 1.01 }}
+                            whileTap={{ scale: 0.99 }}
+                            onClick={() => setSelectedEvent(event)}
+                            className="w-full p-3 rounded-xl text-white text-left transition-all flex items-center gap-2"
+                            style={{ backgroundColor: event.color }}
+                          >
+                            {event.type === 'habit' ? (
+                              <CheckCircle2 size={16} />
+                            ) : (
+                              <Activity size={16} />
+                            )}
+                            <div className="flex-1">
+                              <p className="font-medium">{event.title}</p>
+                              <p className="text-xs opacity-80">{event.hour}:00 · {event.duration} min</p>
+                            </div>
+                          </motion.button>
+                        ))}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         )}
 
         {/* Vista Mensual */}
         {view === 'month' && (
-          <div className={`${currentTheme.bgCard} rounded-2xl p-6 border border-white/40`}>
-            <div className="grid grid-cols-7 gap-2 mb-2">
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-2xl p-6 border border-[#FFB4A8]/30 shadow-sm"
+          >
+            {/* Calendar Grid Header */}
+            <div className="grid grid-cols-7 gap-2 mb-4">
               {['D', 'L', 'M', 'M', 'J', 'V', 'S'].map((day) => (
-                <div key={day} className="text-center text-sm font-medium text-slate-600 py-2">
+                <div key={day} className="text-center text-sm font-bold text-[#3D2C28] py-2">
                   {day}
                 </div>
               ))}
             </div>
-            <div className="grid grid-cols-7 gap-2">
+
+            {/* Calendar Grid */}
+            <div className="grid grid-cols-7 gap-2 mb-6">
               {Array.from({ length: firstDay }).map((_, i) => (
                 <div key={`empty-${i}`} className="aspect-square" />
               ))}
@@ -289,90 +358,116 @@ export default function CalendarioPage() {
                 const cycleInfo = getCycleDayInfo(day);
 
                 return (
-                  <button
+                  <motion.button
                     key={day}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
                     onClick={() => {
                       setSelectedDay(day);
                       if (dayEvents.length > 0) toggleDayExpand(day);
                     }}
-                    className={`aspect-square rounded-xl flex flex-col items-center justify-center transition-all relative ${
-                      isToday ? `${currentTheme.gradient} text-white font-bold` :
-                      selectedDay === day ? 'bg-indigo-100 text-indigo-600' :
-                      cycleInfo?.isPeriod ? 'bg-red-100 text-red-700 border-2 border-red-300' :
-                      cycleInfo?.isFertile ? 'bg-amber-100 text-amber-700 border-2 border-amber-300' :
-                      'bg-white/50 hover:bg-white text-slate-700'
+                    className={`aspect-square rounded-xl flex flex-col items-center justify-center transition-all relative font-medium ${
+                      isToday
+                        ? 'bg-gradient-to-br from-[#FFC0A9] to-[#FF99AC] text-white shadow-md'
+                        : selectedDay === day
+                        ? 'bg-[#FFF5F0] border-2 border-[#FF99AC] text-[#3D2C28]'
+                        : cycleInfo?.isPeriod
+                        ? 'bg-red-100 text-red-700 border border-red-300'
+                        : cycleInfo?.isFertile
+                        ? 'bg-amber-100 text-amber-700 border border-amber-300'
+                        : 'bg-white hover:bg-[#FFF5F0] text-[#3D2C28] border border-[#FFB4A8]/20'
                     }`}
                   >
                     <span className="text-sm">{day}</span>
 
-                    {/* Indicador de eventos */}
+                    {/* Indicadores de eventos */}
                     {dayEvents.length > 0 && (
                       <div className="flex gap-0.5 mt-1">
-                        {dayEvents.slice(0, 3).map((_, i) => (
-                          <div key={i} className="w-1 h-1 rounded-full bg-green-500" />
+                        {dayEvents.slice(0, 3).map((event, idx) => (
+                          <div
+                            key={idx}
+                            className="w-1.5 h-1.5 rounded-full"
+                            style={{ backgroundColor: event.color }}
+                          />
                         ))}
                       </div>
                     )}
 
-                    {/* Indicador de ciclo */}
+                    {/* Indicadores de ciclo */}
                     {cycleInfo?.isPeriod && (
-                      <div className="absolute top-1 right-1">
-                        <Droplet size={12} className="text-red-500 fill-red-500" />
-                      </div>
+                      <div className="absolute top-0.5 right-0.5 text-lg">🩸</div>
                     )}
                     {cycleInfo?.isFertile && (
-                      <div className="absolute top-1 right-1">
+                      <div className="absolute top-0.5 right-0.5">
                         <Sparkles size={12} className="text-amber-500" />
                       </div>
                     )}
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
 
-            {/* Leyenda del ciclo */}
+            {/* Leyenda del ciclo mejorada */}
             {cycleData.isActive && (
-              <div className="mt-6 p-4 bg-rose-50 rounded-xl">
-                <p className="text-sm font-medium text-slate-900 mb-3">Leyenda del ciclo:</p>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mt-6 p-4 bg-gradient-to-r from-[#FFF5F0] to-[#FFE8E1] rounded-xl border border-[#FFB4A8]/30"
+              >
+                <p className="text-sm font-semibold text-[#3D2C28] mb-3">Leyenda del ciclo:</p>
                 <div className="flex flex-wrap gap-4 text-sm">
                   <div className="flex items-center gap-2">
-                    <Droplet size={16} className="text-red-500 fill-red-500" />
-                    <span className="text-slate-700">Periodo</span>
+                    <div className="text-lg">🩸</div>
+                    <span className="text-[#A67B6B]">Período</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Sparkles size={16} className="text-amber-500" />
-                    <span className="text-slate-700">Ventana fértil</span>
+                    <span className="text-[#A67B6B]">Ventana fértil</span>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             )}
 
             {/* Eventos del día seleccionado */}
-            {expandedDays.includes(selectedDay) && (
-              <div className="mt-6 pt-6 border-t border-slate-200 space-y-3">
-                <h3 className="font-bold text-slate-900 mb-3">
-                  {selectedDay} de {currentDate.toLocaleDateString('es-ES', { month: 'long' })}
-                </h3>
-                {events.filter(e => e.day === selectedDay).map((event) => (
-                  <button
-                    key={event.id}
-                    onClick={() => setSelectedEvent(event)}
-                    className={`w-full p-4 rounded-xl flex items-center gap-3 ${event.color} text-white text-left`}
-                  >
-                    <Clock size={18} />
-                    <div className="flex-1">
-                      <p className="font-medium">{event.title}</p>
-                      <p className="text-sm opacity-80">{event.hour}:00 - {event.duration} min</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
+            <AnimatePresence>
+              {expandedDays.includes(selectedDay) && (
+                <motion.div
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  className="mt-6 pt-6 border-t border-[#FFB4A8]/20 space-y-3"
+                >
+                  <h3 className="font-bold text-[#3D2C28] mb-3">
+                    {selectedDay} de {currentDate.toLocaleDateString('es-ES', { month: 'long' })}
+                  </h3>
+                  {events.filter(e => e.day === selectedDay).map((event) => (
+                    <motion.button
+                      key={event.id}
+                      whileHover={{ scale: 1.01 }}
+                      whileTap={{ scale: 0.99 }}
+                      onClick={() => setSelectedEvent(event)}
+                      className="w-full p-4 rounded-xl flex items-center gap-3 text-white text-left transition-all"
+                      style={{ backgroundColor: event.color }}
+                    >
+                      {event.type === 'habit' ? (
+                        <CheckCircle2 size={18} />
+                      ) : (
+                        <Activity size={18} />
+                      )}
+                      <div className="flex-1">
+                        <p className="font-medium">{event.title}</p>
+                        <p className="text-sm opacity-80">{event.hour}:00 · {event.duration} min</p>
+                      </div>
+                    </motion.button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.div>
         )}
       </div>
 
-      {/* Modal Editar/Eliminar */}
+      {/* Modal Editar/Eliminar mejorado */}
       <AnimatePresence>
         {selectedEvent && (
           <motion.div
@@ -383,47 +478,83 @@ export default function CalendarioPage() {
             className="fixed inset-0 bg-black/40 backdrop-blur-sm z-60 flex items-center justify-center p-6"
           >
             <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.9 }}
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className={`${currentTheme.bgCard} rounded-3xl p-6 max-w-sm w-full border border-white/40`}
+              className="bg-white rounded-3xl p-6 max-w-sm w-full border border-[#FFB4A8]/30 shadow-lg"
             >
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold">{selectedEvent.title}</h3>
-                <button
+              {/* Header con close button */}
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3 flex-1">
+                  {selectedEvent.type === 'habit' ? (
+                    <div className="p-2 bg-[#FFF5F0] rounded-lg">
+                      <CheckCircle2 size={20} className="text-[#FF99AC]" />
+                    </div>
+                  ) : (
+                    <div className="p-2 bg-[#FFF5F0] rounded-lg">
+                      <Activity size={20} className="text-[#FFC0A9]" />
+                    </div>
+                  )}
+                  <div>
+                    <h3 className="text-lg font-bold text-[#3D2C28]">{selectedEvent.title}</h3>
+                    <p className="text-xs text-[#A67B6B]">
+                      {selectedEvent.type === 'habit' ? 'Hábito' : 'Actividad'}
+                    </p>
+                  </div>
+                </div>
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                   onClick={() => setSelectedEvent(null)}
-                  className="p-2 hover:bg-slate-100 rounded-lg"
+                  className="p-2 hover:bg-[#FFF5F0] rounded-lg transition-colors text-[#3D2C28]"
                 >
                   <X size={20} />
-                </button>
+                </motion.button>
               </div>
-              <p className="text-sm text-slate-600 mb-6">
-                {selectedEvent.hour}:00 - {selectedEvent.duration} minutos
-              </p>
+
+              {/* Información detallada */}
+              <div className="bg-[#FFF5F0] rounded-xl p-4 mb-6 space-y-2">
+                <div className="flex items-center gap-2 text-[#3D2C28]">
+                  <Clock size={16} className="text-[#FF99AC]" />
+                  <span className="text-sm font-medium">
+                    {selectedEvent.hour.toString().padStart(2, '0')}:00 · {selectedEvent.duration} min
+                  </span>
+                </div>
+                {selectedEvent.type === 'habit' && (
+                  <div className="text-xs text-[#A67B6B]">
+                    Hábito registrado
+                  </div>
+                )}
+              </div>
+
+              {/* Botones de acción */}
               <div className="flex gap-3">
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => {
                     setSelectedEvent(null);
-                    // Redirigir según tipo
                     if (selectedEvent.type === 'habit') {
                       router.push(`/biblioteca?edit=${selectedEvent.id}`);
                     } else {
                       router.push(`/editar-actividad/${selectedEvent.id}`);
                     }
                   }}
-                  className="flex-1 px-6 py-3 rounded-xl border-2 border-slate-200 font-medium flex items-center justify-center gap-2 hover:bg-slate-50 transition-colors"
+                  className="flex-1 px-6 py-3 rounded-xl border-2 border-[#FFB4A8] text-[#3D2C28] font-medium flex items-center justify-center gap-2 hover:bg-[#FFF5F0] transition-colors"
                 >
                   <Edit2 size={18} />
                   Editar
-                </button>
-                <button
+                </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => handleDeleteEvent(selectedEvent.id)}
-                  className="flex-1 px-6 py-3 rounded-xl bg-red-500 text-white font-medium flex items-center justify-center gap-2"
+                  className="flex-1 px-6 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white font-medium flex items-center justify-center gap-2 transition-colors"
                 >
                   <Trash2 size={18} />
                   Eliminar
-                </button>
+                </motion.button>
               </div>
             </motion.div>
           </motion.div>
