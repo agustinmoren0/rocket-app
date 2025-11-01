@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { motion } from 'framer-motion';
+import { motion, useMotionValue, PanInfo } from 'framer-motion';
 import { Plus, Clock, Edit2, Trash2, Sparkles } from 'lucide-react';
 import { LUCIDE_ICONS } from '../utils/icons';
 
@@ -23,7 +23,7 @@ const COLORES = [
   '#A8D8EA', '#FFB4A8', '#B8E6B8', '#D4A5A5'
 ];
 
-// Modal opener component that uses useSearchParams
+// Componente que usa useSearchParams (dentro de Suspense)
 function ModalOpener({ setShowModal }: any) {
   const searchParams = useSearchParams();
 
@@ -41,25 +41,31 @@ export default function ActividadesPage() {
   const [activities, setActivities] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingActivity, setEditingActivity] = useState<any>(null);
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
+  // Cargar actividades y configurar listeners
   useEffect(() => {
     loadTodayActivities();
-  }, [refreshTrigger]);
+    setupMidnightArchive();
 
-  useEffect(() => {
-    checkMidnight();
+    // Listener para cambios en storage (otras pestañas)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'habika_activities_today') {
+        loadTodayActivities();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   const loadTodayActivities = () => {
     try {
       const today = new Date().toISOString().split('T')[0];
-      const allActivities = JSON.parse(localStorage.getItem('habika_activities') || '{}');
-      const todayActivities = allActivities[today] || [];
+      const todayActivities = JSON.parse(
+        localStorage.getItem(`habika_activities_today_${today}`) || '[]'
+      );
 
-      console.log('📅 Cargando actividades del día:', today);
-      console.log('📦 Todas las actividades:', allActivities);
-      console.log('✅ Actividades de hoy:', todayActivities);
+      console.log('📅 Actividades de hoy:', todayActivities.length);
 
       const sorted = todayActivities.sort((a: any, b: any) =>
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
@@ -67,12 +73,12 @@ export default function ActividadesPage() {
 
       setActivities(sorted);
     } catch (error) {
-      console.error('❌ Error al cargar actividades:', error);
+      console.error('❌ Error al cargar:', error);
       setActivities([]);
     }
   };
 
-  const checkMidnight = () => {
+  const setupMidnightArchive = () => {
     const now = new Date();
     const tomorrow = new Date(now);
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -80,96 +86,126 @@ export default function ActividadesPage() {
 
     const timeUntilMidnight = tomorrow.getTime() - now.getTime();
 
+    console.log(
+      `⏰ Próximo archivo a medianoche en ${Math.round(timeUntilMidnight / 1000 / 60)} minutos`
+    );
+
     setTimeout(() => {
-      archiveTodayActivities();
-      setRefreshTrigger(prev => prev + 1);
-      checkMidnight();
+      archiveToCalendar();
+      setupMidnightArchive();
     }, timeUntilMidnight);
   };
 
-  const archiveTodayActivities = () => {
-    const today = new Date().toISOString().split('T')[0];
-    const allActivities = JSON.parse(localStorage.getItem('habika_activities') || '{}');
+  const archiveToCalendar = () => {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const todayActivities = JSON.parse(
+        localStorage.getItem(`habika_activities_today_${today}`) || '[]'
+      );
 
-    if (allActivities[today] && allActivities[today].length > 0) {
-      const archived = JSON.parse(localStorage.getItem('habika_activities_archive') || '{}');
-      archived[today] = allActivities[today];
-      localStorage.setItem('habika_activities_archive', JSON.stringify(archived));
+      if (todayActivities.length > 0) {
+        // Guardar en calendario
+        const calendar = JSON.parse(localStorage.getItem('habika_calendar') || '{}');
+        calendar[today] = todayActivities;
+        localStorage.setItem('habika_calendar', JSON.stringify(calendar));
 
-      delete allActivities[today];
-      localStorage.setItem('habika_activities', JSON.stringify(allActivities));
+        // Limpiar actividades del día
+        localStorage.removeItem(`habika_activities_today_${today}`);
+
+        console.log('📚 Actividades archivadas en calendario');
+      }
+
+      loadTodayActivities();
+    } catch (error) {
+      console.error('❌ Error al archivar:', error);
     }
   };
 
-  const saveActivity = (activity: any) => {
+  const saveActivity = (activityData: any) => {
     try {
       const today = new Date().toISOString().split('T')[0];
-      const allActivities = JSON.parse(localStorage.getItem('habika_activities') || '{}');
-
-      if (!allActivities[today]) {
-        allActivities[today] = [];
-      }
+      const todayActivities = JSON.parse(
+        localStorage.getItem(`habika_activities_today_${today}`) || '[]'
+      );
 
       if (editingActivity) {
-        // EDITAR
-        const index = allActivities[today].findIndex((a: any) => a.id === editingActivity.id);
+        // EDITAR actividad existente
+        const index = todayActivities.findIndex((a: any) => a.id === editingActivity.id);
         if (index !== -1) {
-          allActivities[today][index] = {
-            ...activity,
+          todayActivities[index] = {
+            ...activityData,
             id: editingActivity.id,
             timestamp: editingActivity.timestamp
           };
-          console.log('✏️ Actividad editada:', allActivities[today][index]);
+          console.log('✏️ Actividad editada');
         }
       } else {
-        // CREAR NUEVA
+        // CREAR nueva actividad
         const newActivity = {
           id: `activity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           timestamp: new Date().toISOString(),
-          ...activity
+          ...activityData
         };
-        allActivities[today].push(newActivity);
-        console.log('✅ Nueva actividad creada:', newActivity);
+        todayActivities.push(newActivity);
+        console.log('✅ Nueva actividad creada');
       }
 
-      // GUARDAR
-      localStorage.setItem('habika_activities', JSON.stringify(allActivities));
-      console.log('💾 Guardado completo. Total actividades hoy:', allActivities[today].length);
+      // GUARDAR en localStorage (actividaddes del día)
+      localStorage.setItem(`habika_activities_today_${today}`, JSON.stringify(todayActivities));
 
-      // FORZAR actualización
-      const sorted = allActivities[today].sort((a: any, b: any) =>
+      // GUARDAR en calendario también (para visualización)
+      const calendar = JSON.parse(localStorage.getItem('habika_calendar') || '{}');
+      calendar[today] = todayActivities;
+      localStorage.setItem('habika_calendar', JSON.stringify(calendar));
+
+      console.log('💾 Guardado en actividades y calendario');
+
+      // Actualizar estado
+      const sorted = todayActivities.sort((a: any, b: any) =>
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
       setActivities([...sorted]);
 
-      // Cerrar modal
       setShowModal(false);
       setEditingActivity(null);
 
-      console.log('🎉 Proceso completado. Estado actualizado.');
+      // Disparar evento para otras pestañas
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'habika_activities_today',
+        newValue: JSON.stringify(todayActivities)
+      }));
     } catch (error) {
-      console.error('❌ Error al guardar actividad:', error);
-      alert('Error al guardar la actividad. Por favor intenta de nuevo.');
+      console.error('❌ Error al guardar:', error);
+      alert('Error al guardar. Intenta de nuevo.');
     }
   };
 
   const deleteActivity = (activityId: string) => {
-    if (confirm('¿Eliminar esta actividad?')) {
-      try {
-        const today = new Date().toISOString().split('T')[0];
-        const allActivities = JSON.parse(localStorage.getItem('habika_activities') || '{}');
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const todayActivities = JSON.parse(
+        localStorage.getItem(`habika_activities_today_${today}`) || '[]'
+      );
 
-        const filtered = (allActivities[today] || []).filter((a: any) => a.id !== activityId);
-        allActivities[today] = filtered;
+      const filtered = todayActivities.filter((a: any) => a.id !== activityId);
 
-        localStorage.setItem('habika_activities', JSON.stringify(allActivities));
+      localStorage.setItem(`habika_activities_today_${today}`, JSON.stringify(filtered));
 
-        setActivities([...filtered]);
+      // Actualizar calendario
+      const calendar = JSON.parse(localStorage.getItem('habika_calendar') || '{}');
+      calendar[today] = filtered;
+      localStorage.setItem('habika_calendar', JSON.stringify(calendar));
 
-        console.log('🗑️ Actividad eliminada');
-      } catch (error) {
-        console.error('❌ Error al eliminar actividad:', error);
-      }
+      setActivities([...filtered]);
+      console.log('🗑️ Actividad eliminada');
+
+      // Disparar evento
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: 'habika_activities_today',
+        newValue: JSON.stringify(filtered)
+      }));
+    } catch (error) {
+      console.error('❌ Error al eliminar:', error);
     }
   };
 
@@ -189,6 +225,7 @@ export default function ActividadesPage() {
 
   return (
     <>
+      {/* Modal opener con Suspense para useSearchParams */}
       <Suspense fallback={null}>
         <ModalOpener setShowModal={setShowModal} />
       </Suspense>
@@ -229,19 +266,17 @@ export default function ActividadesPage() {
               </button>
             </div>
           ) : (
-            <>
-              {activities.map((activity) => (
-                <ActivityCard
-                  key={activity.id}
-                  activity={activity}
-                  onEdit={() => {
-                    setEditingActivity(activity);
-                    setShowModal(true);
-                  }}
-                  onDelete={() => deleteActivity(activity.id)}
-                />
-              ))}
-            </>
+            activities.map((activity) => (
+              <ActivityCard
+                key={activity.id}
+                activity={activity}
+                onEdit={() => {
+                  setEditingActivity(activity);
+                  setShowModal(true);
+                }}
+                onDelete={() => deleteActivity(activity.id)}
+              />
+            ))
           )}
         </div>
 
@@ -276,58 +311,143 @@ export default function ActividadesPage() {
 }
 
 function ActivityCard({ activity, onEdit, onDelete }: any) {
+  const x = useMotionValue(0);
+  const [swipeState, setSwipeState] = useState<'closed' | 'edit' | 'delete'>('closed');
+
+  const handleDragEnd = (event: any, info: PanInfo) => {
+    const velocity = info.velocity.x;
+    const offset = info.offset.x;
+
+    // Detección por velocidad
+    if (Math.abs(velocity) > 500) {
+      if (velocity > 0 && swipeState === 'closed') {
+        setSwipeState('edit');
+        x.set(100);
+      } else if (velocity < 0 && swipeState === 'closed') {
+        setSwipeState('delete');
+        x.set(-100);
+      } else {
+        setSwipeState('closed');
+        x.set(0);
+      }
+      return;
+    }
+
+    // Detección por offset
+    if (offset > 50 && swipeState === 'closed') {
+      setSwipeState('edit');
+      x.set(100);
+    } else if (offset < -50 && swipeState === 'closed') {
+      setSwipeState('delete');
+      x.set(-100);
+    } else if (Math.abs(offset) < 20 && swipeState !== 'closed') {
+      setSwipeState('closed');
+      x.set(0);
+    } else {
+      if (swipeState === 'edit') x.set(100);
+      else if (swipeState === 'delete') x.set(-100);
+      else x.set(0);
+    }
+  };
+
+  const closeSwipe = () => {
+    setSwipeState('closed');
+    x.set(0);
+  };
+
   const categoria = CATEGORIAS.find(c => c.id === activity.categoria);
   const Icon = categoria ? LUCIDE_ICONS[categoria.icon] : LUCIDE_ICONS['Circle'];
-  const time = new Date(activity.timestamp).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  const time = new Date(activity.timestamp).toLocaleTimeString('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-sm">
-      <div className="flex items-start gap-3">
-        <div
-          className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-sm"
-          style={{ backgroundColor: activity.color }}
+    <div className="relative overflow-hidden rounded-2xl">
+      {/* Botón EDITAR (izquierda) */}
+      {swipeState === 'edit' && (
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="absolute left-0 top-0 bottom-0 flex items-center pl-4 z-20"
         >
-          <Icon className="w-6 h-6 text-white" />
-        </div>
-
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-[#3D2C28] mb-1">{activity.name}</h3>
-          <div className="flex items-center gap-3 text-xs text-[#A67B6B] mb-2">
-            <span className="flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              {activity.duration} {activity.unit}
-            </span>
-            <span>• {time}</span>
-          </div>
-          <span
-            className="inline-block px-2 py-1 rounded-lg text-xs font-medium"
-            style={{
-              backgroundColor: `${activity.color}20`,
-              color: activity.color
+          <button
+            onClick={() => {
+              onEdit();
+              closeSwipe();
             }}
+            className="w-20 h-16 rounded-2xl bg-[#6B9B9E] flex flex-col items-center justify-center shadow-md hover:scale-110 transition-transform"
           >
-            {categoria?.name}
-          </span>
-          {activity.notes && (
-            <p className="text-xs text-[#A67B6B] mt-2 italic">"{activity.notes}"</p>
-          )}
-        </div>
+            <Edit2 className="w-5 h-5 text-white mb-1" />
+            <span className="text-xs text-white font-medium">Editar</span>
+          </button>
+        </motion.div>
+      )}
 
-        <div className="flex gap-1">
+      {/* Botón ELIMINAR (derecha) */}
+      {swipeState === 'delete' && (
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="absolute right-0 top-0 bottom-0 flex items-center pr-4 z-20"
+        >
           <button
-            onClick={onEdit}
-            className="w-8 h-8 rounded-lg bg-[#FFF5F0] flex items-center justify-center hover:bg-[#FFE5D9] transition-colors"
+            onClick={() => {
+              if (confirm('¿Eliminar esta actividad?')) {
+                onDelete();
+              }
+              closeSwipe();
+            }}
+            className="w-20 h-16 rounded-2xl bg-[#FF6B6B] flex flex-col items-center justify-center shadow-md hover:scale-110 transition-transform"
           >
-            <Edit2 className="w-4 h-4 text-[#A67B6B]" />
+            <Trash2 className="w-5 h-5 text-white mb-1" />
+            <span className="text-xs text-white font-medium">Eliminar</span>
           </button>
-          <button
-            onClick={onDelete}
-            className="w-8 h-8 rounded-lg bg-[#FFF5F0] flex items-center justify-center hover:bg-[#FFE5D9] transition-colors"
+        </motion.div>
+      )}
+
+      {/* Card principal */}
+      <motion.div
+        drag="x"
+        dragConstraints={{ left: -100, right: 100 }}
+        dragElastic={0.1}
+        dragMomentum={false}
+        onDragEnd={handleDragEnd}
+        style={{ x }}
+        className="bg-white rounded-2xl p-4 shadow-sm cursor-grab active:cursor-grabbing"
+      >
+        <div className="flex items-start gap-3">
+          <div
+            className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-sm"
+            style={{ backgroundColor: activity.color }}
           >
-            <Trash2 className="w-4 h-4 text-[#A67B6B]" />
-          </button>
+            <Icon className="w-6 h-6 text-white" />
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-[#3D2C28] mb-1">{activity.name}</h3>
+            <div className="flex items-center gap-3 text-xs text-[#A67B6B] mb-2">
+              <span className="flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                {activity.duration} {activity.unit}
+              </span>
+              <span>• {time}</span>
+            </div>
+            <span
+              className="inline-block px-2 py-1 rounded-lg text-xs font-medium"
+              style={{
+                backgroundColor: `${activity.color}20`,
+                color: activity.color
+              }}
+            >
+              {categoria?.name}
+            </span>
+            {activity.notes && (
+              <p className="text-xs text-[#A67B6B] mt-2 italic">"{activity.notes}"</p>
+            )}
+          </div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }
@@ -347,8 +467,6 @@ function ActivityModal({ activity, onSave, onClose }: any) {
       alert('Ingresa el nombre de la actividad');
       return;
     }
-
-    console.log('🔄 Enviando para guardar:', formData);
     onSave(formData);
   };
 
