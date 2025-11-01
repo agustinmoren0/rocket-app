@@ -309,7 +309,6 @@ function ActivityModal({ activity, onSave, onClose }: any) {
         </div>
 
         <div className="flex-1 overflow-y-auto pb-6 p-6 space-y-6">
-          {/* Actividad */}
           <div>
             <label className="block text-sm font-semibold text-[#3D2C28] mb-2">Actividad</label>
             <input
@@ -321,7 +320,6 @@ function ActivityModal({ activity, onSave, onClose }: any) {
             />
           </div>
 
-          {/* Duración */}
           <div>
             <label className="block text-sm font-semibold text-[#3D2C28] mb-2">Duración</label>
             <div className="flex gap-3">
@@ -353,7 +351,6 @@ function ActivityModal({ activity, onSave, onClose }: any) {
             </div>
           </div>
 
-          {/* Categoría */}
           <div>
             <label className="block text-sm font-semibold text-[#3D2C28] mb-3">Categoría</label>
             <div className="grid grid-cols-4 gap-2">
@@ -378,33 +375,33 @@ function ActivityModal({ activity, onSave, onClose }: any) {
             </div>
           </div>
 
-          {/* Color */}
           <div>
             <label className="block text-sm font-semibold text-[#3D2C28] mb-3">Color</label>
             <div className="grid grid-cols-6 gap-3">
-              {COLORES.map((color) => (
-                <button
-                  key={color}
-                  onClick={() => setFormData({ ...formData, color })}
-                  className={`w-full aspect-square rounded-full transition-transform ${
-                    formData.color === color ? 'scale-110 ring-4 ring-offset-2' : ''
-                  }`}
-                  style={{
-                    backgroundColor: color,
-                    ringColor: color
-                  }}
-                >
-                  {formData.color === color && (
-                    <svg className="w-4 h-4 text-white mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                      <polyline points="20 6 9 17 4 12" />
-                    </svg>
-                  )}
-                </button>
-              ))}
+              {COLORES.map((color) => {
+                const isSelected = formData.color === color;
+                return (
+                  <button
+                    key={color}
+                    onClick={() => setFormData({ ...formData, color })}
+                    className="w-full aspect-square rounded-full transition-transform"
+                    style={{
+                      backgroundColor: color,
+                      transform: isSelected ? 'scale(1.1)' : 'scale(1)',
+                      boxShadow: isSelected ? `0 0 0 2px white, 0 0 0 4px ${color}` : 'none'
+                    }}
+                  >
+                    {isSelected && (
+                      <svg className="w-4 h-4 text-white mx-auto" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    )}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* Notas */}
           <div>
             <label className="block text-sm font-semibold text-[#3D2C28] mb-2">Notas (Opcional)</label>
             <textarea
