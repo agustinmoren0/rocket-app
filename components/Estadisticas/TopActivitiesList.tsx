@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Flame } from 'lucide-react';
+import { Flame, Dumbbell, Zap, Heart, Brain, Smile, Droplets, Coffee, Music, BookOpen } from 'lucide-react';
 
 interface TopActivity {
   id: string;
@@ -13,6 +13,21 @@ interface TopActivity {
 interface TopActivitiesListProps {
   topActivities: TopActivity[];
 }
+
+const getActivityIcon = (activityName: string) => {
+  const name = activityName.toLowerCase();
+  if (name.includes('yoga') || name.includes('pilates')) return Heart;
+  if (name.includes('correr') || name.includes('correr') || name.includes('trotar')) return Zap;
+  if (name.includes('caminata') || name.includes('caminar')) return Dumbbell;
+  if (name.includes('meditación') || name.includes('meditacion')) return Brain;
+  if (name.includes('baile') || name.includes('danza')) return Music;
+  if (name.includes('natación') || name.includes('natacion')) return Droplets;
+  if (name.includes('lectura') || name.includes('leer')) return BookOpen;
+  if (name.includes('café') || name.includes('cafe')) return Coffee;
+  if (name.includes('ejercicio')) return Dumbbell;
+  if (name.includes('relajación') || name.includes('relajacion')) return Smile;
+  return Flame; // Default
+};
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -59,6 +74,7 @@ export default function TopActivitiesList({ topActivities }: TopActivitiesListPr
           topActivities.map((activity, idx) => {
             const isTop = idx === 0;
             const percentage = (activity.count / maxCount) * 100;
+            const IconComponent = getActivityIcon(activity.name);
 
             return (
               <motion.div
@@ -73,7 +89,7 @@ export default function TopActivitiesList({ topActivities }: TopActivitiesListPr
               >
                 <div className="flex items-center justify-between gap-3 mb-2">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <span className="text-2xl flex-shrink-0">{activity.icon}</span>
+                    <IconComponent className="w-6 h-6 text-[#FF99AC] flex-shrink-0" />
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-[#3D2C28] truncate">
                         {activity.name}
@@ -87,9 +103,9 @@ export default function TopActivitiesList({ topActivities }: TopActivitiesListPr
                     <motion.div
                       animate={{ scale: [1, 1.1, 1] }}
                       transition={{ duration: 1, repeat: Infinity }}
-                      className="text-lg flex-shrink-0"
+                      className="flex-shrink-0"
                     >
-                      🔥
+                      <Flame size={20} className="text-[#FF99AC]" />
                     </motion.div>
                   )}
                 </div>

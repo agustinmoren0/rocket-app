@@ -59,10 +59,13 @@ export default function DashboardPage() {
 
     const consistency = totalPossible > 0 ? Math.round((totalCompleted / totalPossible) * 100) : 0;
 
-    // Tiempo en actividades
+    // Tiempo en actividades - convertir a minutos según unit
     const activityTime = activities
       .filter((a: any) => last7Days.includes(a.date))
-      .reduce((sum: number, a: any) => sum + (a.duration || 0), 0);
+      .reduce((sum: number, a: any) => {
+        const minutes = a.unit === 'hora(s)' || a.unit === 'hs' ? (a.duration || 0) * 60 : (a.duration || 0);
+        return sum + minutes;
+      }, 0);
 
     // Racha global
     let streak = 0;

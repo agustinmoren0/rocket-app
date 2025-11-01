@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Star, TrendingUp } from 'lucide-react';
+import { Star, TrendingUp, Droplets, Zap, Dumbbell, BookOpen, Heart, Moon, Sun } from 'lucide-react';
 
 interface TopHabit {
   id: string;
@@ -15,6 +15,18 @@ interface TopHabitsListProps {
   topHabits: TopHabit[];
   summary: string;
 }
+
+const getHabitIcon = (habitName: string) => {
+  const name = habitName.toLowerCase();
+  if (name.includes('agua')) return Droplets;
+  if (name.includes('meditación') || name.includes('meditacion')) return Heart;
+  if (name.includes('ejercicio') || name.includes('correr') || name.includes('yoga')) return Dumbbell;
+  if (name.includes('lectura') || name.includes('leer')) return BookOpen;
+  if (name.includes('dormir') || name.includes('sueño')) return Moon;
+  if (name.includes('energía') || name.includes('energia')) return Zap;
+  if (name.includes('sol') || name.includes('luz')) return Sun;
+  return Heart; // Default
+};
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -59,6 +71,7 @@ export default function TopHabitsList({ topHabits, summary }: TopHabitsListProps
           topHabits.map((habit, idx) => {
             const percentage = Math.round((habit.completed / habit.total) * 100);
             const isPerfect = percentage === 100;
+            const IconComponent = getHabitIcon(habit.name);
 
             return (
               <motion.div
@@ -72,7 +85,7 @@ export default function TopHabitsList({ topHabits, summary }: TopHabitsListProps
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <span className="text-2xl flex-shrink-0">{habit.icon}</span>
+                    <IconComponent className="w-6 h-6 text-[#FF99AC] flex-shrink-0" />
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-[#3D2C28] truncate">{habit.name}</p>
                       <p className="text-xs text-[#A67B6B]">
