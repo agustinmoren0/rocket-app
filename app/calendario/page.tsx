@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, ChevronDown, Clock, Edit2, Trash2, X, Droplet, Sparkles, Activity, CheckCircle2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Clock, Edit2, Trash2, X, Activity, CheckCircle2 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { useCycle } from '../context/CycleContext';
 import BottomNav from '../components/BottomNav';
@@ -335,97 +335,136 @@ export default function CalendarioPage() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl p-6 border border-[#FFB4A8]/30 shadow-sm"
+            className="bg-white rounded-2xl p-6 border border-[#FFB4A8]/30 shadow-sm space-y-6"
           >
-            {/* Calendar Grid Header */}
-            <div className="grid grid-cols-7 gap-2 mb-4">
-              {['D', 'L', 'M', 'M', 'J', 'V', 'S'].map((day) => (
-                <div key={day} className="text-center text-sm font-bold text-[#3D2C28] py-2">
-                  {day}
-                </div>
-              ))}
+            {/* Sección de Hábitos y Actividades */}
+            <div>
+              <h3 className="text-lg font-bold text-[#3D2C28] mb-4">Hábitos & Actividades</h3>
+
+              {/* Calendar Grid Header */}
+              <div className="grid grid-cols-7 gap-2 mb-4">
+                {['D', 'L', 'M', 'M', 'J', 'V', 'S'].map((day) => (
+                  <div key={day} className="text-center text-sm font-bold text-[#3D2C28] py-2">
+                    {day}
+                  </div>
+                ))}
+              </div>
+
+              {/* Calendar Grid - Hábitos y Actividades */}
+              <div className="grid grid-cols-7 gap-2 mb-6">
+                {Array.from({ length: firstDay }).map((_, i) => (
+                  <div key={`empty-${i}`} className="aspect-square" />
+                ))}
+                {Array.from({ length: daysInMonth }).map((_, i) => {
+                  const day = i + 1;
+                  const isToday = day === new Date().getDate();
+                  const dayEvents = events.filter(e => e.day === day);
+
+                  return (
+                    <motion.button
+                      key={day}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => {
+                        setSelectedDay(day);
+                        if (dayEvents.length > 0) toggleDayExpand(day);
+                      }}
+                      className={`aspect-square rounded-lg flex flex-col items-center justify-center transition-all relative font-medium text-sm ${
+                        isToday
+                          ? 'bg-gradient-to-br from-[#FFC0A9] to-[#FF99AC] text-white shadow-md border-2 border-[#FF99AC]'
+                          : selectedDay === day
+                          ? 'bg-[#FFF5F0] border-2 border-[#F8C8C2] text-[#3D2C28]'
+                          : dayEvents.length > 0
+                          ? 'bg-white border-2 border-[#FFB4A8]/40 text-[#3D2C28] hover:bg-[#FFF5F0]'
+                          : 'bg-white text-[#3D2C28] border border-[#FFB4A8]/20 hover:bg-[#FFF5F0]'
+                      }`}
+                    >
+                      <span>{day}</span>
+
+                      {/* Indicadores de eventos - Puntos suaves */}
+                      {dayEvents.length > 0 && (
+                        <div className="flex gap-0.5 mt-1">
+                          {dayEvents.slice(0, 3).map((event, idx) => (
+                            <div
+                              key={idx}
+                              className="w-1.5 h-1.5 rounded-full"
+                              style={{ backgroundColor: event.color }}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </motion.button>
+                  );
+                })}
+              </div>
             </div>
 
-            {/* Calendar Grid */}
-            <div className="grid grid-cols-7 gap-2 mb-6">
-              {Array.from({ length: firstDay }).map((_, i) => (
-                <div key={`empty-${i}`} className="aspect-square" />
-              ))}
-              {Array.from({ length: daysInMonth }).map((_, i) => {
-                const day = i + 1;
-                const isToday = day === new Date().getDate();
-                const dayEvents = events.filter(e => e.day === day);
-                const cycleInfo = getCycleDayInfo(day);
-
-                return (
-                  <motion.button
-                    key={day}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => {
-                      setSelectedDay(day);
-                      if (dayEvents.length > 0) toggleDayExpand(day);
-                    }}
-                    className={`aspect-square rounded-xl flex flex-col items-center justify-center transition-all relative font-medium ${
-                      isToday
-                        ? 'bg-gradient-to-br from-[#FFC0A9] to-[#FF99AC] text-white shadow-md'
-                        : selectedDay === day
-                        ? 'bg-[#FFF5F0] border-2 border-[#FF99AC] text-[#3D2C28]'
-                        : cycleInfo?.isPeriod
-                        ? 'bg-red-100 text-red-700 border border-red-300'
-                        : cycleInfo?.isFertile
-                        ? 'bg-amber-100 text-amber-700 border border-amber-300'
-                        : 'bg-white hover:bg-[#FFF5F0] text-[#3D2C28] border border-[#FFB4A8]/20'
-                    }`}
-                  >
-                    <span className="text-sm">{day}</span>
-
-                    {/* Indicadores de eventos */}
-                    {dayEvents.length > 0 && (
-                      <div className="flex gap-0.5 mt-1">
-                        {dayEvents.slice(0, 3).map((event, idx) => (
-                          <div
-                            key={idx}
-                            className="w-1.5 h-1.5 rounded-full"
-                            style={{ backgroundColor: event.color }}
-                          />
-                        ))}
-                      </div>
-                    )}
-
-                    {/* Indicadores de ciclo */}
-                    {cycleInfo?.isPeriod && (
-                      <div className="absolute top-0.5 right-0.5 text-lg">🩸</div>
-                    )}
-                    {cycleInfo?.isFertile && (
-                      <div className="absolute top-0.5 right-0.5">
-                        <Sparkles size={12} className="text-amber-500" />
-                      </div>
-                    )}
-                  </motion.button>
-                );
-              })}
-            </div>
-
-            {/* Leyenda del ciclo mejorada */}
+            {/* Sección de Modo Ciclo - Separada visualmente */}
             {cycleData.isActive && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="mt-6 p-4 bg-gradient-to-r from-[#FFF5F0] to-[#FFE8E1] rounded-xl border border-[#FFB4A8]/30"
-              >
-                <p className="text-sm font-semibold text-[#3D2C28] mb-3">Leyenda del ciclo:</p>
-                <div className="flex flex-wrap gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <div className="text-lg">🩸</div>
-                    <span className="text-[#A67B6B]">Período</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Sparkles size={16} className="text-amber-500" />
-                    <span className="text-[#A67B6B]">Ventana fértil</span>
-                  </div>
+              <div className="pt-6 border-t border-[#FFB4A8]/20">
+                <h3 className="text-lg font-bold text-[#3D2C28] mb-4">Tu Ciclo</h3>
+
+                {/* Calendar Grid Header */}
+                <div className="grid grid-cols-7 gap-2 mb-4">
+                  {['D', 'L', 'M', 'M', 'J', 'V', 'S'].map((day) => (
+                    <div key={day} className="text-center text-sm font-bold text-[#3D2C28] py-2">
+                      {day}
+                    </div>
+                  ))}
                 </div>
-              </motion.div>
+
+                {/* Calendar Grid - Modo Ciclo */}
+                <div className="grid grid-cols-7 gap-2 mb-6">
+                  {Array.from({ length: firstDay }).map((_, i) => (
+                    <div key={`empty-cycle-${i}`} className="aspect-square" />
+                  ))}
+                  {Array.from({ length: daysInMonth }).map((_, i) => {
+                    const day = i + 1;
+                    const isToday = day === new Date().getDate();
+                    const cycleInfo = getCycleDayInfo(day);
+
+                    return (
+                      <motion.button
+                        key={`cycle-${day}`}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className={`aspect-square rounded-lg flex items-center justify-center transition-all relative font-medium text-sm ${
+                          isToday
+                            ? 'border-2 border-[#F8C8C2] text-[#3D2C28]'
+                            : 'text-[#3D2C28]'
+                        } ${
+                          cycleInfo?.isPeriod
+                            ? 'bg-[#FDEEEE] border-2 border-[#FCE8E6]'
+                            : cycleInfo?.isFertile
+                            ? 'bg-white border-2 border-[#F9D68F] shadow-[0_0_0_2px_rgba(249,214,143,0.3)]'
+                            : 'bg-white text-[#3D2C28] border border-[#FFB4A8]/20 hover:bg-[#FFF5F0]'
+                        } ${isToday ? 'border-[#F8C8C2]' : ''}`}
+                      >
+                        {day}
+                      </motion.button>
+                    );
+                  })}
+                </div>
+
+                {/* Leyenda del ciclo - Minimalista */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="p-4 bg-[#FFF4F2] rounded-xl border border-[#FFB4A8]/20"
+                >
+                  <p className="text-xs font-semibold text-[#6B5B56] mb-3 uppercase tracking-wide">Leyenda del ciclo</p>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-[#FDEEEE] border border-[#FCE8E6]" />
+                      <span className="text-[#6B5B56]">Período</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded border-2 border-[#F9D68F]" />
+                      <span className="text-[#6B5B56]">Ventana fértil</span>
+                    </div>
+                  </div>
+                </motion.div>
+              </div>
             )}
 
             {/* Eventos del día seleccionado */}
