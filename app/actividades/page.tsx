@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Plus, Clock, Edit2, Trash2, Sparkles } from 'lucide-react';
 import { LUCIDE_ICONS } from '../utils/icons';
@@ -23,10 +24,20 @@ const COLORES = [
 ];
 
 export default function ActividadesPage() {
+  const searchParams = useSearchParams();
   const [activities, setActivities] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingActivity, setEditingActivity] = useState<any>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Abrir modal si viene con ?open=true desde el botón +
+  useEffect(() => {
+    if (searchParams.get('open') === 'true') {
+      setShowModal(true);
+      // Limpiar URL sin recargar
+      window.history.replaceState({}, '', '/actividades');
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     loadTodayActivities();
@@ -37,16 +48,24 @@ export default function ActividadesPage() {
   }, []);
 
   const loadTodayActivities = () => {
-    const today = new Date().toISOString().split('T')[0];
-    const allActivities = JSON.parse(localStorage.getItem('habika_activities') || '{}');
-    const todayActivities = allActivities[today] || [];
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const allActivities = JSON.parse(localStorage.getItem('habika_activities') || '{}');
+      const todayActivities = allActivities[today] || [];
 
-    console.log('📅 Cargando actividades del día:', today);
-    console.log('📋 Actividades encontradas:', todayActivities);
+      console.log('📅 Cargando actividades del día:', today);
+      console.log('📦 Todas las actividades:', allActivities);
+      console.log('✅ Actividades de hoy:', todayActivities);
 
-    setActivities(todayActivities.sort((a: any, b: any) =>
-      new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    ));
+      const sorted = todayActivities.sort((a: any, b: any) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+
+      setActivities(sorted);
+    } catch (error) {
+      console.error('❌ Error al cargar actividades:', error);
+      setActivities([]);
+    }
   };
 
   const checkMidnight = () => {
@@ -79,55 +98,74 @@ export default function ActividadesPage() {
   };
 
   const saveActivity = (activity: any) => {
-    const today = new Date().toISOString().split('T')[0];
-    const allActivities = JSON.parse(localStorage.getItem('habika_activities') || '{}');
-    const todayActivities = allActivities[today] || [];
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const allActivities = JSON.parse(localStorage.getItem('habika_activities') || '{}');
 
-    console.log('💾 Guardando actividad:', activity);
-
-    if (editingActivity) {
-      // Editar actividad existente
-      const index = todayActivities.findIndex((a: any) => a.id === editingActivity.id);
-      if (index !== -1) {
-        todayActivities[index] = {
-          ...activity,
-          id: editingActivity.id,
-          timestamp: editingActivity.timestamp
-        };
+      if (!allActivities[today]) {
+        allActivities[today] = [];
       }
-    } else {
-      // Crear nueva actividad
-      const newActivity = {
-        ...activity,
-        id: `activity_${Date.now()}`,
-        timestamp: new Date().toISOString(),
-      };
-      todayActivities.push(newActivity);
-      console.log('✅ Nueva actividad creada:', newActivity);
+
+      if (editingActivity) {
+        // EDITAR
+        const index = allActivities[today].findIndex((a: any) => a.id === editingActivity.id);
+        if (index !== -1) {
+          allActivities[today][index] = {
+            ...activity,
+            id: editingActivity.id,
+            timestamp: editingActivity.timestamp
+          };
+          console.log('✏️ Actividad editada:', allActivities[today][index]);
+        }
+      } else {
+        // CREAR NUEVA
+        const newActivity = {
+          id: `activity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          timestamp: new Date().toISOString(),
+          ...activity
+        };
+        allActivities[today].push(newActivity);
+        console.log('✅ Nueva actividad creada:', newActivity);
+      }
+
+      // GUARDAR
+      localStorage.setItem('habika_activities', JSON.stringify(allActivities));
+      console.log('💾 Guardado completo. Total actividades hoy:', allActivities[today].length);
+
+      // FORZAR actualización
+      const sorted = allActivities[today].sort((a: any, b: any) =>
+        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+      setActivities([...sorted]);
+
+      // Cerrar modal
+      setShowModal(false);
+      setEditingActivity(null);
+
+      console.log('🎉 Proceso completado. Estado actualizado.');
+    } catch (error) {
+      console.error('❌ Error al guardar actividad:', error);
+      alert('Error al guardar la actividad. Por favor intenta de nuevo.');
     }
-
-    allActivities[today] = todayActivities;
-    localStorage.setItem('habika_activities', JSON.stringify(allActivities));
-
-    console.log('📦 Estado final en localStorage:', allActivities[today]);
-
-    // Cerrar modal
-    setShowModal(false);
-    setEditingActivity(null);
-
-    // FORZAR recarga
-    setRefreshTrigger(prev => prev + 1);
   };
 
   const deleteActivity = (activityId: string) => {
     if (confirm('¿Eliminar esta actividad?')) {
-      const today = new Date().toISOString().split('T')[0];
-      const allActivities = JSON.parse(localStorage.getItem('habika_activities') || '{}');
-      const todayActivities = (allActivities[today] || []).filter((a: any) => a.id !== activityId);
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        const allActivities = JSON.parse(localStorage.getItem('habika_activities') || '{}');
 
-      allActivities[today] = todayActivities;
-      localStorage.setItem('habika_activities', JSON.stringify(allActivities));
-      setRefreshTrigger(prev => prev + 1);
+        const filtered = (allActivities[today] || []).filter((a: any) => a.id !== activityId);
+        allActivities[today] = filtered;
+
+        localStorage.setItem('habika_activities', JSON.stringify(allActivities));
+
+        setActivities([...filtered]);
+
+        console.log('🗑️ Actividad eliminada');
+      } catch (error) {
+        console.error('❌ Error al eliminar actividad:', error);
+      }
     }
   };
 

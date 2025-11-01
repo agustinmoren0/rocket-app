@@ -41,7 +41,7 @@ export default function BottomNav() {
           >
             <button
               onClick={() => {
-                router.push('/registrar-actividad');
+                router.push('/actividades?open=true');
                 setShowFAB(false);
               }}
               className="flex items-center gap-3 bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white px-6 py-3 rounded-full shadow-lg hover:scale-105 transition-transform"
