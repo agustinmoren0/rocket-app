@@ -248,6 +248,8 @@ function CreateHabitModal({ editingHabit, onClose, onSuccess }: any) {
     frequencyInterval: editingHabit?.frequencyInterval || 1,
     selectedDays: editingHabit?.daysOfWeek || [],
     selectedDates: editingHabit?.datesOfMonth || [],
+    startTime: editingHabit?.startTime || '09:00',
+    endTime: editingHabit?.endTime || '17:00',
   });
 
   const [showIconPicker, setShowIconPicker] = useState(false);
@@ -610,6 +612,43 @@ function CreateHabitModal({ editingHabit, onClose, onSuccess }: any) {
                   </div>
                 </div>
               )}
+            </div>
+
+            {/* Horario */}
+            <div>
+              <label className="block text-sm font-semibold text-[#3D2C28] mb-3">Horario</label>
+              <p className="text-xs text-[#A67B6B] mb-3">Define en qué horario quieres realizar este hábito</p>
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="text-xs text-[#A67B6B] font-medium mb-2 block">Inicio</label>
+                  <input
+                    type="time"
+                    value={formData.startTime}
+                    onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl text-[#3D2C28] font-medium border-2 focus:outline-none"
+                    style={{
+                      backgroundColor: '#FFF5F0',
+                      borderColor: formData.color
+                    }}
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="text-xs text-[#A67B6B] font-medium mb-2 block">Fin</label>
+                  <input
+                    type="time"
+                    value={formData.endTime}
+                    onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl text-[#3D2C28] font-medium border-2 focus:outline-none"
+                    style={{
+                      backgroundColor: '#FFF5F0',
+                      borderColor: formData.color
+                    }}
+                  />
+                </div>
+              </div>
+              <p className="text-xs text-[#A67B6B] mt-2">
+                {formData.startTime} - {formData.endTime}
+              </p>
             </div>
 
           </div>
