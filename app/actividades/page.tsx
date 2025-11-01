@@ -26,9 +26,13 @@ export default function ActividadesPage() {
   const [activities, setActivities] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingActivity, setEditingActivity] = useState<any>(null);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     loadTodayActivities();
+  }, [refreshTrigger]);
+
+  useEffect(() => {
     checkMidnight();
   }, []);
 
@@ -36,6 +40,10 @@ export default function ActividadesPage() {
     const today = new Date().toISOString().split('T')[0];
     const allActivities = JSON.parse(localStorage.getItem('habika_activities') || '{}');
     const todayActivities = allActivities[today] || [];
+
+    console.log('📅 Cargando actividades del día:', today);
+    console.log('📋 Actividades encontradas:', todayActivities);
+
     setActivities(todayActivities.sort((a: any, b: any) =>
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     ));
@@ -51,7 +59,7 @@ export default function ActividadesPage() {
 
     setTimeout(() => {
       archiveTodayActivities();
-      loadTodayActivities();
+      setRefreshTrigger(prev => prev + 1);
       checkMidnight();
     }, timeUntilMidnight);
   };
@@ -75,7 +83,10 @@ export default function ActividadesPage() {
     const allActivities = JSON.parse(localStorage.getItem('habika_activities') || '{}');
     const todayActivities = allActivities[today] || [];
 
+    console.log('💾 Guardando actividad:', activity);
+
     if (editingActivity) {
+      // Editar actividad existente
       const index = todayActivities.findIndex((a: any) => a.id === editingActivity.id);
       if (index !== -1) {
         todayActivities[index] = {
@@ -85,18 +96,27 @@ export default function ActividadesPage() {
         };
       }
     } else {
-      todayActivities.push({
+      // Crear nueva actividad
+      const newActivity = {
         ...activity,
         id: `activity_${Date.now()}`,
         timestamp: new Date().toISOString(),
-      });
+      };
+      todayActivities.push(newActivity);
+      console.log('✅ Nueva actividad creada:', newActivity);
     }
 
     allActivities[today] = todayActivities;
     localStorage.setItem('habika_activities', JSON.stringify(allActivities));
-    loadTodayActivities();
+
+    console.log('📦 Estado final en localStorage:', allActivities[today]);
+
+    // Cerrar modal
     setShowModal(false);
     setEditingActivity(null);
+
+    // FORZAR recarga
+    setRefreshTrigger(prev => prev + 1);
   };
 
   const deleteActivity = (activityId: string) => {
@@ -107,7 +127,7 @@ export default function ActividadesPage() {
 
       allActivities[today] = todayActivities;
       localStorage.setItem('habika_activities', JSON.stringify(allActivities));
-      loadTodayActivities();
+      setRefreshTrigger(prev => prev + 1);
     }
   };
 
