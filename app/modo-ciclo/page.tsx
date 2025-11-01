@@ -307,10 +307,10 @@ export default function ModoCicloPage() {
                           isCurrent
                             ? `bg-gradient-to-br ${phaseInfo.color} text-white ring-2 ring-offset-2 ring-[#FF99AC]`
                             : isPeriod
-                            ? 'bg-red-100 text-red-700 border border-red-300'
+                            ? 'bg-[#FDEEEE] text-[#3D2C28] border-2 border-[#FCE8E6]'
                             : isFertile
-                            ? 'bg-amber-100 text-amber-700 border border-amber-300'
-                            : 'bg-[#FFF5F0] text-[#3D2C28] border border-[#FFB4A8]/20 hover:border-[#FFB4A8]/40'
+                            ? 'bg-white text-[#3D2C28] border-2 border-[#F9D68F] shadow-[0_0_0_2px_rgba(249,214,143,0.3)]'
+                            : 'bg-white text-[#3D2C28] border border-[#FFB4A8]/20 hover:border-[#FFB4A8]/40'
                         }`}
                       >
                         {day}
@@ -320,15 +320,15 @@ export default function ModoCicloPage() {
                 </div>
                 <div className="flex flex-wrap gap-4 mt-6 text-sm">
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-red-100 border border-red-300"></div>
+                    <div className="w-3 h-3 rounded bg-[#FDEEEE] border border-[#FCE8E6]"></div>
                     <span className="text-[#A67B6B]">Período</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-amber-100 border border-amber-300"></div>
+                    <div className="w-3 h-3 rounded border-2 border-[#F9D68F]"></div>
                     <span className="text-[#A67B6B]">Ventana fértil</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className={`w-4 h-4 rounded bg-gradient-to-br ${phaseInfo.color}`}></div>
+                    <div className={`w-3 h-3 rounded bg-gradient-to-br ${phaseInfo.color}`}></div>
                     <span className="text-[#A67B6B]">Hoy</span>
                   </div>
                 </div>
