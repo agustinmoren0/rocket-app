@@ -61,34 +61,34 @@ function ModoCicloSection({ cycleData, currentTheme }: any) {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.22 }}
-        className={`${currentTheme.bgCard} backdrop-blur-xl rounded-2xl shadow-sm border ${currentTheme.border} p-6`}
+        className="bg-white backdrop-blur-xl rounded-2xl shadow-sm border border-[#FFB4A8]/30 p-6"
       >
         <div className="flex items-center gap-2 mb-4">
           <span className="text-2xl">{phaseEmoji}</span>
-          <h3 className="text-base font-semibold text-slate-900">Modo Ciclo Activo</h3>
+          <h3 className="text-base font-semibold text-[#3D2C28]">Modo Ciclo Activo</h3>
         </div>
 
         <div className="grid grid-cols-2 gap-3 mb-4">
-          <div className={`${currentTheme.bgCardSecondary || currentTheme.bgHover} rounded-xl p-3`}>
-            <p className="text-xs text-slate-600 mb-1">Día del ciclo</p>
-            <p className="text-2xl font-bold text-slate-900">{cycleData.currentDay}</p>
+          <div className="bg-gradient-to-br from-[#FFF5F0] to-[#FFE8E1] rounded-xl p-3 border border-[#FFB4A8]/20">
+            <p className="text-xs text-[#A67B6B] mb-1">Día del ciclo</p>
+            <p className="text-2xl font-bold text-[#3D2C28]">{cycleData.currentDay}</p>
           </div>
-          <div className={`${currentTheme.bgCardSecondary || currentTheme.bgHover} rounded-xl p-3`}>
-            <p className="text-xs text-slate-600 mb-1">Próximo período</p>
-            <p className="text-2xl font-bold text-slate-900">{Math.max(0, daysUntilPeriod)}d</p>
+          <div className="bg-gradient-to-br from-[#FFF5F0] to-[#FFE8E1] rounded-xl p-3 border border-[#FFB4A8]/20">
+            <p className="text-xs text-[#A67B6B] mb-1">Próximo período</p>
+            <p className="text-2xl font-bold text-[#3D2C28]">{Math.max(0, daysUntilPeriod)}d</p>
           </div>
         </div>
 
         <div className="flex gap-2">
           <button
             onClick={() => setShowCycleSetup(true)}
-            className={`flex-1 h-10 rounded-xl ${currentTheme.button} text-white text-sm font-medium hover:opacity-90 transition-opacity`}
+            className="flex-1 h-10 rounded-xl bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white text-sm font-medium hover:shadow-md transition-shadow"
           >
             Editar datos
           </button>
           <button
             onClick={() => setShowDeactivateConfirm(true)}
-            className="flex-1 h-10 rounded-xl bg-slate-200 text-slate-900 text-sm font-medium hover:bg-slate-300 transition-colors"
+            className="flex-1 h-10 rounded-xl bg-[#F0E8E6] text-[#3D2C28] text-sm font-medium hover:bg-[#E8DEDE] transition-colors"
           >
             Desactivar
           </button>
@@ -98,13 +98,13 @@ function ModoCicloSection({ cycleData, currentTheme }: any) {
           <motion.div
             initial={{ opacity: 0, y: 2 }}
             animate={{ opacity: 1, y: 0 }}
-            className={`mt-3 ${currentTheme.bgCardSecondary} rounded-xl p-3`}
+            className="mt-3 bg-[#FFF5F0] border border-[#FFB4A8]/30 rounded-xl p-3"
           >
-            <p className="text-sm font-medium text-slate-900 mb-2">¿Desactivar Modo Ciclo?</p>
+            <p className="text-sm font-medium text-[#3D2C28] mb-2">¿Desactivar Modo Ciclo?</p>
             <div className="flex gap-2">
               <button
                 onClick={() => setShowDeactivateConfirm(false)}
-                className="flex-1 h-8 rounded-lg bg-slate-300 hover:bg-slate-400 text-slate-900 text-xs font-medium transition-colors"
+                className="flex-1 h-8 rounded-lg bg-[#E8DEDE] hover:bg-[#DDD4D2] text-[#3D2C28] text-xs font-medium transition-colors"
               >
                 Cancelar
               </button>
@@ -126,7 +126,7 @@ function ModoCicloSection({ cycleData, currentTheme }: any) {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.22 }}
-      className={`${currentTheme.bgCard} backdrop-blur-xl rounded-2xl shadow-sm border ${currentTheme.border} p-6`}
+      className="bg-white backdrop-blur-xl rounded-2xl shadow-sm border border-[#FFB4A8]/30 p-6"
     >
       <AnimatePresence mode="wait">
         {!showCycleSetup ? (
@@ -138,23 +138,19 @@ function ModoCicloSection({ cycleData, currentTheme }: any) {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowCycleSetup(true)}
-            className={`w-full p-5 rounded-2xl border-2 transition-all ${
-              cycleData.isActive
-                ? 'bg-gradient-to-r from-pink-50 to-rose-50 border-rose-300'
-                : 'border-slate-200 hover:border-rose-300'
-            }`}
+            className="w-full p-5 rounded-2xl border-2 border-[#FFB4A8]/40 bg-gradient-to-r from-[#FFF5F0] to-[#FFE8E1] hover:border-[#FF99AC]/60 transition-all"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FFC0A9] to-[#FF99AC] flex items-center justify-center">
                   <Heart size={24} className="text-white" />
                 </div>
                 <div className="text-left">
-                  <p className="font-bold text-slate-900">Modo Ciclo 🌸</p>
-                  <p className="text-sm text-slate-600">Adapta hábitos a tu ciclo</p>
+                  <p className="font-bold text-[#3D2C28]">Modo Ciclo</p>
+                  <p className="text-sm text-[#A67B6B]">Adapta hábitos a tu ciclo</p>
                 </div>
               </div>
-              <div className="px-3 py-1 rounded-full text-xs font-medium bg-slate-200 text-slate-600">
+              <div className="px-3 py-1 rounded-full text-xs font-medium bg-[#F0E8E6] text-[#A67B6B]">
                 OFF
               </div>
             </div>
@@ -172,12 +168,12 @@ function ModoCicloSection({ cycleData, currentTheme }: any) {
                   <div
                     key={step}
                     className={`h-1.5 flex-1 rounded-full transition-all ${
-                      step <= cycleStep ? 'bg-rose-500' : 'bg-slate-200'
+                      step <= cycleStep ? 'bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC]' : 'bg-[#F0E8E6]'
                     }`}
                   />
                 ))}
               </div>
-              <span className="text-xs font-medium text-slate-600">
+              <span className="text-xs font-medium text-[#A67B6B]">
                 Paso {cycleStep}/3
               </span>
             </div>
@@ -190,7 +186,7 @@ function ModoCicloSection({ cycleData, currentTheme }: any) {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
                 >
-                  <label className="block text-sm font-medium text-slate-900 mb-3">
+                  <label className="block text-sm font-medium text-[#3D2C28] mb-3">
                     Fecha de tu último período
                   </label>
                   <input
@@ -198,9 +194,9 @@ function ModoCicloSection({ cycleData, currentTheme }: any) {
                     value={cycleFormData.lastPeriod}
                     onChange={(e) => setCycleFormData({ ...cycleFormData, lastPeriod: e.target.value })}
                     max={new Date().toISOString().split('T')[0]}
-                    className="w-full h-12 px-4 rounded-xl border-2 border-slate-200 focus:border-rose-400 focus:outline-none text-slate-900 font-medium text-base"
+                    className="w-full h-12 px-4 rounded-xl border-2 border-[#FFB4A8]/30 focus:border-[#FF99AC] focus:outline-none text-[#3D2C28] font-medium text-base"
                   />
-                  <p className="text-xs text-slate-600 mt-2">
+                  <p className="text-xs text-[#A67B6B] mt-2">
                     Selecciona la fecha en que comenzó tu último período menstrual
                   </p>
                 </motion.div>
@@ -213,11 +209,11 @@ function ModoCicloSection({ cycleData, currentTheme }: any) {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
                 >
-                  <label className="block text-sm font-medium text-slate-900 mb-3">
+                  <label className="block text-sm font-medium text-[#3D2C28] mb-3">
                     Duración del ciclo: {cycleFormData.cycleLength} días
                   </label>
                   <div className="flex items-center gap-4">
-                    <span className="text-xs text-slate-600 min-w-fit">21d</span>
+                    <span className="text-xs text-[#A67B6B] min-w-fit">21d</span>
                     <input
                       type="range"
                       min="21"
@@ -226,11 +222,11 @@ function ModoCicloSection({ cycleData, currentTheme }: any) {
                       onChange={(e) =>
                         setCycleFormData({ ...cycleFormData, cycleLength: parseInt(e.target.value) })
                       }
-                      className="cycle-slider flex-1 h-2 rounded-lg appearance-none cursor-pointer accent-rose-500"
+                      className="cycle-slider flex-1 h-2 rounded-lg appearance-none cursor-pointer accent-[#FF99AC]"
                     />
-                    <span className="text-xs text-slate-600 min-w-fit">35d</span>
+                    <span className="text-xs text-[#A67B6B] min-w-fit">35d</span>
                   </div>
-                  <p className="text-xs text-slate-600 mt-3">
+                  <p className="text-xs text-[#A67B6B] mt-3">
                     La mayoría de ciclos duran entre 21 y 35 días. El promedio es 28 días.
                   </p>
                 </motion.div>
@@ -243,11 +239,11 @@ function ModoCicloSection({ cycleData, currentTheme }: any) {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -10 }}
                 >
-                  <label className="block text-sm font-medium text-slate-900 mb-3">
+                  <label className="block text-sm font-medium text-[#3D2C28] mb-3">
                     Duración del período: {cycleFormData.periodLength} días
                   </label>
                   <div className="flex items-center gap-4">
-                    <span className="text-xs text-slate-600 min-w-fit">2d</span>
+                    <span className="text-xs text-[#A67B6B] min-w-fit">2d</span>
                     <input
                       type="range"
                       min="2"
@@ -256,11 +252,11 @@ function ModoCicloSection({ cycleData, currentTheme }: any) {
                       onChange={(e) =>
                         setCycleFormData({ ...cycleFormData, periodLength: parseInt(e.target.value) })
                       }
-                      className="cycle-slider flex-1 h-2 rounded-lg appearance-none cursor-pointer accent-rose-500"
+                      className="cycle-slider flex-1 h-2 rounded-lg appearance-none cursor-pointer accent-[#FF99AC]"
                     />
-                    <span className="text-xs text-slate-600 min-w-fit">8d</span>
+                    <span className="text-xs text-[#A67B6B] min-w-fit">8d</span>
                   </div>
-                  <p className="text-xs text-slate-600 mt-3">
+                  <p className="text-xs text-[#A67B6B] mt-3">
                     El período menstrual típico dura entre 2 y 8 días. La mayoría dura 5 días.
                   </p>
                 </motion.div>
@@ -278,7 +274,7 @@ function ModoCicloSection({ cycleData, currentTheme }: any) {
                     setShowCycleSetup(false);
                   }
                 }}
-                className="flex-1 h-11 rounded-xl border-2 border-slate-200 text-slate-900 font-medium hover:border-slate-300 transition-colors flex items-center justify-center gap-2"
+                className="flex-1 h-11 rounded-xl border-2 border-[#FFB4A8]/30 text-[#3D2C28] font-medium hover:border-[#FFB4A8]/50 transition-colors flex items-center justify-center gap-2"
               >
                 <ChevronLeft size={18} />
                 {cycleStep === 1 ? 'Cancelar' : 'Atrás'}
@@ -294,7 +290,7 @@ function ModoCicloSection({ cycleData, currentTheme }: any) {
                   }
                 }}
                 disabled={!cycleFormData.lastPeriod && cycleStep === 1}
-                className="flex-1 h-11 rounded-xl bg-gradient-to-r from-rose-500 to-pink-500 text-white font-medium hover:shadow-lg transition-shadow flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 h-11 rounded-xl bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white font-medium hover:shadow-lg transition-shadow flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {cycleStep === 3 ? 'Activar' : 'Siguiente'}
                 <ChevronRight size={18} />
@@ -349,7 +345,7 @@ export default function PerfilPage() {
   }
 
   return (
-    <main className={`min-h-screen bg-gradient-to-br ${currentTheme.bg}`}>
+    <main className="min-h-screen bg-gradient-to-br from-[#FFF5F0] via-white to-[#FFF5F0]">
       {/* Header */}
       <motion.header
         initial={{ opacity: 0, y: -8 }}
@@ -357,16 +353,16 @@ export default function PerfilPage() {
         className="max-w-2xl mx-auto px-6 pt-8 pb-6 flex items-center justify-between"
       >
         <div>
-          <h1 className="text-xl font-semibold text-slate-900 tracking-tight">
+          <h1 className="text-xl font-semibold text-[#3D2C28] tracking-tight">
             Configuración
           </h1>
-          <p className="text-xs text-slate-500">Personaliza tu experiencia</p>
+          <p className="text-xs text-[#A67B6B]">Personaliza tu experiencia</p>
         </div>
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => router.back()}
-          className={`w-10 h-10 rounded-xl ${currentTheme.bgCard} shadow-sm flex items-center justify-center ${currentTheme.bgHover} transition-all`}
+          className="w-10 h-10 rounded-xl bg-white shadow-sm flex items-center justify-center hover:bg-[#FFF5F0] transition-all text-[#3D2C28]"
         >
           ✕
         </motion.button>
@@ -378,10 +374,10 @@ export default function PerfilPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className={`${currentTheme.bgCard} backdrop-blur-xl rounded-2xl shadow-sm border ${currentTheme.border} p-6`}
+          className="bg-white backdrop-blur-xl rounded-2xl shadow-sm border border-[#FFB4A8]/30 p-6"
         >
           <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center text-2xl">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[#FFC0A9] to-[#FF99AC] flex items-center justify-center text-2xl font-bold text-white">
               {username.charAt(0).toUpperCase()}
             </div>
             <div className="flex-1">
@@ -392,22 +388,22 @@ export default function PerfilPage() {
                     value={tempName}
                     onChange={(e) => setTempName(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSaveName()}
-                    className="flex-1 h-9 px-3 rounded-xl bg-white border-2 border-slate-200 focus:outline-none text-sm"
+                    className="flex-1 h-9 px-3 rounded-xl bg-[#FFF5F0] border-2 border-[#FFB4A8]/30 focus:border-[#FF99AC] focus:outline-none text-sm text-[#3D2C28]"
                     autoFocus
                   />
                   <button
                     onClick={handleSaveName}
-                    className={`px-4 h-9 rounded-xl ${currentTheme.button} text-white text-sm font-medium`}
+                    className="px-4 h-9 rounded-xl bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white text-sm font-medium hover:shadow-md transition-shadow"
                   >
                     ✓
                   </button>
                 </div>
               ) : (
                 <>
-                  <h2 className="text-lg font-semibold text-slate-900">{username}</h2>
+                  <h2 className="text-lg font-semibold text-[#3D2C28]">{username}</h2>
                   <button
                     onClick={() => setIsEditingName(true)}
-                    className={`text-xs ${currentTheme.accent} hover:opacity-70 transition-opacity mt-0.5`}
+                    className="text-xs text-[#FF99AC] hover:opacity-70 transition-opacity mt-0.5"
                   >
                     Cambiar nombre
                   </button>
@@ -422,36 +418,44 @@ export default function PerfilPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className={`${currentTheme.bgCard} backdrop-blur-xl rounded-2xl shadow-sm border ${currentTheme.border} p-6`}
+          className="bg-white backdrop-blur-xl rounded-2xl shadow-sm border border-[#FFB4A8]/30 p-6"
         >
-          <div className="flex items-center gap-2 mb-4">
+          <div className="flex items-center gap-2 mb-5">
             <span className="text-lg">🎨</span>
-            <h3 className="text-base font-semibold text-slate-900">Tema de colores</h3>
+            <h3 className="text-base font-semibold text-[#3D2C28]">Tema de colores</h3>
           </div>
 
-          <div className="flex gap-3 flex-wrap justify-center">
+          <div className="space-y-3">
             {[
-              { id: 'oceano', name: 'Océano', emoji: '🌊', color: 'bg-blue-500' },
-              { id: 'bosque', name: 'Bosque', emoji: '🌲', color: 'bg-green-500' },
-              { id: 'atardecer', name: 'Atardecer', emoji: '🌅', color: 'bg-orange-500' },
-              { id: 'lavanda', name: 'Lavanda', emoji: '💜', color: 'bg-purple-500' },
-              { id: 'monocromo', name: 'Monocromo', emoji: '⚫', color: 'bg-slate-700' },
+              { id: 'habika', name: 'HABIKA', color: 'from-[#FFC0A9] to-[#FF99AC]', ring: 'ring-[#FF99AC]' },
+              { id: 'oceano', name: 'Océano', color: 'from-blue-400 to-blue-500', ring: 'ring-blue-500' },
+              { id: 'bosque', name: 'Bosque', color: 'from-green-400 to-green-500', ring: 'ring-green-500' },
+              { id: 'atardecer', name: 'Atardecer', color: 'from-orange-400 to-orange-500', ring: 'ring-orange-500' },
+              { id: 'lavanda', name: 'Lavanda', color: 'from-purple-400 to-purple-500', ring: 'ring-purple-500' },
+              { id: 'monocromo', name: 'Monocromo', color: 'from-slate-600 to-slate-700', ring: 'ring-slate-700' },
             ].map((theme) => (
               <motion.button
                 key={theme.id}
                 onClick={() => handleThemeChange(theme.id)}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`flex flex-col items-center gap-2 p-3 rounded-xl transition-all ${
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all ${
                   themeId === theme.id
-                    ? 'bg-indigo-100 ring-2 ring-indigo-500'
-                    : 'hover:bg-white/50'
+                    ? 'bg-gradient-to-r ' + theme.color + ' ring-2 ' + theme.ring
+                    : 'bg-[#FFF5F0] hover:bg-[#FFE8E1] border border-[#FFB4A8]/20'
                 }`}
               >
-                <div className={`w-12 h-12 rounded-full ${theme.color} flex items-center justify-center text-2xl`}>
-                  {theme.emoji}
-                </div>
-                <span className="text-xs text-slate-600 font-medium">{theme.name}</span>
+                <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${theme.color} flex-shrink-0`}></div>
+                <span className={`text-sm font-medium ${themeId === theme.id ? 'text-white' : 'text-[#3D2C28]'}`}>
+                  {theme.name}
+                </span>
+                {themeId === theme.id && (
+                  <div className="ml-auto">
+                    <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center">
+                      <div className="w-2 h-2 rounded-full bg-gradient-to-br from-[#FFC0A9] to-[#FF99AC]"></div>
+                    </div>
+                  </div>
+                )}
               </motion.button>
             ))}
           </div>
@@ -462,22 +466,22 @@ export default function PerfilPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className={`${currentTheme.bgCard} backdrop-blur-xl rounded-2xl shadow-sm border ${currentTheme.border} p-6`}
+          className="bg-white backdrop-blur-xl rounded-2xl shadow-sm border border-[#FFB4A8]/30 p-6"
         >
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-lg">🧘</span>
-                <h3 className="text-base font-semibold text-slate-900">Modo Zen</h3>
+                <h3 className="text-base font-semibold text-[#3D2C28]">Modo Zen</h3>
               </div>
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <p className="text-xs text-[#A67B6B] leading-relaxed">
                 Interfaz ultra minimalista. Solo progreso y acción.
               </p>
             </div>
             <button
               onClick={handleToggleZen}
               className={`relative w-11 h-6 rounded-full transition-colors ${
-                data.zenMode ? currentTheme.button : 'bg-slate-300'
+                data.zenMode ? 'bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC]' : 'bg-[#E8DEDE]'
               }`}
             >
               <motion.div
@@ -498,22 +502,32 @@ export default function PerfilPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.25 }}
-          className={`${currentTheme.bgCard} backdrop-blur-xl rounded-2xl shadow-sm border ${currentTheme.border} p-6`}
+          className="bg-white backdrop-blur-xl rounded-2xl shadow-sm border border-[#FFB4A8]/30 p-6"
         >
           <div className="flex items-center gap-2 mb-3">
             <span className="text-lg">🔄</span>
-            <h3 className="text-base font-semibold text-slate-900">Actualizar app</h3>
+            <h3 className="text-base font-semibold text-[#3D2C28]">Actualizar app</h3>
           </div>
-          <p className="text-xs text-slate-600 mb-4 leading-relaxed">
-            Si instalaste HABIKA como PWA, usá esto para obtener la última versión.
+          <p className="text-xs text-[#A67B6B] mb-4 leading-relaxed">
+            Si instalaste HABIKA como PWA, usá esto para obtener la última versión y limpiar la caché.
           </p>
           <button
-            onClick={() => window.location.reload()}
-            className={`w-full h-10 rounded-xl ${currentTheme.bgCardSecondary} hover:opacity-80 transition-opacity text-sm font-medium text-slate-700`}
+            onClick={() => {
+              showToast('Limpiando caché y recargando...', 'info');
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then((registrations) => {
+                  registrations.forEach((registration) => registration.unregister());
+                });
+              }
+              setTimeout(() => {
+                window.location.reload();
+              }, 500);
+            }}
+            className="w-full h-10 rounded-xl bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white text-sm font-medium hover:shadow-md transition-shadow"
           >
             Buscar actualizaciones
           </button>
-          <p className="text-xs text-slate-500 text-center mt-3">
+          <p className="text-xs text-[#A67B6B] text-center mt-3">
             Versión 1.0.0 · Última actualización: {new Date().toLocaleDateString('es-ES')}
           </p>
         </motion.section>
@@ -523,43 +537,54 @@ export default function PerfilPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className={`${currentTheme.bgCard} backdrop-blur-xl rounded-2xl shadow-sm border ${currentTheme.border} p-6`}
+          className="bg-white backdrop-blur-xl rounded-2xl shadow-sm border border-[#FFB4A8]/30 p-6"
         >
-          <h3 className="text-base font-semibold text-slate-900 mb-3">Aplicación</h3>
+          <h3 className="text-base font-semibold text-[#3D2C28] mb-3">Aplicación</h3>
           <div className="space-y-2">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => {
-                if (window.matchMedia('(display-mode: standalone)').matches) {
-                  showToast('HABIKA ya está instalada', 'success');
+                const isInstalled = typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches;
+                if (isInstalled) {
+                  showToast('HABIKA ya está instalada como app', 'success');
                 } else {
-                  showToast('Usá el menú de tu navegador para instalar', 'info');
+                  showToast('Usá el menú de tu navegador para agregar a inicio', 'info');
                 }
               }}
-              className={`w-full flex items-center gap-3 p-3 rounded-xl ${currentTheme.bgHover} transition-colors text-left`}
+              className={`w-full flex items-center gap-3 p-3 rounded-xl transition-colors text-left ${
+                typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches
+                  ? 'bg-gradient-to-r from-[#FFF5F0] to-[#FFE8E1] border border-[#FFB4A8]/20'
+                  : 'bg-[#FFF5F0] hover:bg-[#FFE8E1] border border-[#FFB4A8]/20'
+              }`}
             >
               <span className="text-xl">
                 {typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches ? '✅' : '📱'}
               </span>
               <div>
-                <p className="text-sm font-medium text-slate-900">
+                <p className="text-sm font-medium text-[#3D2C28]">
                   {typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches
-                    ? 'HABIKA está instalada'
+                    ? 'HABIKA instalada'
                     : 'Agregar a pantalla de inicio'}
                 </p>
-                <p className="text-xs text-slate-600">
+                <p className="text-xs text-[#A67B6B]">
                   {typeof window !== 'undefined' && window.matchMedia('(display-mode: standalone)').matches
-                    ? 'Ya estás usando HABIKA como app'
-                    : 'Usá HABIKA como app nativa'}
+                    ? 'Acceso rápido desde inicio'
+                    : 'Abre HABIKA como app nativa'}
                 </p>
               </div>
-            </button>
-            <button className={`w-full flex items-center gap-3 p-3 rounded-xl ${currentTheme.bgHover} transition-colors text-left`}>
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              className="w-full flex items-center gap-3 p-3 rounded-xl bg-[#FFF5F0] hover:bg-[#FFE8E1] border border-[#FFB4A8]/20 transition-colors text-left"
+            >
               <span className="text-xl">ℹ️</span>
               <div>
-                <p className="text-sm font-medium text-slate-900">Acerca de HABIKA</p>
-                <p className="text-xs text-slate-600">Versión 1.0.0 MVP</p>
+                <p className="text-sm font-medium text-[#3D2C28]">Acerca de HABIKA</p>
+                <p className="text-xs text-[#A67B6B]">Versión 1.0.0 MVP</p>
               </div>
-            </button>
+            </motion.button>
           </div>
         </motion.section>
 
@@ -568,19 +593,23 @@ export default function PerfilPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
-          className={`${currentTheme.bgCard} backdrop-blur-xl rounded-2xl shadow-sm border ${currentTheme.border} p-6`}
+          className="bg-white backdrop-blur-xl rounded-2xl shadow-sm border border-[#FFB4A8]/30 p-6"
         >
-          <h3 className="text-base font-semibold text-slate-900 mb-3">Cuenta</h3>
+          <h3 className="text-base font-semibold text-[#3D2C28] mb-3">Cuenta</h3>
 
           {showDeleteConfirm ? (
-            <div className={`${currentTheme.bgCardSecondary} rounded-xl p-4`}>
-              <p className="text-sm font-medium text-slate-900 mb-3">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-red-50 border border-red-200 rounded-xl p-4"
+            >
+              <p className="text-sm font-medium text-red-900 mb-3">
                 ¿Estás seguro? Esta acción no se puede deshacer.
               </p>
               <div className="flex gap-2">
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
-                  className="flex-1 h-9 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-900 text-sm font-medium transition-colors"
+                  className="flex-1 h-9 rounded-xl bg-[#F0E8E6] hover:bg-[#E8DEDE] text-[#3D2C28] text-sm font-medium transition-colors"
                 >
                   Cancelar
                 </button>
@@ -591,18 +620,20 @@ export default function PerfilPage() {
                   Sí, borrar
                 </button>
               </div>
-            </div>
+            </motion.div>
           ) : (
-            <button
+            <motion.button
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
               onClick={() => setShowDeleteConfirm(true)}
-              className="w-full flex items-center gap-3 p-3 rounded-xl bg-red-50 hover:bg-red-100 transition-colors text-left"
+              className="w-full flex items-center gap-3 p-3 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 transition-colors text-left"
             >
               <span className="text-xl">🗑️</span>
               <div>
                 <p className="text-sm font-medium text-red-600">Borrar todos mis datos</p>
                 <p className="text-xs text-red-500">Esta acción no se puede deshacer</p>
               </div>
-            </button>
+            </motion.button>
           )}
         </motion.section>
 
@@ -616,7 +647,7 @@ export default function PerfilPage() {
         >
           <Link
             href="/"
-            className={`block w-full h-12 rounded-2xl ${currentTheme.button} text-white font-medium flex items-center justify-center shadow-md hover:shadow-lg transition-all`}
+            className="block w-full h-12 rounded-2xl bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white font-medium flex items-center justify-center shadow-md hover:shadow-lg transition-all"
           >
             Volver al inicio
           </Link>
