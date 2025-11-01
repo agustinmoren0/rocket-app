@@ -65,7 +65,7 @@ export default function ReflexionPage() {
   }
 
   return (
-    <main className={`min-h-screen bg-gradient-to-b ${currentTheme.bg} px-6 py-10`}>
+    <main className="min-h-screen bg-gradient-to-br from-[#FFF5F0] via-white to-[#FFF5F0] px-6 py-10">
       <motion.header
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -75,14 +75,14 @@ export default function ReflexionPage() {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
           onClick={() => router.back()}
-          className={`w-10 h-10 rounded-full ${currentTheme.bgCard} shadow-sm flex items-center justify-center mb-6 ${currentTheme.bgHover}`}
+          className="w-10 h-10 rounded-full bg-white shadow-sm flex items-center justify-center mb-6 hover:bg-[#FFF5F0] text-[#3D2C28] transition-all"
         >
           ←
         </motion.button>
-        <h1 className="text-3xl font-bold text-slate-800 mb-2">
+        <h1 className="text-3xl font-bold text-[#3D2C28] mb-2">
           ¿Qué lograste hoy?
         </h1>
-        <p className="text-slate-600">
+        <p className="text-[#A67B6B]">
           Registrá tu progreso creativo del día
         </p>
       </motion.header>
@@ -96,7 +96,7 @@ export default function ReflexionPage() {
       >
         {/* Tiempo con selector */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
+          <label className="block text-sm font-medium text-[#3D2C28] mb-2">
             ¿Cuánto tiempo dedicaste?
           </label>
           <div className="flex gap-3">
@@ -107,18 +107,17 @@ export default function ReflexionPage() {
               value={timeValue}
               onChange={(e) => setTimeValue(e.target.value)}
               placeholder={timeUnit === 'minutes' ? '60' : '1.5'}
-              className={`flex-1 h-14 px-4 rounded-2xl ${currentTheme.bgCard} border-2 ${currentTheme.border} focus:outline-none text-lg transition-colors`}
-              style={{ borderColor: currentTheme.primary }}
+              className="flex-1 h-14 px-4 rounded-2xl bg-white border-2 border-[#FFB4A8]/40 focus:border-[#FF99AC] focus:outline-none text-lg transition-colors text-[#3D2C28]"
               autoFocus
             />
-            <div className={`flex rounded-2xl ${currentTheme.bgHover} p-1`}>
+            <div className="flex rounded-2xl bg-[#FFF5F0] p-1">
               <button
                 type="button"
                 onClick={() => setTimeUnit('minutes')}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                   timeUnit === 'minutes'
-                    ? `${currentTheme.bgCard} text-slate-800 shadow-sm`
-                    : 'text-slate-600'
+                    ? 'bg-white text-[#3D2C28] shadow-sm'
+                    : 'text-[#A67B6B]'
                 }`}
               >
                 Min
@@ -128,22 +127,22 @@ export default function ReflexionPage() {
                 onClick={() => setTimeUnit('hours')}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-all ${
                   timeUnit === 'hours'
-                    ? `${currentTheme.bgCard} text-slate-800 shadow-sm`
-                    : 'text-slate-600'
+                    ? 'bg-white text-[#3D2C28] shadow-sm'
+                    : 'text-[#A67B6B]'
                 }`}
               >
                 Hs
               </button>
             </div>
           </div>
-          <p className="text-xs text-slate-500 mt-2">
+          <p className="text-xs text-[#A67B6B] mt-2">
             {timeUnit === 'minutes' ? 'O podés usar horas →' : '← O podés usar minutos'}
           </p>
         </div>
 
         {/* Categorías */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-3">
+          <label className="block text-sm font-medium text-[#3D2C28] mb-3">
             ¿A qué categoría pertenece?
           </label>
           <div className="grid grid-cols-2 gap-3">
@@ -163,14 +162,10 @@ export default function ReflexionPage() {
                   h-16 rounded-2xl flex items-center justify-center text-sm font-medium
                   transition-all
                   ${selectedCategory === category
-                    ? `text-white transition-all border-2`
-                    : `${currentTheme.bgCard} text-slate-700 ${currentTheme.bgHover} border-2 ${currentTheme.border}`
+                    ? 'bg-gradient-to-br from-[#FFC0A9] to-[#FF99AC] text-white border-2 border-[#FF99AC]'
+                    : 'bg-white text-[#3D2C28] hover:bg-[#FFF5F0] border-2 border-[#FFB4A8]/30'
                   }
                 `}
-                style={selectedCategory === category ? {
-                  backgroundImage: `linear-gradient(135deg, ${currentTheme.primary}, ${currentTheme.secondary})`,
-                  borderColor: currentTheme.primary,
-                } : {}}
               >
                 {category}
               </motion.button>
@@ -180,8 +175,8 @@ export default function ReflexionPage() {
 
         {/* Nota OPCIONAL */}
         <div>
-          <label className="block text-sm font-medium text-slate-700 mb-2">
-            ¿Qué hiciste? <span className="text-slate-400 text-xs">(opcional)</span>
+          <label className="block text-sm font-medium text-[#3D2C28] mb-2">
+            ¿Qué hiciste? <span className="text-[#A67B6B] text-xs">(opcional)</span>
           </label>
           <motion.textarea
             whileFocus={{ scale: 1.01 }}
@@ -191,10 +186,9 @@ export default function ReflexionPage() {
               ? "Opcional: describí qué hiciste..."
               : "Ej: Escribí 500 palabras de mi novela..."}
             rows={4}
-            className={`w-full px-4 py-3 rounded-2xl ${currentTheme.bgCard} border-2 ${currentTheme.border} focus:outline-none resize-none transition-colors`}
-            style={{ borderColor: currentTheme.primary }}
+            className="w-full px-4 py-3 rounded-2xl bg-white border-2 border-[#FFB4A8]/40 focus:border-[#FF99AC] focus:outline-none resize-none transition-colors text-[#3D2C28] placeholder-[#A67B6B]"
           />
-          <p className="text-xs text-slate-500 mt-2">
+          <p className="text-xs text-[#A67B6B] mt-2">
             {selectedCategory
               ? 'Tenés categoría elegida, podés dejar esto vacío'
               : 'Si no elegís categoría, escribí qué hiciste'}
@@ -203,7 +197,7 @@ export default function ReflexionPage() {
 
         {/* Emojis opcionales */}
         <div>
-          <label className="block text-sm font-medium text-slate-500 mb-3">
+          <label className="block text-sm font-medium text-[#A67B6B] mb-3">
             ¿Cómo te sentiste? <span className="text-xs">(opcional)</span>
           </label>
           <div className="flex gap-2 flex-wrap">
@@ -223,15 +217,10 @@ export default function ReflexionPage() {
                   w-14 h-14 rounded-xl flex items-center justify-center text-2xl
                   transition-all
                   ${selectedEmotion === emotion.emoji
-                    ? `ring-2 transition-all`
-                    : `${currentTheme.bgHover} hover:opacity-80`
+                    ? 'bg-gradient-to-br from-[#FFC0A9]/20 to-[#FF99AC]/20 ring-2 ring-[#FF99AC]'
+                    : 'bg-[#FFF5F0] hover:opacity-80'
                   }
                 `}
-                style={selectedEmotion === emotion.emoji ? {
-                  backgroundColor: currentTheme.primary + '20',
-                  borderColor: currentTheme.primary,
-                  boxShadow: `0 0 0 2px ${currentTheme.primary}`,
-                } : {}}
                 title={emotion.label}
               >
                 {emotion.emoji}
@@ -248,7 +237,7 @@ export default function ReflexionPage() {
           whileHover={{ scale: 1.01 }}
           whileTap={{ scale: 0.99 }}
           type="submit"
-          className={`w-full h-14 rounded-2xl ${currentTheme.button} text-white font-medium shadow-md hover:shadow-lg transition-all duration-200`}
+          className="w-full h-14 rounded-2xl bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white font-medium shadow-md hover:shadow-lg transition-all duration-200"
         >
           Guardar progreso
         </motion.button>

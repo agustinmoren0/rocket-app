@@ -16,10 +16,10 @@ interface Reflection {
 }
 
 const MOOD_DATA = {
-  great: { emoji: '🚀', label: 'Excelente', color: 'text-green-600' },
-  good: { emoji: '😊', label: 'Bien', color: 'text-blue-600' },
-  okay: { emoji: '😐', label: 'Normal', color: 'text-yellow-600' },
-  tough: { emoji: '😤', label: 'Difícil', color: 'text-red-600' },
+  great: { emoji: '🚀', label: 'Excelente', bg: 'from-green-400 to-green-500' },
+  good: { emoji: '😊', label: 'Bien', bg: 'from-blue-400 to-blue-500' },
+  okay: { emoji: '😐', label: 'Normal', bg: 'from-yellow-400 to-yellow-500' },
+  tough: { emoji: '😤', label: 'Difícil', bg: 'from-red-400 to-red-500' },
 };
 
 export default function ReflexionesPage() {
@@ -116,12 +116,12 @@ export default function ReflexionesPage() {
 
   if (loading) {
     return (
-      <div className={`min-h-screen ${currentTheme.bg} p-4`}>
+      <div className="min-h-screen bg-gradient-to-br from-[#FFF5F0] via-white to-[#FFF5F0] p-4">
         <div className="max-w-2xl mx-auto space-y-4">
           {[1, 2, 3].map((i) => (
             <div
               key={i}
-              className="h-40 rounded-xl bg-slate-200 animate-pulse"
+              className="h-40 rounded-xl bg-[#FFB4A8]/20 animate-pulse"
             />
           ))}
         </div>
@@ -130,7 +130,7 @@ export default function ReflexionesPage() {
   }
 
   return (
-    <div className={`min-h-screen ${currentTheme.bg} p-4 pb-24`}>
+    <div className="min-h-screen bg-gradient-to-br from-[#FFF5F0] via-white to-[#FFF5F0] p-4 pb-24">
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <motion.div
@@ -138,10 +138,10 @@ export default function ReflexionesPage() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h1 className={`text-3xl font-bold ${currentTheme.text} mb-2`}>
+          <h1 className="text-3xl font-bold text-[#3D2C28] mb-2">
             Reflexiones
           </h1>
-          <p className={`${currentTheme.textSecondary}`}>
+          <p className="text-[#A67B6B]">
             Tu diario de crecimiento personal
           </p>
         </motion.div>
@@ -153,15 +153,15 @@ export default function ReflexionesPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className={`${currentTheme.bgCard} rounded-xl p-6 border ${currentTheme.border} mb-6`}
+              className="bg-white rounded-2xl p-6 border border-[#FFB4A8]/30 mb-6 shadow-sm"
             >
-              <h2 className={`text-xl font-semibold ${currentTheme.text} mb-4`}>
+              <h2 className="text-xl font-semibold text-[#3D2C28] mb-4">
                 Nueva Reflexión
               </h2>
 
               {/* Mood Selector */}
               <div className="mb-6">
-                <p className={`text-sm font-medium ${currentTheme.textSecondary} mb-3`}>
+                <p className="text-sm font-medium text-[#A67B6B] mb-3">
                   ¿Cómo te sientes esta semana?
                 </p>
                 <div className="grid grid-cols-4 gap-3">
@@ -176,10 +176,10 @@ export default function ReflexionesPage() {
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       onClick={() => setMood(key)}
-                      className={`py-3 px-2 rounded-lg font-medium transition-all ${
+                      className={`py-3 px-2 rounded-xl font-medium transition-all ${
                         mood === key
-                          ? `${currentTheme.gradient} text-white shadow-lg`
-                          : `${currentTheme.buttonHover} ${currentTheme.text}`
+                          ? `bg-gradient-to-br ${data.bg} text-white shadow-lg`
+                          : 'bg-[#FFF5F0] hover:bg-[#FFE8E1] text-[#3D2C28] border border-[#FFB4A8]/20'
                       }`}
                     >
                       <div className="text-2xl mb-1">{data.emoji}</div>
@@ -193,48 +193,42 @@ export default function ReflexionesPage() {
               <div className="space-y-4 mb-6">
                 {/* Achievements */}
                 <div>
-                  <label
-                    className={`block text-sm font-medium ${currentTheme.textSecondary} mb-2`}
-                  >
+                  <label className="block text-sm font-medium text-[#3D2C28] mb-2">
                     ¿Qué lograste?
                   </label>
                   <textarea
                     value={achievements}
                     onChange={(e) => setAchievements(e.target.value)}
                     placeholder="Cuéntame tus logros, sin importar el tamaño..."
-                    className={`w-full p-3 rounded-lg border ${currentTheme.border} ${currentTheme.bgCardSecondary || currentTheme.bgHover} ${currentTheme.text} placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-indigo-500`}
+                    className="w-full p-3 rounded-xl border border-[#FFB4A8]/30 bg-[#FFF5F0] text-[#3D2C28] placeholder-[#A67B6B] focus:outline-none focus:border-[#FF99AC]"
                     rows={3}
                   />
                 </div>
 
                 {/* Learnings */}
                 <div>
-                  <label
-                    className={`block text-sm font-medium ${currentTheme.textSecondary} mb-2`}
-                  >
+                  <label className="block text-sm font-medium text-[#3D2C28] mb-2">
                     ¿Qué aprendiste?
                   </label>
                   <textarea
                     value={learnings}
                     onChange={(e) => setLearnings(e.target.value)}
                     placeholder="Lecciones, insights, momentos de claridad..."
-                    className={`w-full p-3 rounded-lg border ${currentTheme.border} ${currentTheme.bgCardSecondary || currentTheme.bgHover} ${currentTheme.text} placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-indigo-500`}
+                    className="w-full p-3 rounded-xl border border-[#FFB4A8]/30 bg-[#FFF5F0] text-[#3D2C28] placeholder-[#A67B6B] focus:outline-none focus:border-[#FF99AC]"
                     rows={3}
                   />
                 </div>
 
                 {/* Improvements */}
                 <div>
-                  <label
-                    className={`block text-sm font-medium ${currentTheme.textSecondary} mb-2`}
-                  >
+                  <label className="block text-sm font-medium text-[#3D2C28] mb-2">
                     ¿Qué mejorarás?
                   </label>
                   <textarea
                     value={improvements}
                     onChange={(e) => setImprovements(e.target.value)}
                     placeholder="Ideas para la próxima semana..."
-                    className={`w-full p-3 rounded-lg border ${currentTheme.border} ${currentTheme.bgCardSecondary || currentTheme.bgHover} ${currentTheme.text} placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-offset-0 focus:ring-indigo-500`}
+                    className="w-full p-3 rounded-xl border border-[#FFB4A8]/30 bg-[#FFF5F0] text-[#3D2C28] placeholder-[#A67B6B] focus:outline-none focus:border-[#FF99AC]"
                     rows={3}
                   />
                 </div>
@@ -246,7 +240,7 @@ export default function ReflexionesPage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleCreateReflection}
-                  className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium ${currentTheme.gradient} text-white transition-all`}
+                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-medium bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white transition-all hover:shadow-md"
                 >
                   <Send size={18} />
                   Guardar Reflexión
@@ -255,7 +249,7 @@ export default function ReflexionesPage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setIsCreating(false)}
-                  className={`py-3 px-4 rounded-lg font-medium ${currentTheme.buttonHover} transition-all`}
+                  className="py-3 px-4 rounded-xl font-medium bg-[#F0E8E6] text-[#3D2C28] transition-all hover:bg-[#E8DEDE]"
                 >
                   Cancelar
                 </motion.button>
@@ -270,7 +264,7 @@ export default function ReflexionesPage() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setIsCreating(true)}
-            className={`w-full py-3 px-4 rounded-lg font-medium mb-6 ${currentTheme.gradient} text-white transition-all`}
+            className="w-full py-3 px-4 rounded-xl font-medium mb-6 bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white transition-all hover:shadow-md"
           >
             + Nueva Reflexión
           </motion.button>
@@ -282,16 +276,16 @@ export default function ReflexionesPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className={`${currentTheme.bgCard} rounded-xl p-8 border ${currentTheme.border} text-center`}
+              className="bg-white rounded-2xl p-8 border border-[#FFB4A8]/30 text-center shadow-sm"
             >
               <BookOpen
                 size={48}
-                className={`${currentTheme.primary} mx-auto mb-4`}
+                className="text-[#FF99AC] mx-auto mb-4"
               />
-              <h2 className={`text-xl font-semibold ${currentTheme.text} mb-2`}>
+              <h2 className="text-xl font-semibold text-[#3D2C28] mb-2">
                 Aún no hay reflexiones
               </h2>
-              <p className={currentTheme.textSecondary}>
+              <p className="text-[#A67B6B]">
                 Crea tu primera reflexión semanal. Tómate un momento para observar tu semana sin juzgarte.
               </p>
             </motion.div>
@@ -303,7 +297,7 @@ export default function ReflexionesPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, x: -100 }}
                 transition={{ delay: index * 0.05 }}
-                className={`${currentTheme.bgCard} rounded-xl p-6 border ${currentTheme.border}`}
+                className="bg-white rounded-2xl p-6 border border-[#FFB4A8]/30 shadow-sm"
               >
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
@@ -312,11 +306,11 @@ export default function ReflexionesPage() {
                       <span className="text-2xl">
                         {MOOD_DATA[reflection.mood].emoji}
                       </span>
-                      <span className={`text-sm font-medium ${currentTheme.textSecondary}`}>
+                      <span className="text-sm font-medium text-[#A67B6B]">
                         {MOOD_DATA[reflection.mood].label}
                       </span>
                     </div>
-                    <p className={`text-xs ${currentTheme.textMuted}`}>
+                    <p className="text-xs text-[#D4B5A9]">
                       {formatDate(reflection.date)}
                     </p>
                   </div>
@@ -324,7 +318,7 @@ export default function ReflexionesPage() {
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleDeleteReflection(reflection.id)}
-                    className={`p-2 rounded-lg ${currentTheme.buttonHover} transition-all`}
+                    className="p-2 rounded-lg hover:bg-red-50 transition-all"
                   >
                     <Trash2 size={18} className="text-red-600" />
                   </motion.button>
@@ -334,10 +328,10 @@ export default function ReflexionesPage() {
                 <div className="space-y-4">
                   {reflection.achievements && (
                     <div>
-                      <p className={`text-sm font-semibold ${currentTheme.text} mb-1`}>
+                      <p className="text-sm font-semibold text-[#3D2C28] mb-1">
                         ✅ Logros
                       </p>
-                      <p className={`text-sm ${currentTheme.textSecondary} leading-relaxed`}>
+                      <p className="text-sm text-[#A67B6B] leading-relaxed">
                         {reflection.achievements}
                       </p>
                     </div>
@@ -345,10 +339,10 @@ export default function ReflexionesPage() {
 
                   {reflection.learnings && (
                     <div>
-                      <p className={`text-sm font-semibold ${currentTheme.text} mb-1`}>
+                      <p className="text-sm font-semibold text-[#3D2C28] mb-1">
                         💡 Aprendizajes
                       </p>
-                      <p className={`text-sm ${currentTheme.textSecondary} leading-relaxed`}>
+                      <p className="text-sm text-[#A67B6B] leading-relaxed">
                         {reflection.learnings}
                       </p>
                     </div>
@@ -356,10 +350,10 @@ export default function ReflexionesPage() {
 
                   {reflection.improvements && (
                     <div>
-                      <p className={`text-sm font-semibold ${currentTheme.text} mb-1`}>
+                      <p className="text-sm font-semibold text-[#3D2C28] mb-1">
                         🎯 Mejoras
                       </p>
-                      <p className={`text-sm ${currentTheme.textSecondary} leading-relaxed`}>
+                      <p className="text-sm text-[#A67B6B] leading-relaxed">
                         {reflection.improvements}
                       </p>
                     </div>
