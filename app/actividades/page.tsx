@@ -39,18 +39,23 @@ function ModalOpener({ setShowModal }: any) {
 
 export default function ActividadesPage() {
   const [activities, setActivities] = useState<any[]>([]);
+  const [habits, setHabits] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingActivity, setEditingActivity] = useState<any>(null);
 
-  // Cargar actividades y configurar listeners
+  // Cargar actividades y hábitos, y configurar listeners
   useEffect(() => {
     loadTodayActivities();
+    loadTodayHabits();
     setupMidnightArchive();
 
     // Listener para cambios en storage (otras pestañas)
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'habika_activities_today') {
         loadTodayActivities();
+      }
+      if (e.key === 'habika_custom_habits') {
+        loadTodayHabits();
       }
     };
 
@@ -76,6 +81,70 @@ export default function ActividadesPage() {
       console.error('❌ Error al cargar:', error);
       setActivities([]);
     }
+  };
+
+  const loadTodayHabits = () => {
+    try {
+      const allHabits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
+      const today = new Date().toISOString().split('T')[0];
+
+      // Filtrar hábitos activos que tengan horario dentro del rango actual
+      const todayHabits = allHabits.filter((habit: any) => {
+        if (habit.status !== 'active') return false;
+
+        // Si no tiene horario definido, mostrarlo
+        if (!habit.startTime || !habit.endTime) return true;
+
+        // Si tiene horario, verificar que sea hoy
+        const now = new Date();
+        const currentHour = now.getHours();
+        const currentMinute = now.getMinutes();
+        const currentTime = `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`;
+
+        const startTime = habit.startTime;
+        const endTime = habit.endTime;
+
+        return currentTime >= startTime && currentTime <= endTime;
+      });
+
+      console.log('🔥 Hábitos de hoy:', todayHabits.length);
+      setHabits(todayHabits);
+    } catch (error) {
+      console.error('❌ Error al cargar hábitos:', error);
+      setHabits([]);
+    }
+  };
+
+  const toggleHabitComplete = (habitId: string) => {
+    const today = new Date().toISOString().split('T')[0];
+    const updatedHabits = habits.map(h => {
+      if (h.id === habitId) {
+        const completedDates = h.completedDates || [];
+        const isCompleted = completedDates.includes(today);
+        return {
+          ...h,
+          completedDates: isCompleted
+            ? completedDates.filter((d: string) => d !== today)
+            : [...completedDates, today]
+        };
+      }
+      return h;
+    });
+
+    // Actualizar en todas las fuentes
+    const allHabits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
+    const updated = allHabits.map((h: any) =>
+      updatedHabits.find((uh: any) => uh.id === h.id) || h
+    );
+
+    localStorage.setItem('habika_custom_habits', JSON.stringify(updated));
+    setHabits(updatedHabits);
+
+    // Disparar evento para otras pestañas
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'habika_custom_habits',
+      newValue: JSON.stringify(updated)
+    }));
   };
 
   const setupMidnightArchive = () => {
@@ -291,7 +360,58 @@ export default function ActividadesPage() {
         </header>
 
         <div className="px-6 py-4 space-y-3">
-          {activities.length === 0 ? (
+          {/* Sección de Hábitos */}
+          {habits.length > 0 && (
+            <div>
+              <h2 className="text-sm font-bold text-[#3D2C28] mb-3 px-2">Hábitos de hoy</h2>
+              <div className="space-y-2">
+                {habits.map((habit) => {
+                  const today = new Date().toISOString().split('T')[0];
+                  const isCompleted = habit.completedDates?.includes(today);
+                  const Icon = LUCIDE_ICONS[habit.icon] || LUCIDE_ICONS['Star'];
+
+                  return (
+                    <div key={habit.id} className="bg-white rounded-2xl p-4 shadow-sm flex items-center gap-3">
+                      <div
+                        className="w-12 h-12 rounded-full flex items-center justify-center shrink-0 shadow-sm"
+                        style={{ backgroundColor: habit.color }}
+                      >
+                        <Icon className="w-6 h-6 text-white" />
+                      </div>
+
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-[#3D2C28] mb-1">{habit.name}</h3>
+                        <p className="text-xs text-[#A67B6B]">
+                          {habit.startTime && habit.endTime ? `${habit.startTime} - ${habit.endTime}` : 'Flexible'}
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={() => toggleHabitComplete(habit.id)}
+                        className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 transition-all ${
+                          isCompleted ? 'shadow-md' : 'bg-[#FFF5F0] hover:bg-[#FFE5D9]'
+                        }`}
+                        style={{
+                          backgroundColor: isCompleted ? habit.color : undefined
+                        }}
+                      >
+                        {isCompleted ? (
+                          <svg className="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                            <polyline points="20 6 9 17 4 12" />
+                          </svg>
+                        ) : (
+                          <div className="w-6 h-6 rounded-full border-2 border-[#A67B6B]" />
+                        )}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* Sección de Actividades */}
+          {activities.length === 0 && habits.length === 0 ? (
             <div className="text-center py-12 px-6">
               <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#FFC0A9] to-[#FF99AC] flex items-center justify-center mx-auto mb-4 shadow-lg">
                 <Sparkles className="w-10 h-10 text-white" />
@@ -313,19 +433,26 @@ export default function ActividadesPage() {
                 Registrar primera actividad
               </button>
             </div>
-          ) : (
-            activities.map((activity) => (
-              <ActivityCard
-                key={activity.id}
-                activity={activity}
-                onEdit={() => {
-                  setEditingActivity(activity);
-                  setShowModal(true);
-                }}
-                onDelete={() => deleteActivity(activity.id)}
-              />
-            ))
-          )}
+          ) : activities.length > 0 ? (
+            <div>
+              {habits.length > 0 && (
+                <h2 className="text-sm font-bold text-[#3D2C28] mb-3 px-2">Actividades</h2>
+              )}
+              <div className="space-y-3">
+                {activities.map((activity) => (
+                  <ActivityCard
+                    key={activity.id}
+                    activity={activity}
+                    onEdit={() => {
+                      setEditingActivity(activity);
+                      setShowModal(true);
+                    }}
+                    onDelete={() => deleteActivity(activity.id)}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
 
         {activities.length > 0 && (
@@ -366,41 +493,39 @@ function ActivityCard({ activity, onEdit, onDelete }: any) {
     const velocity = info.velocity.x;
     const offset = info.offset.x;
 
-    // Detección por velocidad
+    // Detección por velocidad (swipe fuerte)
     if (Math.abs(velocity) > 500) {
       if (velocity > 0 && swipeState === 'closed') {
         setSwipeState('edit');
-        x.set(100);
+        x.set(100, { duration: 0.2 });
       } else if (velocity < 0 && swipeState === 'closed') {
         setSwipeState('delete');
-        x.set(-100);
+        x.set(-100, { duration: 0.2 });
       } else {
         setSwipeState('closed');
-        x.set(0);
+        x.set(0, { duration: 0.2 });
       }
       return;
     }
 
-    // Detección por offset
+    // Detección por offset (swipe lento pero definitivo)
     if (offset > 50 && swipeState === 'closed') {
       setSwipeState('edit');
-      x.set(100);
+      x.set(100, { duration: 0.2 });
     } else if (offset < -50 && swipeState === 'closed') {
       setSwipeState('delete');
-      x.set(-100);
-    } else if (Math.abs(offset) < 20 && swipeState !== 'closed') {
-      setSwipeState('closed');
-      x.set(0);
+      x.set(-100, { duration: 0.2 });
     } else {
-      if (swipeState === 'edit') x.set(100);
-      else if (swipeState === 'delete') x.set(-100);
-      else x.set(0);
+      // Volver al centro si no hay suficiente swipe
+      setSwipeState('closed');
+      x.set(0, { duration: 0.2 });
     }
   };
 
   const closeSwipe = () => {
     setSwipeState('closed');
-    x.set(0);
+    // Usar animate en lugar de set para una transición suave
+    x.set(0, { duration: 0.2 });
   };
 
   const categoria = CATEGORIAS.find(c => c.id === activity.categoria);

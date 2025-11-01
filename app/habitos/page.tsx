@@ -13,6 +13,7 @@ export default function HabitosPage() {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [confirmAction, setConfirmAction] = useState<any>(null);
+  const [editingHabit, setEditingHabit] = useState<any>(null);
 
   useEffect(() => {
     loadHabits();
@@ -104,7 +105,16 @@ export default function HabitosPage() {
   };
 
   const editHabit = (habit: any) => {
-    router.push(`/biblioteca?edit=${habit.id}`);
+    setEditingHabit(habit);
+  };
+
+  const saveEditedHabit = (updatedHabit: any) => {
+    const updatedHabits = habits.map(h =>
+      h.id === updatedHabit.id ? updatedHabit : h
+    );
+    setHabits(updatedHabits);
+    localStorage.setItem('habika_custom_habits', JSON.stringify(updatedHabits));
+    setEditingHabit(null);
   };
 
   const calculateStreak = (habit: any) => {
@@ -227,6 +237,14 @@ export default function HabitosPage() {
           onCancel={() => setConfirmAction(null)}
         />
       )}
+
+      {editingHabit && (
+        <EditHabitModal
+          habit={editingHabit}
+          onSave={saveEditedHabit}
+          onClose={() => setEditingHabit(null)}
+        />
+      )}
     </div>
   );
 }
@@ -239,39 +257,38 @@ function HabitCard({ habit, onToggleComplete, onPause, onEdit, onDelete, streak,
     const velocity = info.velocity.x;
     const offset = info.offset.x;
 
+    // Detección por velocidad (swipe fuerte)
     if (Math.abs(velocity) > 500) {
       if (velocity > 0 && swipeState === 'closed') {
         setSwipeState('edit');
-        x.set(100);
+        x.set(100, { duration: 0.2 });
       } else if (velocity < 0 && swipeState === 'closed') {
         setSwipeState('actions');
-        x.set(-160);
+        x.set(-160, { duration: 0.2 });
       } else {
         setSwipeState('closed');
-        x.set(0);
+        x.set(0, { duration: 0.2 });
       }
       return;
     }
 
+    // Detección por offset (swipe lento pero definitivo)
     if (offset > 50 && swipeState === 'closed') {
       setSwipeState('edit');
-      x.set(100);
+      x.set(100, { duration: 0.2 });
     } else if (offset < -50 && swipeState === 'closed') {
       setSwipeState('actions');
-      x.set(-160);
-    } else if (Math.abs(offset) < 20 && swipeState !== 'closed') {
-      setSwipeState('closed');
-      x.set(0);
+      x.set(-160, { duration: 0.2 });
     } else {
-      if (swipeState === 'edit') x.set(100);
-      else if (swipeState === 'actions') x.set(-160);
-      else x.set(0);
+      // Volver al centro si no hay suficiente swipe
+      setSwipeState('closed');
+      x.set(0, { duration: 0.2 });
     }
   };
 
   const closeSwipe = () => {
     setSwipeState('closed');
-    x.set(0);
+    x.set(0, { duration: 0.2 });
   };
 
   const handleEdit = () => {
@@ -479,6 +496,169 @@ function ConfirmModal({ message, confirmText, onConfirm, onCancel }: any) {
           >
             {confirmText}
           </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function EditHabitModal({ habit, onSave, onClose }: any) {
+  const [formData, setFormData] = useState({
+    name: habit.name || '',
+    type: habit.type || 'formar',
+    frequency: habit.frequency || 'diario',
+    color: habit.color || '#6B9B9E',
+    icon: habit.icon || 'Heart',
+    description: habit.description || '',
+    goal: habit.goal || '',
+    startTime: habit.startTime || '09:00',
+    endTime: habit.endTime || '17:00'
+  });
+
+  const handleSave = () => {
+    if (!formData.name.trim()) {
+      alert('Ingresa el nombre del hábito');
+      return;
+    }
+    onSave({
+      ...habit,
+      ...formData
+    });
+  };
+
+  const COLORES = [
+    '#FFD166', '#FF99AC', '#FFC0A9', '#9C6B98',
+    '#6B9B9E', '#6B8BB6', '#E8A598', '#C9A0A0',
+    '#A8D8EA', '#FFB4A8', '#B8E6B8', '#D4A5A5'
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="fixed inset-0 bg-black/50 z-[60] flex items-end"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ y: '100%' }}
+        animate={{ y: 0 }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full bg-white rounded-t-3xl max-h-[85vh] overflow-hidden flex flex-col"
+      >
+        <div className="flex items-center justify-between p-4 border-b border-gray-100 shrink-0">
+          <button onClick={onClose} className="text-[#A67B6B] font-medium">
+            Cancelar
+          </button>
+          <h2 className="text-lg font-bold text-[#3D2C28]">Editar hábito</h2>
+          <button
+            onClick={handleSave}
+            className="px-4 py-2 bg-[#FF99AC] text-white rounded-full text-sm font-semibold"
+          >
+            Guardar
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto pb-6 p-6 space-y-6">
+          <div>
+            <label className="block text-sm font-semibold text-[#3D2C28] mb-2">Nombre</label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full px-4 py-3 rounded-xl bg-[#FFF5F0] border-none text-[#3D2C28] focus:outline-none focus:ring-2 focus:ring-[#FF99AC]"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-[#3D2C28] mb-2">Tipo</label>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setFormData({ ...formData, type: 'formar' })}
+                className={`flex-1 py-3 rounded-xl font-medium transition-colors ${
+                  formData.type === 'formar' ? 'bg-[#FF99AC] text-white' : 'bg-[#FFF5F0] text-[#A67B6B]'
+                }`}
+              >
+                A Formar
+              </button>
+              <button
+                onClick={() => setFormData({ ...formData, type: 'dejar' })}
+                className={`flex-1 py-3 rounded-xl font-medium transition-colors ${
+                  formData.type === 'dejar' ? 'bg-[#FF99AC] text-white' : 'bg-[#FFF5F0] text-[#A67B6B]'
+                }`}
+              >
+                A Dejar
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-[#3D2C28] mb-2">Frecuencia</label>
+            <div className="grid grid-cols-3 gap-2">
+              {['diario', 'semanal', 'mensual'].map((freq) => (
+                <button
+                  key={freq}
+                  onClick={() => setFormData({ ...formData, frequency: freq })}
+                  className={`py-3 rounded-xl font-medium text-sm transition-colors ${
+                    formData.frequency === freq ? 'bg-[#FF99AC] text-white' : 'bg-[#FFF5F0] text-[#A67B6B]'
+                  }`}
+                >
+                  {freq === 'diario' ? 'Diario' : freq === 'semanal' ? 'Semanal' : 'Mensual'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-[#3D2C28] mb-2">Horario</label>
+            <div className="flex gap-3">
+              <div className="flex-1">
+                <label className="text-xs text-[#A67B6B] mb-1 block">Inicio</label>
+                <input
+                  type="time"
+                  value={formData.startTime}
+                  onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl bg-[#FFF5F0] text-[#3D2C28] focus:outline-none focus:ring-2 focus:ring-[#FF99AC]"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="text-xs text-[#A67B6B] mb-1 block">Fin</label>
+                <input
+                  type="time"
+                  value={formData.endTime}
+                  onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+                  className="w-full px-4 py-3 rounded-xl bg-[#FFF5F0] text-[#3D2C28] focus:outline-none focus:ring-2 focus:ring-[#FF99AC]"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-[#3D2C28] mb-3">Color</label>
+            <div className="grid grid-cols-6 gap-3">
+              {COLORES.map((color) => (
+                <button
+                  key={color}
+                  onClick={() => setFormData({ ...formData, color })}
+                  className="w-full aspect-square rounded-full transition-transform"
+                  style={{
+                    backgroundColor: color,
+                    transform: formData.color === color ? 'scale(1.1)' : 'scale(1)',
+                    boxShadow: formData.color === color ? `0 0 0 2px white, 0 0 0 4px ${color}` : 'none'
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-[#3D2C28] mb-2">Descripción (Opcional)</label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              rows={3}
+              className="w-full px-4 py-3 rounded-xl bg-[#FFF5F0] border-none text-[#3D2C28] focus:outline-none focus:ring-2 focus:ring-[#FF99AC] resize-none"
+            />
+          </div>
         </div>
       </motion.div>
     </motion.div>
