@@ -104,9 +104,25 @@ export default function ActividadesPage() {
       );
 
       if (todayActivities.length > 0) {
-        // Guardar en calendario
+        // Guardar en calendario con estructura correcta
         const calendar = JSON.parse(localStorage.getItem('habika_calendar') || '{}');
-        calendar[today] = todayActivities;
+
+        if (!calendar[today]) {
+          calendar[today] = { activities: [], habits: [], notes: '' };
+        }
+
+        calendar[today].activities = todayActivities.map((act: any) => ({
+          id: act.id,
+          name: act.name,
+          duration: act.duration,
+          unit: act.unit,
+          categoria: act.categoria,
+          color: act.color,
+          notes: act.notes || '',
+          timestamp: act.timestamp,
+          type: 'activity'
+        }));
+
         localStorage.setItem('habika_calendar', JSON.stringify(calendar));
 
         // Limpiar actividades del día
@@ -155,7 +171,23 @@ export default function ActividadesPage() {
 
       // GUARDAR en calendario también (para visualización)
       const calendar = JSON.parse(localStorage.getItem('habika_calendar') || '{}');
-      calendar[today] = todayActivities;
+
+      if (!calendar[today]) {
+        calendar[today] = { activities: [], habits: [], notes: '' };
+      }
+
+      calendar[today].activities = todayActivities.map((act: any) => ({
+        id: act.id,
+        name: act.name,
+        duration: act.duration,
+        unit: act.unit,
+        categoria: act.categoria,
+        color: act.color,
+        notes: act.notes || '',
+        timestamp: act.timestamp,
+        type: 'activity'
+      }));
+
       localStorage.setItem('habika_calendar', JSON.stringify(calendar));
 
       console.log('💾 Guardado en actividades y calendario');
@@ -191,9 +223,25 @@ export default function ActividadesPage() {
 
       localStorage.setItem(`habika_activities_today_${today}`, JSON.stringify(filtered));
 
-      // Actualizar calendario
+      // Actualizar calendario con estructura correcta
       const calendar = JSON.parse(localStorage.getItem('habika_calendar') || '{}');
-      calendar[today] = filtered;
+
+      if (!calendar[today]) {
+        calendar[today] = { activities: [], habits: [], notes: '' };
+      }
+
+      calendar[today].activities = filtered.map((act: any) => ({
+        id: act.id,
+        name: act.name,
+        duration: act.duration,
+        unit: act.unit,
+        categoria: act.categoria,
+        color: act.color,
+        notes: act.notes || '',
+        timestamp: act.timestamp,
+        type: 'activity'
+      }));
+
       localStorage.setItem('habika_calendar', JSON.stringify(calendar));
 
       setActivities([...filtered]);
@@ -369,7 +417,7 @@ function ActivityCard({ activity, onEdit, onDelete }: any) {
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="absolute left-0 top-0 bottom-0 flex items-center pl-4 z-20"
+          className="absolute left-0 top-0 bottom-0 flex items-center pl-4 z-0"
         >
           <button
             onClick={() => {
@@ -389,7 +437,7 @@ function ActivityCard({ activity, onEdit, onDelete }: any) {
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          className="absolute right-0 top-0 bottom-0 flex items-center pr-4 z-20"
+          className="absolute right-0 top-0 bottom-0 flex items-center pr-4 z-0"
         >
           <button
             onClick={() => {
@@ -414,7 +462,7 @@ function ActivityCard({ activity, onEdit, onDelete }: any) {
         dragMomentum={false}
         onDragEnd={handleDragEnd}
         style={{ x }}
-        className="bg-white rounded-2xl p-4 shadow-sm cursor-grab active:cursor-grabbing"
+        className="relative bg-white rounded-2xl p-4 shadow-sm cursor-grab active:cursor-grabbing z-10"
       >
         <div className="flex items-start gap-3">
           <div

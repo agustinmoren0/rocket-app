@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, ChevronDown, Clock, Edit2, Trash2, X, Droplet, Sparkles } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
@@ -45,11 +45,58 @@ export default function CalendarioPage() {
   };
 
   // Mock events
-  const [events, setEvents] = useState<Event[]>([
-    { id: '1', hour: 9, day: 26, title: 'Correr', duration: 30, color: 'bg-green-500', type: 'activity' },
-    { id: '2', hour: 14, day: 26, title: 'Meditar', duration: 20, color: 'bg-purple-500', type: 'habit' },
-    { id: '3', hour: 18, day: 27, title: 'Leer', duration: 40, color: 'bg-blue-500', type: 'activity' },
-  ]);
+  const [events, setEvents] = useState<Event[]>([]);
+
+  // Load events from localStorage
+  useEffect(() => {
+    const loadEventsFromCalendar = () => {
+      try {
+        const calendar = JSON.parse(localStorage.getItem('habika_calendar') || '{}');
+        const dateStr = currentDate.toISOString().split('T')[0];
+        const dayData = calendar[dateStr];
+
+        if (dayData && dayData.activities) {
+          const loadedActivities = dayData.activities.map((act: any) => ({
+            id: act.id,
+            hour: new Date(act.timestamp).getHours(),
+            day: currentDate.getDate(),
+            title: act.name,
+            duration: act.unit === 'hora(s)' ? act.duration * 60 : act.duration,
+            color: `bg-[${act.color}]`, // Color dinámico
+            type: 'activity' as const
+          }));
+
+          // También cargar hábitos si existen
+          const loadedHabits = dayData.habits ? dayData.habits.map((hab: any) => ({
+            id: hab.id,
+            hour: new Date(hab.timestamp || new Date()).getHours(),
+            day: currentDate.getDate(),
+            title: hab.name,
+            duration: 20, // Duración por defecto para hábitos
+            color: `bg-[${hab.color}]`,
+            type: 'habit' as const
+          })) : [];
+
+          setEvents([...loadedActivities, ...loadedHabits]);
+          console.log('📅 Eventos cargados del calendario');
+        }
+      } catch (error) {
+        console.error('❌ Error al cargar eventos:', error);
+      }
+    };
+
+    loadEventsFromCalendar();
+
+    // Listener para cambios en storage
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'habika_calendar') {
+        loadEventsFromCalendar();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [currentDate]);
 
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
   const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1).getDay();
