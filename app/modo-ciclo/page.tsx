@@ -10,6 +10,7 @@ import {
   AlertCircle, Droplet, Moon, Sun, Thermometer, Activity, ArrowLeft,
   Bell, AlertTriangle, RotateCcw, Save, Check, X
 } from 'lucide-react';
+import { showToast } from '../components/Toast';
 
 export default function ModoCicloPage() {
   const router = useRouter();
@@ -63,108 +64,128 @@ export default function ModoCicloPage() {
     return now >= start && now <= end;
   };
 
-  const handleDeactivate = () => {
-    if (window.confirm('¿Estás segura? Tus datos de síntomas se guardarán.')) {
-      deactivateCycleMode();
-      router.push('/perfil');
-    }
-  };
-
   if (!cycleData.isActive) {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50 flex items-center justify-center p-6">
-        <div className={`${currentTheme.bgCard} rounded-3xl p-8 max-w-md w-full border ${currentTheme.border} text-center`}>
-          <Heart size={48} className="text-rose-500 mx-auto mb-4" />
-          <h1 className={`text-2xl font-bold ${currentTheme.text} mb-2`}>Modo Ciclo desactivado</h1>
-          <p className={currentTheme.textSecondary}>Actívalo en configuración para comenzar a registrar tu ciclo</p>
-          <button
+      <main className="min-h-screen bg-gradient-to-br from-[#FFF5F0] via-white to-[#FFF5F0] flex items-center justify-center p-6">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white rounded-3xl p-8 max-w-md w-full border border-[#FFB4A8]/30 text-center shadow-lg"
+        >
+          <motion.div
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            <Heart size={48} className="text-[#FF99AC] mx-auto mb-4" />
+          </motion.div>
+          <h1 className="text-2xl font-bold text-[#3D2C28] mb-2">Modo Ciclo desactivado</h1>
+          <p className="text-[#A67B6B] mb-6">Actívalo en configuración para comenzar a registrar tu ciclo</p>
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
             onClick={() => router.push('/perfil')}
-            className={`w-full mt-6 py-3 rounded-xl ${currentTheme.gradient} text-white font-medium`}
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white font-medium transition-all hover:shadow-md"
           >
             Ir a configuración
-          </button>
-        </div>
+          </motion.button>
+        </motion.div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-pink-50 via-rose-50 to-purple-50 pb-24 lg:pb-8">
-      <div className="max-w-4xl mx-auto p-4 lg:p-0">
+    <main className="min-h-screen bg-gradient-to-br from-[#FFF5F0] via-white to-[#FFF5F0] pb-24 lg:pb-8">
+      <div className="max-w-4xl mx-auto p-4 lg:p-6">
         {/* Back Button */}
         <motion.button
           whileHover={{ x: -4 }}
+          whileTap={{ scale: 0.95 }}
           onClick={() => router.back()}
-          className={`flex items-center gap-2 ${currentTheme.textSecondary} hover:${currentTheme.text} mb-6 transition-colors`}
+          className="flex items-center gap-2 text-[#FF99AC] hover:text-[#FFC0A9] mb-6 transition-colors font-medium"
         >
           <ArrowLeft size={20} />
-          <span className="font-medium">Volver</span>
+          <span>Volver</span>
         </motion.button>
 
         {/* Header con fase actual */}
-        <div className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl p-6 lg:p-8 mb-6 border ${currentTheme.border}`}>
+        <div className="bg-white backdrop-blur-xl rounded-3xl p-6 lg:p-8 mb-6 border border-[#FFB4A8]/30 shadow-sm">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-6">
             <div>
-              <h1 className={`text-3xl font-bold ${currentTheme.text} mb-2`}>Modo Ciclo 🌸</h1>
-              <p className={currentTheme.textSecondary}>Tu ciclo, tus reglas</p>
+              <h1 className="text-3xl lg:text-4xl font-bold text-[#3D2C28] mb-2">Modo Ciclo</h1>
+              <p className="text-[#A67B6B]">Tu ciclo, tus reglas</p>
             </div>
           </div>
 
-          {/* Fase actual - Banner */}
-          <div className={`bg-gradient-to-br ${phaseInfo.color} rounded-2xl p-6 text-white mb-6`}>
+          {/* Fase actual - Banner mejorado */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className={`bg-gradient-to-br ${phaseInfo.color} rounded-2xl p-6 lg:p-8 text-white mb-6 shadow-lg`}
+          >
             <div className="grid lg:grid-cols-2 gap-6">
               <div>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="text-5xl">{phaseInfo.emoji}</div>
-                  <div>
-                    <p className="text-sm opacity-90">Día {cycleData.currentDay} del ciclo</p>
-                    <h2 className="text-2xl font-bold">Fase {phaseInfo.name}</h2>
+                <div className="flex items-center gap-4 mb-6">
+                  <motion.div
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                    className="text-6xl flex-shrink-0"
+                  >
+                    {phaseInfo.emoji}
+                  </motion.div>
+                  <div className="min-w-0">
+                    <p className="text-sm opacity-95 font-medium">Día {cycleData.currentDay} del ciclo</p>
+                    <h2 className="text-3xl font-bold leading-tight">Fase {phaseInfo.name}</h2>
                   </div>
                 </div>
-                <p className="text-sm opacity-90 mb-4">{phaseInfo.description}</p>
+                <p className="text-sm opacity-95 leading-relaxed mb-4">{phaseInfo.description}</p>
                 <div className="flex gap-3 text-sm flex-wrap">
-                  <div className="bg-white/20 px-3 py-1 rounded-full">
-                    Energía: {phaseInfo.energy}
+                  <div className="bg-white/25 backdrop-blur-sm px-4 py-2 rounded-full font-medium whitespace-nowrap">
+                    ⚡ {phaseInfo.energy}
                   </div>
-                  <div className="bg-white/20 px-3 py-1 rounded-full">
-                    Ánimo: {phaseInfo.mood}
+                  <div className="bg-white/25 backdrop-blur-sm px-4 py-2 rounded-full font-medium whitespace-nowrap">
+                    😊 {phaseInfo.mood}
                   </div>
                 </div>
               </div>
 
               <div className="space-y-3">
-                <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4">
-                  <p className="text-sm opacity-90 mb-1">Próximo periodo</p>
-                  <p className="text-xl font-bold">
-                    {daysUntilNextPeriod > 0
-                      ? `En ${daysUntilNextPeriod} días`
-                      : 'Hoy o ya pasó'}
+                <motion.div
+                  whileHover={{ scale: 1.02 }}
+                  className="bg-white/15 backdrop-blur-sm rounded-xl p-5 border border-white/20 cursor-pointer"
+                >
+                  <p className="text-sm opacity-90 font-medium mb-2">Próximo período</p>
+                  <p className="text-3xl font-bold">
+                    {daysUntilNextPeriod > 0 ? daysUntilNextPeriod : '0'}
                   </p>
-                  <p className="text-xs opacity-75">
+                  <p className="text-xs opacity-75 mt-1">
                     {new Date(cycleData.nextPeriodDate).toLocaleDateString('es-ES', {
                       day: 'numeric',
                       month: 'long'
                     })}
                   </p>
-                </div>
+                </motion.div>
 
                 {isInFertilityWindow() && (
-                  <div className="bg-amber-400/30 backdrop-blur-sm rounded-xl p-4 border border-amber-300/50">
-                    <p className="text-sm font-medium mb-1">⚠️ Ventana de fertilidad</p>
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="bg-yellow-400/30 backdrop-blur-sm rounded-xl p-4 border border-yellow-300/50"
+                  >
+                    <p className="text-sm font-semibold mb-1">✨ Ventana de fertilidad</p>
                     <p className="text-xs">Alta probabilidad de embarazo</p>
-                  </div>
+                  </motion.div>
                 )}
               </div>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Tabs */}
-          <div className="flex gap-2 overflow-x-auto pb-2">
+          {/* Tabs con mejor responsividad */}
+          <div className="flex gap-2 overflow-x-auto pb-4 snap-x -mx-2 px-2">
             {[
               { id: 'overview', label: 'Resumen', icon: Heart },
               { id: 'symptoms', label: 'Síntomas', icon: Activity },
               { id: 'insights', label: 'Insights', icon: TrendingUp },
-              { id: 'settings', label: 'Configuración', icon: Settings },
+              { id: 'settings', label: 'Ajustes', icon: Settings },
             ].map((tab) => {
               const Icon = tab.icon;
               return (
@@ -173,14 +194,14 @@ export default function ModoCicloPage() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all whitespace-nowrap ${
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all whitespace-nowrap snap-start flex-shrink-0 ${
                     activeTab === tab.id
-                      ? `bg-gradient-to-r ${phaseInfo.color} text-white`
-                      : `${currentTheme.bgCardSecondary || currentTheme.bgHover} ${currentTheme.text} hover:opacity-80`
+                      ? 'bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white shadow-md'
+                      : 'bg-[#FFF5F0] text-[#3D2C28] hover:bg-[#FFE8E1] border border-[#FFB4A8]/20'
                   }`}
                 >
                   <Icon size={18} />
-                  {tab.label}
+                  <span className="hidden sm:inline">{tab.label}</span>
                 </motion.button>
               );
             })}
@@ -202,39 +223,46 @@ export default function ModoCicloPage() {
                 <motion.div
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className={`bg-gradient-to-r from-red-50 to-rose-50 rounded-3xl p-6 border-2 border-rose-200`}
+                  className="bg-gradient-to-r from-red-50 to-rose-50 rounded-3xl p-6 border-2 border-red-200"
                 >
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-red-400 to-rose-500 flex items-center justify-center">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-4">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-red-400 to-rose-500 flex items-center justify-center flex-shrink-0">
                       <Droplet size={28} className="text-white" />
                     </div>
-                    <div className="flex-1">
+                    <div>
                       <h3 className="font-bold text-slate-900 mb-1">
-                        ¿Tu periodo comenzó hoy?
+                        ¿Tu período comenzó hoy?
                       </h3>
                       <p className="text-sm text-slate-600">
                         Actualiza tus datos para cálculos precisos
                       </p>
                     </div>
                   </div>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => {
-                      if (confirm('¿Registrar periodo hoy?')) {
+                      if (confirm('¿Registrar período hoy?')) {
                         registerNewPeriod(today);
-                        alert('✅ Periodo registrado correctamente');
+                        showToast('✅ Período registrado correctamente', 'success');
                       }
                     }}
                     className="w-full py-3 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
                   >
                     <Droplet size={18} />
-                    Registrar periodo
-                  </button>
+                    Registrar período
+                  </motion.button>
                 </motion.div>
               )}
 
               {/* Sugerencias de hábitos */}
-              <div className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl p-6 lg:p-8 border ${currentTheme.border}`}>
-                <h2 className={`text-xl font-bold ${currentTheme.text} mb-4`}>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="bg-white backdrop-blur-xl rounded-3xl p-6 lg:p-8 border border-[#FFB4A8]/30 shadow-sm"
+              >
+                <h2 className="text-xl font-bold text-[#3D2C28] mb-4">
                   Sugerencias para esta fase
                 </h2>
                 <div className="grid lg:grid-cols-2 gap-3">
@@ -244,18 +272,23 @@ export default function ModoCicloPage() {
                       initial={{ opacity: 0, x: -20 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: i * 0.1 }}
-                      className={`flex items-center gap-3 p-4 rounded-xl hover:shadow-md transition-all cursor-pointer ${currentTheme.bgCardSecondary || currentTheme.bgHover}`}
+                      className="flex items-center gap-3 p-4 rounded-xl hover:shadow-md transition-all cursor-pointer bg-[#FFF5F0] border border-[#FFB4A8]/20 hover:border-[#FFB4A8]/40"
                     >
-                      <Sparkles size={20} className={currentTheme.primary} />
-                      <span className={currentTheme.text}>{suggestion}</span>
+                      <Sparkles size={20} className="text-[#FF99AC] flex-shrink-0" />
+                      <span className="text-[#3D2C28] text-sm">{suggestion}</span>
                     </motion.div>
                   ))}
                 </div>
-              </div>
+              </motion.div>
 
               {/* Calendario mini visual */}
-              <div className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl p-6 lg:p-8 border ${currentTheme.border}`}>
-                <h2 className={`text-xl font-bold ${currentTheme.text} mb-4`}>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="bg-white backdrop-blur-xl rounded-3xl p-6 lg:p-8 border border-[#FFB4A8]/30 shadow-sm"
+              >
+                <h2 className="text-xl font-bold text-[#3D2C28] mb-4">
                   Tu ciclo este mes
                 </h2>
                 <div className="grid grid-cols-7 gap-2">
@@ -267,38 +300,39 @@ export default function ModoCicloPage() {
                                      day <= Math.floor(cycleData.cycleLengthDays / 2) + 2;
 
                     return (
-                      <div
+                      <motion.div
                         key={i}
-                        className={`aspect-square rounded-xl flex items-center justify-center text-sm font-medium transition-all ${
+                        whileHover={{ scale: 1.1 }}
+                        className={`aspect-square rounded-lg flex items-center justify-center text-xs font-bold transition-all ${
                           isCurrent
-                            ? `bg-gradient-to-br ${phaseInfo.color} text-white ring-4 ring-pink-200`
+                            ? `bg-gradient-to-br ${phaseInfo.color} text-white ring-2 ring-offset-2 ring-[#FF99AC]`
                             : isPeriod
-                            ? 'bg-red-100 text-red-700'
+                            ? 'bg-red-100 text-red-700 border border-red-300'
                             : isFertile
-                            ? 'bg-amber-100 text-amber-700'
-                            : `${currentTheme.bgCardSecondary || currentTheme.bgHover} ${currentTheme.text}`
+                            ? 'bg-amber-100 text-amber-700 border border-amber-300'
+                            : 'bg-[#FFF5F0] text-[#3D2C28] border border-[#FFB4A8]/20 hover:border-[#FFB4A8]/40'
                         }`}
                       >
                         {day}
-                      </div>
+                      </motion.div>
                     );
                   })}
                 </div>
                 <div className="flex flex-wrap gap-4 mt-6 text-sm">
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-red-100"></div>
-                    <span className={currentTheme.textSecondary}>Periodo</span>
+                    <div className="w-4 h-4 rounded bg-red-100 border border-red-300"></div>
+                    <span className="text-[#A67B6B]">Período</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 rounded bg-amber-100"></div>
-                    <span className={currentTheme.textSecondary}>Ventana fértil</span>
+                    <div className="w-4 h-4 rounded bg-amber-100 border border-amber-300"></div>
+                    <span className="text-[#A67B6B]">Ventana fértil</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className={`w-4 h-4 rounded bg-gradient-to-br ${phaseInfo.color}`}></div>
-                    <span className={currentTheme.textSecondary}>Hoy</span>
+                    <span className="text-[#A67B6B]">Hoy</span>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             </motion.div>
           )}
 
@@ -308,18 +342,18 @@ export default function ModoCicloPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl p-6 lg:p-8 border ${currentTheme.border}`}
+              className="bg-white backdrop-blur-xl rounded-3xl p-6 lg:p-8 border border-[#FFB4A8]/30 shadow-sm"
             >
-              <h2 className={`text-xl font-bold ${currentTheme.text} mb-2`}>
+              <h2 className="text-xl font-bold text-[#3D2C28] mb-2">
                 ¿Cómo te sientes hoy?
               </h2>
-              <p className={`${currentTheme.textSecondary} mb-6`}>
+              <p className="text-[#A67B6B] mb-6">
                 Registra tus síntomas para identificar patrones en tu ciclo
               </p>
 
               {['pain', 'physical', 'energy', 'mood', 'other'].map((category) => (
                 <div key={category} className="mb-8">
-                  <h3 className={`text-sm font-semibold ${currentTheme.text} mb-3 capitalize`}>
+                  <h3 className="text-sm font-semibold text-[#3D2C28] mb-3">
                     {category === 'pain' && '💢 Dolor'}
                     {category === 'physical' && '🌡️ Físico'}
                     {category === 'energy' && '⚡ Energía'}
@@ -337,12 +371,12 @@ export default function ModoCicloPage() {
                           onClick={() => toggleSymptom(symptom.id)}
                           className={`p-4 rounded-xl border-2 transition-all text-left ${
                             todaySymptoms.includes(symptom.id)
-                              ? `bg-gradient-to-br from-rose-50 to-pink-50 border-rose-300`
-                              : `border-slate-200 hover:border-rose-200 ${currentTheme.bgCardSecondary || currentTheme.bgHover}`
+                              ? 'bg-gradient-to-br from-[#FFF5F0] to-[#FFE8E1] border-[#FF99AC] shadow-md'
+                              : 'border-[#FFB4A8]/30 hover:border-[#FFB4A8]/60 bg-white hover:bg-[#FFF5F0]'
                           }`}
                         >
                           <div className="text-2xl mb-2">{symptom.emoji}</div>
-                          <div className={`text-sm font-medium ${currentTheme.text}`}>
+                          <div className="text-sm font-medium text-[#3D2C28]">
                             {symptom.label}
                           </div>
                         </motion.button>
@@ -359,39 +393,38 @@ export default function ModoCicloPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl p-6 lg:p-8 border ${currentTheme.border}`}
+              className="bg-white backdrop-blur-xl rounded-3xl p-6 lg:p-8 border border-[#FFB4A8]/30 shadow-sm"
             >
-              <h2 className={`text-xl font-bold ${currentTheme.text} mb-6`}>
+              <h2 className="text-xl font-bold text-[#3D2C28] mb-6">
                 Tus patrones del mes
               </h2>
 
-              {/* Gráfico simple de síntomas por fase */}
               <div className="space-y-4">
-                <div className={`p-4 rounded-xl ${currentTheme.bgCardSecondary || currentTheme.bgHover}`}>
+                <div className="p-4 rounded-xl bg-[#FFF5F0] border border-[#FFB4A8]/20">
                   <div className="flex items-center justify-between mb-4">
-                    <span className={`font-medium ${currentTheme.text}`}>Síntomas más comunes</span>
-                    <span className={`text-sm ${currentTheme.textSecondary}`}>Últimos 30 días</span>
+                    <span className="font-medium text-[#3D2C28]">Síntomas más comunes</span>
+                    <span className="text-sm text-[#A67B6B]">Últimos 30 días</span>
                   </div>
                   <div className="space-y-3">
                     {['Cólicos', 'Fatiga', 'Irritabilidad'].map((symptom, i) => (
                       <div key={i} className="flex items-center gap-3">
-                        <div className={`flex-1 bg-white/60 rounded-full h-2 overflow-hidden`}>
+                        <div className="flex-1 bg-white/80 rounded-full h-2 overflow-hidden">
                           <motion.div
                             initial={{ width: 0 }}
                             animate={{ width: `${80 - i * 20}%` }}
                             transition={{ delay: i * 0.1, duration: 0.5 }}
-                            className={`bg-gradient-to-r from-rose-400 to-pink-500 h-full rounded-full`}
+                            className="bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] h-full rounded-full"
                           />
                         </div>
-                        <span className={`text-sm ${currentTheme.text} w-24`}>{symptom}</span>
+                        <span className="text-sm text-[#3D2C28] w-24">{symptom}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
                 <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                  <p className={`font-medium text-amber-900 mb-2`}>💡 Insight del mes</p>
-                  <p className={`text-sm text-amber-800`}>
+                  <p className="font-medium text-amber-900 mb-2">💡 Insight del mes</p>
+                  <p className="text-sm text-amber-800">
                     Tus niveles de energía suelen ser más altos durante la fase ovulatoria.
                     Considera agendar tareas importantes para esos días.
                   </p>
@@ -409,66 +442,77 @@ export default function ModoCicloPage() {
               className="space-y-6"
             >
               {/* Registrar nuevo periodo */}
-              <div className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl p-6 lg:p-8 border border-rose-200`}>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white backdrop-blur-xl rounded-3xl p-6 lg:p-8 border border-red-200/50 shadow-sm"
+              >
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-400 to-rose-500 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-400 to-rose-500 flex items-center justify-center flex-shrink-0">
                     <Droplet size={24} className="text-white" />
                   </div>
                   <div>
-                    <h2 className={`text-xl font-bold ${currentTheme.text}`}>Registrar periodo</h2>
-                    <p className={`text-sm ${currentTheme.textSecondary}`}>¿Tu periodo comenzó hoy?</p>
+                    <h2 className="text-xl font-bold text-[#3D2C28]">Registrar período</h2>
+                    <p className="text-sm text-[#A67B6B]">¿Tu período comenzó hoy?</p>
                   </div>
                 </div>
 
                 <div className="mb-4">
-                  <label className={`block text-sm font-medium ${currentTheme.text} mb-2`}>
-                    Fecha de inicio del periodo
+                  <label className="block text-sm font-medium text-[#3D2C28] mb-2">
+                    Fecha de inicio del período
                   </label>
                   <input
                     type="date"
                     defaultValue={today}
                     max={today}
                     id="newPeriodDate"
-                    className={`w-full px-4 py-3 rounded-xl border-2 border-rose-200 focus:border-rose-500 outline-none ${currentTheme.bgCardSecondary || currentTheme.bgHover} ${currentTheme.text}`}
+                    className="w-full px-4 py-3 rounded-xl border-2 border-[#FFB4A8]/30 focus:border-[#FF99AC] focus:outline-none bg-white text-[#3D2C28]"
                   />
                 </div>
 
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                   onClick={() => {
                     const dateInput = document.getElementById('newPeriodDate') as HTMLInputElement;
                     const date = dateInput.value;
 
-                    if (confirm(`¿Registrar nuevo periodo el ${new Date(date).toLocaleDateString('es-ES')}?`)) {
+                    if (confirm(`¿Registrar nuevo período el ${new Date(date).toLocaleDateString('es-ES')}?`)) {
                       registerNewPeriod(date);
-                      alert('✅ Periodo registrado. Los cálculos se han actualizado.');
+                      showToast('✅ Período registrado. Los cálculos se han actualizado.', 'success');
                     }
                   }}
                   className="w-full py-4 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
                 >
                   <Check size={20} />
-                  Registrar nuevo periodo
-                </button>
+                  Registrar nuevo período
+                </motion.button>
 
-                <p className={`text-xs ${currentTheme.textSecondary} mt-3 text-center`}>
+                <p className="text-xs text-[#A67B6B] mt-3 text-center">
                   Esto actualizará todos los cálculos y predicciones
                 </p>
-              </div>
+              </motion.div>
 
               {/* Ajustar configuración del ciclo */}
-              <div className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl p-6 lg:p-8 border border-rose-200`}>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="bg-white backdrop-blur-xl rounded-3xl p-6 lg:p-8 border border-[#FFB4A8]/30 shadow-sm"
+              >
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center flex-shrink-0">
                     <Settings size={24} className="text-white" />
                   </div>
                   <div>
-                    <h2 className={`text-xl font-bold ${currentTheme.text}`}>Ajustar ciclo</h2>
-                    <p className={`text-sm ${currentTheme.textSecondary}`}>Actualiza la duración según tu cuerpo</p>
+                    <h2 className="text-xl font-bold text-[#3D2C28]">Ajustar ciclo</h2>
+                    <p className="text-sm text-[#A67B6B]">Actualiza la duración según tu cuerpo</p>
                   </div>
                 </div>
 
                 <div className="space-y-6">
                   <div>
-                    <label className={`block text-sm font-medium ${currentTheme.text} mb-3`}>
+                    <label className="block text-sm font-medium text-[#3D2C28] mb-3">
                       🔄 Duración del ciclo completo
                     </label>
                     <input
@@ -482,25 +526,25 @@ export default function ModoCicloPage() {
                         const display = document.getElementById('cycleLengthDisplay');
                         if (display) display.textContent = value;
                       }}
-                      className="w-full h-3 bg-rose-200 rounded-lg appearance-none cursor-pointer accent-rose-500"
+                      className="w-full h-3 bg-[#FFB4A8] rounded-lg appearance-none cursor-pointer accent-[#FF99AC]"
                     />
-                    <div className="flex justify-between items-center text-xs text-slate-500 mt-2">
+                    <div className="flex justify-between items-center text-xs text-[#A67B6B] mt-2">
                       <span>21 días</span>
                       <div className="flex flex-col items-center">
-                        <span id="cycleLengthDisplay" className="text-3xl font-bold text-slate-900">
+                        <span id="cycleLengthDisplay" className="text-3xl font-bold text-[#3D2C28]">
                           {cycleData.cycleLengthDays}
                         </span>
-                        <span className={currentTheme.textSecondary}>días</span>
+                        <span>días</span>
                       </div>
                       <span>35 días</span>
                     </div>
-                    <p className={`text-xs ${currentTheme.bgCardSecondary} p-3 rounded-lg mt-3 ${currentTheme.textSecondary}`}>
-                      💡 Tiempo entre el primer día de un periodo y el siguiente
+                    <p className="text-xs bg-[#FFF5F0] p-3 rounded-lg mt-3 text-[#A67B6B]">
+                      💡 Tiempo entre el primer día de un período y el siguiente
                     </p>
                   </div>
 
                   <div>
-                    <label className={`block text-sm font-medium ${currentTheme.text} mb-3`}>
+                    <label className="block text-sm font-medium text-[#3D2C28] mb-3">
                       🩸 Duración del sangrado
                     </label>
                     <input
@@ -514,21 +558,23 @@ export default function ModoCicloPage() {
                         const display = document.getElementById('periodLengthDisplay');
                         if (display) display.textContent = value;
                       }}
-                      className="w-full h-3 bg-rose-200 rounded-lg appearance-none cursor-pointer accent-rose-500"
+                      className="w-full h-3 bg-[#FFB4A8] rounded-lg appearance-none cursor-pointer accent-[#FF99AC]"
                     />
-                    <div className="flex justify-between items-center text-xs text-slate-500 mt-2">
+                    <div className="flex justify-between items-center text-xs text-[#A67B6B] mt-2">
                       <span>2 días</span>
                       <div className="flex flex-col items-center">
-                        <span id="periodLengthDisplay" className="text-3xl font-bold text-slate-900">
+                        <span id="periodLengthDisplay" className="text-3xl font-bold text-[#3D2C28]">
                           {cycleData.periodLengthDays}
                         </span>
-                        <span className={currentTheme.textSecondary}>días</span>
+                        <span>días</span>
                       </div>
                       <span>8 días</span>
                     </div>
                   </div>
 
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => {
                       const cycleSlider = document.getElementById('cycleLengthSlider') as HTMLInputElement;
                       const periodSlider = document.getElementById('periodLengthSlider') as HTMLInputElement;
@@ -538,100 +584,80 @@ export default function ModoCicloPage() {
 
                       if (confirm('¿Guardar nuevos ajustes?')) {
                         updateCycleSettings(newCycleLength, newPeriodLength);
-                        alert('✅ Configuración actualizada');
+                        showToast('✅ Configuración actualizada', 'success');
                       }
                     }}
                     className="w-full py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
                   >
                     <Save size={20} />
                     Guardar cambios
-                  </button>
+                  </motion.button>
                 </div>
-              </div>
+              </motion.div>
 
               {/* Notificaciones */}
-              <div className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl p-6 lg:p-8 border border-rose-200`}>
-                <h3 className={`font-bold ${currentTheme.text} mb-4 flex items-center gap-2`}>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="bg-white backdrop-blur-xl rounded-3xl p-6 lg:p-8 border border-[#FFB4A8]/30 shadow-sm"
+              >
+                <h3 className="font-bold text-[#3D2C28] mb-4 flex items-center gap-2">
                   <Bell size={20} />
                   Notificaciones
                 </h3>
 
                 <div className="space-y-3">
-                  <label className={`flex items-center justify-between p-4 bg-rose-50 rounded-xl cursor-pointer hover:bg-rose-100 transition-colors`}>
-                    <div className="flex items-center gap-3">
-                      <Droplet size={20} className="text-rose-500" />
-                      <div>
-                        <p className={`text-sm font-medium ${currentTheme.text}`}>
-                          Recordar registrar periodo
-                        </p>
-                        <p className={`text-xs ${currentTheme.textSecondary}`}>Cuando llegue la fecha prevista</p>
-                      </div>
-                    </div>
-                    <input
-                      type="checkbox"
-                      defaultChecked
-                      className="w-5 h-5 accent-rose-500"
-                    />
-                  </label>
+                  {[
+                    { icon: Droplet, label: 'Recordar registrar período', desc: 'Cuando llegue la fecha prevista', color: 'rose' },
+                    { icon: Sparkles, label: 'Avisar ventana fértil', desc: '3 días antes del inicio', color: 'amber' },
+                    { icon: Heart, label: 'Sugerencias de hábitos', desc: 'Según tu fase actual', color: 'purple' },
+                    { icon: Activity, label: 'Recordar registrar síntomas', desc: 'Diariamente a las 20:00', color: 'blue' },
+                  ].map((notif, idx) => {
+                    const Icon = notif.icon;
+                    const colorClasses = {
+                      rose: 'bg-rose-50 hover:bg-rose-100',
+                      amber: 'bg-amber-50 hover:bg-amber-100',
+                      purple: 'bg-purple-50 hover:bg-purple-100',
+                      blue: 'bg-blue-50 hover:bg-blue-100',
+                    };
 
-                  <label className={`flex items-center justify-between p-4 bg-amber-50 rounded-xl cursor-pointer hover:bg-amber-100 transition-colors`}>
-                    <div className="flex items-center gap-3">
-                      <Sparkles size={20} className="text-amber-500" />
-                      <div>
-                        <p className={`text-sm font-medium ${currentTheme.text}`}>
-                          Avisar ventana fértil
-                        </p>
-                        <p className={`text-xs ${currentTheme.textSecondary}`}>3 días antes del inicio</p>
-                      </div>
-                    </div>
-                    <input
-                      type="checkbox"
-                      defaultChecked
-                      className="w-5 h-5 accent-amber-500"
-                    />
-                  </label>
-
-                  <label className={`flex items-center justify-between p-4 bg-purple-50 rounded-xl cursor-pointer hover:bg-purple-100 transition-colors`}>
-                    <div className="flex items-center gap-3">
-                      <Heart size={20} className="text-purple-500" />
-                      <div>
-                        <p className={`text-sm font-medium ${currentTheme.text}`}>
-                          Sugerencias de hábitos
-                        </p>
-                        <p className={`text-xs ${currentTheme.textSecondary}`}>Según tu fase actual</p>
-                      </div>
-                    </div>
-                    <input
-                      type="checkbox"
-                      defaultChecked
-                      className="w-5 h-5 accent-purple-500"
-                    />
-                  </label>
-
-                  <label className={`flex items-center justify-between p-4 bg-blue-50 rounded-xl cursor-pointer hover:bg-blue-100 transition-colors`}>
-                    <div className="flex items-center gap-3">
-                      <Activity size={20} className="text-blue-500" />
-                      <div>
-                        <p className={`text-sm font-medium ${currentTheme.text}`}>
-                          Recordar registrar síntomas
-                        </p>
-                        <p className={`text-xs ${currentTheme.textSecondary}`}>Diariamente a las 20:00</p>
-                      </div>
-                    </div>
-                    <input
-                      type="checkbox"
-                      defaultChecked
-                      className="w-5 h-5 accent-blue-500"
-                    />
-                  </label>
+                    return (
+                      <motion.label
+                        key={idx}
+                        whileHover={{ scale: 1.01 }}
+                        className={`flex items-center justify-between p-4 ${colorClasses[notif.color as keyof typeof colorClasses]} rounded-xl cursor-pointer transition-colors`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <Icon size={20} className="flex-shrink-0" />
+                          <div className="min-w-0">
+                            <p className="text-sm font-medium text-[#3D2C28] truncate">
+                              {notif.label}
+                            </p>
+                            <p className="text-xs text-[#A67B6B]">{notif.desc}</p>
+                          </div>
+                        </div>
+                        <input
+                          type="checkbox"
+                          defaultChecked
+                          className="w-5 h-5 accent-[#FF99AC] flex-shrink-0"
+                        />
+                      </motion.label>
+                    );
+                  })}
                 </div>
-              </div>
+              </motion.div>
 
-              {/* Historial de periodos */}
-              <div className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl p-6 lg:p-8 border border-rose-200`}>
-                <h3 className={`font-bold ${currentTheme.text} mb-4 flex items-center gap-2`}>
+              {/* Historial de períodos */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="bg-white backdrop-blur-xl rounded-3xl p-6 lg:p-8 border border-[#FFB4A8]/30 shadow-sm"
+              >
+                <h3 className="font-bold text-[#3D2C28] mb-4 flex items-center gap-2">
                   <Calendar size={20} />
-                  Historial de periodos
+                  Historial de períodos
                 </h3>
 
                 <div className="space-y-2">
@@ -641,56 +667,72 @@ export default function ModoCicloPage() {
 
                     if (lastThree.length === 0) {
                       return (
-                        <p className={`text-sm ${currentTheme.textSecondary} text-center py-4`}>
-                          Aún no hay registros. Comienza registrando tu próximo periodo.
+                        <p className="text-sm text-[#A67B6B] text-center py-4">
+                          Aún no hay registros. Comienza registrando tu próximo período.
                         </p>
                       );
                     }
 
                     return lastThree.map((entry: any, i: number) => (
-                      <div key={i} className={`flex items-center gap-3 p-3 bg-rose-50 rounded-xl`}>
-                        <Droplet size={18} className="text-rose-500" />
-                        <div className="flex-1">
-                          <p className={`text-sm font-medium ${currentTheme.text}`}>
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.05 }}
+                        className="flex items-center gap-3 p-3 bg-[#FFF5F0] rounded-xl border border-[#FFB4A8]/20"
+                      >
+                        <Droplet size={18} className="text-rose-500 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-[#3D2C28] truncate">
                             {new Date(entry.date).toLocaleDateString('es-ES', {
                               day: 'numeric',
                               month: 'long',
                               year: 'numeric'
                             })}
                           </p>
-                          <p className={`text-xs ${currentTheme.textSecondary}`}>
+                          <p className="text-xs text-[#A67B6B]">
                             Registrado {new Date(entry.timestamp).toLocaleDateString('es-ES')}
                           </p>
                         </div>
-                      </div>
+                      </motion.div>
                     ));
                   })()}
                 </div>
-              </div>
+              </motion.div>
 
               {/* Zona de peligro */}
-              <div className={`${currentTheme.bgCard} backdrop-blur-xl rounded-3xl p-6 lg:p-8 border-2 border-red-200`}>
-                <h3 className={`font-bold text-red-900 mb-4 flex items-center gap-2`}>
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 }}
+                className="bg-white backdrop-blur-xl rounded-3xl p-6 lg:p-8 border-2 border-red-200/50 shadow-sm"
+              >
+                <h3 className="font-bold text-red-900 mb-4 flex items-center gap-2">
                   <AlertTriangle size={20} />
                   Zona de peligro
                 </h3>
 
                 <div className="space-y-3">
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={resetCycleData}
                     className="w-full py-3 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
                   >
                     <RotateCcw size={18} />
                     Reiniciar configuración
-                  </button>
+                  </motion.button>
 
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => {
                       if (confirm(
                         '¿Desactivar Modo Ciclo?\n\n' +
                         'Tus datos se guardarán y podrás reactivarlo cuando quieras.'
                       )) {
                         deactivateCycleMode();
+                        showToast('Modo Ciclo desactivado', 'success');
                         router.push('/perfil');
                       }
                     }}
@@ -698,13 +740,13 @@ export default function ModoCicloPage() {
                   >
                     <X size={18} />
                     Desactivar Modo Ciclo
-                  </button>
+                  </motion.button>
                 </div>
 
-                <p className={`text-xs ${currentTheme.textSecondary} mt-4 text-center`}>
+                <p className="text-xs text-[#A67B6B] mt-4 text-center">
                   💾 Tu historial se mantendrá guardado
                 </p>
-              </div>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
