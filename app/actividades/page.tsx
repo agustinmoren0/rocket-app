@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Plus, Clock, Edit2, Trash2, Sparkles } from 'lucide-react';
@@ -23,21 +23,25 @@ const COLORES = [
   '#A8D8EA', '#FFB4A8', '#B8E6B8', '#D4A5A5'
 ];
 
-export default function ActividadesPage() {
+// Modal opener component that uses useSearchParams
+function ModalOpener({ setShowModal }: any) {
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get('open') === 'true') {
+      setShowModal(true);
+      window.history.replaceState({}, '', '/actividades');
+    }
+  }, [searchParams, setShowModal]);
+
+  return null;
+}
+
+export default function ActividadesPage() {
   const [activities, setActivities] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingActivity, setEditingActivity] = useState<any>(null);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
-
-  // Abrir modal si viene con ?open=true desde el botón +
-  useEffect(() => {
-    if (searchParams.get('open') === 'true') {
-      setShowModal(true);
-      // Limpiar URL sin recargar
-      window.history.replaceState({}, '', '/actividades');
-    }
-  }, [searchParams]);
 
   useEffect(() => {
     loadTodayActivities();
@@ -184,82 +188,90 @@ export default function ActividadesPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF5F0] pb-32 pt-0">
-      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-10">
-        <div className="px-6 py-4">
-          <h1 className="text-2xl font-bold text-[#3D2C28]">Actividades</h1>
-          <p className="text-sm text-[#A67B6B] mt-1">
-            {activities.length === 0
-              ? 'Tu bitácora diaria te espera'
-              : `${formatTime(getTotalMinutes())} registrados hoy`}
-          </p>
-        </div>
-      </header>
+    <>
+      <Suspense fallback={null}>
+        <ModalOpener setShowModal={setShowModal} />
+      </Suspense>
 
-      <div className="px-6 py-4 space-y-3">
-        {activities.length === 0 ? (
-          <div className="text-center py-12 px-6">
-            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#FFC0A9] to-[#FF99AC] flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <Sparkles className="w-10 h-10 text-white" />
-            </div>
-            <h3 className="text-xl font-bold text-[#3D2C28] mb-2">
-              Comienza tu día
-            </h3>
-            <p className="text-[#A67B6B] mb-1 max-w-xs mx-auto">
-              Registra cada momento importante: trabajo, deporte, creatividad, descanso...
+      <div className="min-h-screen bg-[#FFF5F0] pb-32 pt-0">
+        <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-10">
+          <div className="px-6 py-4">
+            <h1 className="text-2xl font-bold text-[#3D2C28]">Actividades</h1>
+            <p className="text-sm text-[#A67B6B] mt-1">
+              {activities.length === 0
+                ? 'Tu bitácora diaria te espera'
+                : `${formatTime(getTotalMinutes())} registrados hoy`}
             </p>
-            <p className="text-sm text-[#A67B6B] mb-6">
-              Al final del día, todo se guarda automáticamente en tu calendario. Mañana empiezas con una página en blanco.
-            </p>
-            <button
-              onClick={() => setShowModal(true)}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white rounded-full font-semibold shadow-md"
-            >
-              <Plus className="w-5 h-5" />
-              Registrar primera actividad
-            </button>
           </div>
-        ) : (
-          activities.map((activity) => (
-            <ActivityCard
-              key={activity.id}
-              activity={activity}
-              onEdit={() => {
-                setEditingActivity(activity);
+        </header>
+
+        <div className="px-6 py-4 space-y-3">
+          {activities.length === 0 ? (
+            <div className="text-center py-12 px-6">
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#FFC0A9] to-[#FF99AC] flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Sparkles className="w-10 h-10 text-white" />
+              </div>
+              <h3 className="text-xl font-bold text-[#3D2C28] mb-2">
+                Comienza tu día
+              </h3>
+              <p className="text-[#A67B6B] mb-1 max-w-xs mx-auto">
+                Registra cada momento importante: trabajo, deporte, creatividad, descanso...
+              </p>
+              <p className="text-sm text-[#A67B6B] mb-6">
+                Al final del día, todo se guarda automáticamente en tu calendario. Mañana empiezas con una página en blanco.
+              </p>
+              <button
+                onClick={() => setShowModal(true)}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white rounded-full font-semibold shadow-md"
+              >
+                <Plus className="w-5 h-5" />
+                Registrar primera actividad
+              </button>
+            </div>
+          ) : (
+            <>
+              {activities.map((activity) => (
+                <ActivityCard
+                  key={activity.id}
+                  activity={activity}
+                  onEdit={() => {
+                    setEditingActivity(activity);
+                    setShowModal(true);
+                  }}
+                  onDelete={() => deleteActivity(activity.id)}
+                />
+              ))}
+            </>
+          )}
+        </div>
+
+        {activities.length > 0 && (
+          <div className="fixed bottom-20 left-0 right-0 px-6 z-10">
+            <button
+              onClick={() => {
+                setEditingActivity(null);
                 setShowModal(true);
               }}
-              onDelete={() => deleteActivity(activity.id)}
-            />
-          ))
+              className="w-full bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white py-4 rounded-full font-semibold shadow-lg flex items-center justify-center gap-2"
+            >
+              <Plus className="w-5 h-5" />
+              Registrar Actividad
+            </button>
+          </div>
+        )}
+
+        {showModal && (
+          <ActivityModal
+            activity={editingActivity}
+            onSave={saveActivity}
+            onClose={() => {
+              setShowModal(false);
+              setEditingActivity(null);
+            }}
+          />
         )}
       </div>
-
-      {activities.length > 0 && (
-        <div className="fixed bottom-20 left-0 right-0 px-6 z-10">
-          <button
-            onClick={() => {
-              setEditingActivity(null);
-              setShowModal(true);
-            }}
-            className="w-full bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white py-4 rounded-full font-semibold shadow-lg flex items-center justify-center gap-2"
-          >
-            <Plus className="w-5 h-5" />
-            Registrar Actividad
-          </button>
-        </div>
-      )}
-
-      {showModal && (
-        <ActivityModal
-          activity={editingActivity}
-          onSave={saveActivity}
-          onClose={() => {
-            setShowModal(false);
-            setEditingActivity(null);
-          }}
-        />
-      )}
-    </div>
+    </>
   );
 }
 
@@ -335,6 +347,8 @@ function ActivityModal({ activity, onSave, onClose }: any) {
       alert('Ingresa el nombre de la actividad');
       return;
     }
+
+    console.log('🔄 Enviando para guardar:', formData);
     onSave(formData);
   };
 
