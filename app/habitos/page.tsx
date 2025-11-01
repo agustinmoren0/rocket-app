@@ -261,13 +261,13 @@ function HabitCard({ habit, onToggleComplete, onPause, onEdit, onDelete, streak,
     if (Math.abs(velocity) > 500) {
       if (velocity > 0 && swipeState === 'closed') {
         setSwipeState('edit');
-        x.set(100, { duration: 0.2 });
+        x.set(100);
       } else if (velocity < 0 && swipeState === 'closed') {
         setSwipeState('actions');
-        x.set(-160, { duration: 0.2 });
+        x.set(-160);
       } else {
         setSwipeState('closed');
-        x.set(0, { duration: 0.2 });
+        x.set(0);
       }
       return;
     }
@@ -275,20 +275,20 @@ function HabitCard({ habit, onToggleComplete, onPause, onEdit, onDelete, streak,
     // Detección por offset (swipe lento pero definitivo)
     if (offset > 50 && swipeState === 'closed') {
       setSwipeState('edit');
-      x.set(100, { duration: 0.2 });
+      x.set(100);
     } else if (offset < -50 && swipeState === 'closed') {
       setSwipeState('actions');
-      x.set(-160, { duration: 0.2 });
+      x.set(-160);
     } else {
       // Volver al centro si no hay suficiente swipe
       setSwipeState('closed');
-      x.set(0, { duration: 0.2 });
+      x.set(0);
     }
   };
 
   const closeSwipe = () => {
     setSwipeState('closed');
-    x.set(0, { duration: 0.2 });
+    x.set(0);
   };
 
   const handleEdit = () => {
@@ -366,6 +366,7 @@ function HabitCard({ habit, onToggleComplete, onPause, onEdit, onDelete, streak,
         dragMomentum={false}
         onDragEnd={handleDragEnd}
         style={{ x }}
+        transition={{ type: 'spring', stiffness: 500, damping: 40 }}
         className={`relative bg-white rounded-2xl p-4 flex items-center gap-4 shadow-sm ${
           isPaused ? 'opacity-60' : ''
         }`}

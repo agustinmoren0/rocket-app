@@ -497,13 +497,13 @@ function ActivityCard({ activity, onEdit, onDelete }: any) {
     if (Math.abs(velocity) > 500) {
       if (velocity > 0 && swipeState === 'closed') {
         setSwipeState('edit');
-        x.set(100, { duration: 0.2 });
+        x.set(100);
       } else if (velocity < 0 && swipeState === 'closed') {
         setSwipeState('delete');
-        x.set(-100, { duration: 0.2 });
+        x.set(-100);
       } else {
         setSwipeState('closed');
-        x.set(0, { duration: 0.2 });
+        x.set(0);
       }
       return;
     }
@@ -511,21 +511,20 @@ function ActivityCard({ activity, onEdit, onDelete }: any) {
     // Detección por offset (swipe lento pero definitivo)
     if (offset > 50 && swipeState === 'closed') {
       setSwipeState('edit');
-      x.set(100, { duration: 0.2 });
+      x.set(100);
     } else if (offset < -50 && swipeState === 'closed') {
       setSwipeState('delete');
-      x.set(-100, { duration: 0.2 });
+      x.set(-100);
     } else {
       // Volver al centro si no hay suficiente swipe
       setSwipeState('closed');
-      x.set(0, { duration: 0.2 });
+      x.set(0);
     }
   };
 
   const closeSwipe = () => {
     setSwipeState('closed');
-    // Usar animate en lugar de set para una transición suave
-    x.set(0, { duration: 0.2 });
+    x.set(0);
   };
 
   const categoria = CATEGORIAS.find(c => c.id === activity.categoria);
@@ -587,6 +586,7 @@ function ActivityCard({ activity, onEdit, onDelete }: any) {
         dragMomentum={false}
         onDragEnd={handleDragEnd}
         style={{ x }}
+        transition={{ type: 'spring', stiffness: 500, damping: 40 }}
         className="relative bg-white rounded-2xl p-4 shadow-sm cursor-grab active:cursor-grabbing z-10"
       >
         <div className="flex items-start gap-3">
