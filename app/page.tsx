@@ -210,6 +210,22 @@ export default function DashboardPage() {
             <span className="text-sm font-semibold text-[#3D2C28]">Calendario</span>
           </button>
         </motion.div>
+
+        <motion.button
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+          onClick={() => router.push('/respiracion')}
+          className="w-full rounded-xl bg-gradient-to-r from-[#8EB7D1] to-[#6B9B9E] p-5 text-white shadow-lg hover:scale-105 transition-transform active:scale-95"
+        >
+          <div className="flex items-center justify-center gap-3">
+            <span className="text-2xl">🌬️</span>
+            <div className="text-left">
+              <p className="font-semibold">Respiremos</p>
+              <p className="text-xs opacity-90">Tómate un respiro hoy</p>
+            </div>
+          </div>
+        </motion.button>
       </main>
     </div>
   );
