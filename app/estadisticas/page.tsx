@@ -191,17 +191,50 @@ export default function EstadisticasPage() {
       return 'calma';
     };
 
-    const getMoodText = (mood: EstadisticasData['summary']['mood']): string => {
-      const texts: Record<string, string> = {
-        calma: 'Te has sentido en calma y con energía positiva esta semana.',
-        energico:
-          'Excelente semana! Tu energía ha sido muy alta gracias a tus actividades físicas.',
-        reflexivo:
-          'Has tenido momentos de reflexión profunda. Sigue cultivando la gratitud.',
-        estresado:
-          'Detectamos algunos momentos de estrés. Recuerda practicar meditación y descanso.',
-      };
-      return texts[mood];
+    const getMoodText = (mood: EstadisticasData['summary']['mood'], range: TimeRange): string => {
+      // Variaciones según range y mood
+      const calmVariations = [
+        'Te has sentido en calma y con energía positiva.',
+        'Tu semana ha sido equilibrada y serena.',
+        'Mantienes un estado emocional estable y positivo.',
+        'Has logrado momentos de paz y bienestar interior.',
+      ];
+
+      const energicoVariations = [
+        'Excelente! Tu energía ha sido muy alta esta semana.',
+        'Increíble semana: muy activo y dinámico.',
+        'Tu ritmo ha sido energético y productivo.',
+        'Has brillado con energía y motivación constante.',
+      ];
+
+      const reflexivoVariations = [
+        'Has tenido momentos de reflexión profunda.',
+        'Buena conexión contigo mismo durante estos días.',
+        'Cultivaste la gratitud y la introspección.',
+        'Equilibrio entre acción y reflexión personal.',
+      ];
+
+      const estresadoVariations = [
+        'Detectamos períodos de mayor estrés.',
+        'Algunos momentos retadores esta semana.',
+        'Considera más descanso y meditación.',
+        'Te invitamos a priorizar tu bienestar.',
+      ];
+
+      const getRandomVariation = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
+
+      switch (mood) {
+        case 'calma':
+          return getRandomVariation(calmVariations);
+        case 'energico':
+          return getRandomVariation(energicoVariations);
+        case 'reflexivo':
+          return getRandomVariation(reflexivoVariations);
+        case 'estresado':
+          return getRandomVariation(estresadoVariations);
+        default:
+          return 'Tu estado emocional ha sido variado esta semana.';
+      }
     };
 
     const mood = getMood();
@@ -273,7 +306,7 @@ export default function EstadisticasPage() {
       range,
       summary: {
         mood,
-        text: getMoodText(mood),
+        text: getMoodText(mood, range),
       },
       progress: {
         habitsCompleted,
