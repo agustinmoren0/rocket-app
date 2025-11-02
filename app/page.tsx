@@ -20,12 +20,30 @@ export default function DashboardPage() {
 
   useEffect(() => {
     calculateStats();
+
+    // Listener para cambios en localStorage
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'habika_activities_today' || e.key === 'habika_completions' || e.key === 'habika_activities') {
+        calculateStats();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    // También configurar un intervalo para actualizar stats regularmente
+    const interval = setInterval(calculateStats, 5000); // Cada 5 segundos
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
   }, []);
 
   const calculateStats = () => {
     const habits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
     const completions = JSON.parse(localStorage.getItem('habika_completions') || '{}');
-    const activities = JSON.parse(localStorage.getItem('habika_activities') || '[]');
+    const activitiesToday = JSON.parse(localStorage.getItem('habika_activities_today') || '{}');
+    const historicalActivities = JSON.parse(localStorage.getItem('habika_activities') || '[]');
 
     const today = new Date();
     const last7Days = Array.from({ length: 7 }, (_, i) => {
@@ -59,26 +77,43 @@ export default function DashboardPage() {
 
     const consistency = totalPossible > 0 ? Math.round((totalCompleted / totalPossible) * 100) : 0;
 
-    // Tiempo en actividades - convertir a minutos según unit
-    const activityTime = activities
-      .filter((a: any) => last7Days.includes(a.date))
-      .reduce((sum: number, a: any) => {
-        const minutes = a.unit === 'hora(s)' || a.unit === 'hs' ? (a.duration || 0) * 60 : (a.duration || 0);
-        return sum + minutes;
-      }, 0);
+    // Tiempo en actividades - buscar en habika_activities_today y habika_activities
+    let totalActivityMinutes = 0;
 
-    // Racha global
+    // Búscar en habika_activities_today (actividades de hoy por día)
+    last7Days.forEach((dateStr) => {
+      const dayActivities = activitiesToday[dateStr] || [];
+      dayActivities.forEach((activity: any) => {
+        const minutes = activity.unit === 'hora(s)' || activity.unit === 'hs' ? (activity.duration || 0) * 60 : (activity.duration || 0);
+        totalActivityMinutes += minutes;
+      });
+    });
+
+    // También buscar en histórico si existen
+    historicalActivities
+      .filter((a: any) => last7Days.includes(a.date))
+      .forEach((activity: any) => {
+        const minutes = activity.unit === 'hora(s)' || activity.unit === 'hs' ? (activity.duration || 0) * 60 : (activity.duration || 0);
+        totalActivityMinutes += minutes;
+      });
+
+    // Racha global - contar días con hábitos completados O actividades realizadas
     let streak = 0;
     for (let i = 0; i < 365; i++) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
       const dateStr = date.toISOString().split('T')[0];
 
-      const hasCompletion = Object.values(completions).some((habitComps: any) =>
+      // Verificar si hay hábito completado
+      const hasHabitCompletion = Object.values(completions).some((habitComps: any) =>
         habitComps.some((c: any) => c.date === dateStr && c.status === 'completed')
       );
 
-      if (hasCompletion) {
+      // Verificar si hay actividades en ese día
+      const hasActivityToday = (activitiesToday[dateStr] && activitiesToday[dateStr].length > 0) ||
+        historicalActivities.some((a: any) => a.date === dateStr);
+
+      if (hasHabitCompletion || hasActivityToday) {
         streak++;
       } else if (i > 0) {
         break;
@@ -87,7 +122,7 @@ export default function DashboardPage() {
 
     setStats({
       consistency,
-      activityTime: Math.round(activityTime / 60),
+      activityTime: Math.round(totalActivityMinutes / 60),
       streak,
     });
   };

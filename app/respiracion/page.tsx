@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { X } from 'lucide-react';
+import { X, Wind, Clock, CheckCircle } from 'lucide-react';
 import BreathingCircles from '@/components/BreathingCircles';
 
 type PageState = 'intro' | 'breathing' | 'complete';
@@ -92,7 +92,9 @@ export default function RespirationPage() {
             transition={{ delay: 0.2 }}
             className="mb-8"
           >
-            <div className="text-7xl mb-4">🌬️</div>
+            <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#FF9B7B] to-[#8EB7D1] flex items-center justify-center">
+              <Wind className="w-10 h-10 text-white" />
+            </div>
           </motion.div>
 
           <motion.h1
@@ -117,25 +119,35 @@ export default function RespirationPage() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.5 }}
-            className="bg-white rounded-3xl p-8 mb-8 border border-[#8EB7D1]/20 shadow-sm"
+            className="rounded-3xl p-8 mb-8 backdrop-blur-xl border border-white/20 transition-all"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.6) 100%)',
+              boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.5)',
+            }}
           >
             <div className="space-y-6 text-left">
               <div className="flex items-start gap-4">
-                <span className="text-3xl flex-shrink-0">📍</span>
+                <div className="w-12 h-12 rounded-full bg-[#FF9B7B]/20 flex items-center justify-center flex-shrink-0">
+                  <Wind className="w-6 h-6 text-[#FF9B7B]" />
+                </div>
                 <div>
                   <h3 className="font-semibold text-[#3D2C28] mb-1">Respira conscientemente</h3>
                   <p className="text-sm text-[#6B9B9E]">Sigue el ritmo de los círculos animados</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
-                <span className="text-3xl flex-shrink-0">⏱️</span>
+                <div className="w-12 h-12 rounded-full bg-[#8EB7D1]/20 flex items-center justify-center flex-shrink-0">
+                  <Clock className="w-6 h-6 text-[#8EB7D1]" />
+                </div>
                 <div>
                   <h3 className="font-semibold text-[#3D2C28] mb-1">Menos de 2 minutos</h3>
                   <p className="text-sm text-[#6B9B9E]">Una sesión rápida y efectiva</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
-                <span className="text-3xl flex-shrink-0">💾</span>
+                <div className="w-12 h-12 rounded-full bg-[#6B9B9E]/20 flex items-center justify-center flex-shrink-0">
+                  <CheckCircle className="w-6 h-6 text-[#6B9B9E]" />
+                </div>
                 <div>
                   <h3 className="font-semibold text-[#3D2C28] mb-1">Registrado automáticamente</h3>
                   <p className="text-sm text-[#6B9B9E]">Se suma a tu progreso diario</p>
@@ -151,7 +163,7 @@ export default function RespirationPage() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.6 }}
-            className="w-full max-w-sm py-4 bg-gradient-to-r from-[#8EB7D1] to-[#6B9B9E] text-white rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-shadow"
+            className="w-full max-w-sm py-4 bg-gradient-to-r from-[#FF9B7B] to-[#8EB7D1] text-white rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-shadow"
           >
             Comencemos
           </motion.button>
@@ -163,7 +175,7 @@ export default function RespirationPage() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.7 }}
-            className="w-full max-w-sm py-3 border-2 border-[#8EB7D1]/30 text-[#3D2C28] rounded-2xl font-semibold mt-3 hover:bg-[#F3EEEA] transition-colors"
+            className="w-full max-w-sm py-3 border-2 border-[#FF9B7B]/30 text-[#3D2C28] rounded-2xl font-semibold mt-3 hover:bg-[#FFF0ED] transition-colors"
           >
             Quizás después
           </motion.button>
@@ -199,7 +211,9 @@ export default function RespirationPage() {
             transition={{ type: 'spring', stiffness: 100, damping: 15 }}
             className="mb-8"
           >
-            <div className="text-7xl">🌸</div>
+            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-[#FF9B7B] to-[#FFB4A8] flex items-center justify-center">
+              <CheckCircle className="w-12 h-12 text-white" />
+            </div>
           </motion.div>
 
           <motion.h1
@@ -225,12 +239,19 @@ export default function RespirationPage() {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             transition={{ delay: 0.5 }}
-            className="bg-white rounded-3xl p-8 border border-[#8EB7D1]/20 shadow-sm mb-8"
+            className="rounded-3xl p-8 mb-8 backdrop-blur-xl border border-white/20 transition-all"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.6) 100%)',
+              boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.5)',
+            }}
           >
-            <p className="text-[#3D2C28] text-sm font-medium">
-              ✓ Actividad registrada en tu progreso diario
-            </p>
-            <p className="text-[#6B9B9E] text-xs mt-2">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <CheckCircle className="w-5 h-5 text-[#6B9B9E]" />
+              <p className="text-[#3D2C28] text-sm font-medium">
+                Actividad registrada en tu progreso diario
+              </p>
+            </div>
+            <p className="text-[#6B9B9E] text-xs">
               Ejercicio de respiración guardado
             </p>
           </motion.div>
@@ -242,7 +263,7 @@ export default function RespirationPage() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.6 }}
-            className="w-full max-w-sm py-4 bg-gradient-to-r from-[#8EB7D1] to-[#6B9B9E] text-white rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-shadow"
+            className="w-full max-w-sm py-4 bg-gradient-to-r from-[#FF9B7B] to-[#8EB7D1] text-white rounded-2xl font-bold text-lg shadow-lg hover:shadow-xl transition-shadow"
           >
             Volver al inicio
           </motion.button>
