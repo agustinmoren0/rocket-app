@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useUser } from './context/UserContext';
 import { useCycle } from './context/CycleContext';
 import { motion } from 'framer-motion';
-import { TrendingUp, Clock, Flame, Edit3, Calendar, CheckSquare, Wind } from 'lucide-react';
+import { Clock, Flame, Edit3, Calendar, CheckSquare, Wind } from 'lucide-react';
+import InsightsIcon from '@mui/icons-material/Insights';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -157,7 +158,7 @@ export default function DashboardPage() {
           onClick={() => router.push('/estadisticas')}
           className="flex items-center justify-center h-10 w-10 rounded-full glass-stitch hover:scale-105 transition-transform"
         >
-          <TrendingUp className="w-5 h-5 text-[#3D2C28]" />
+          <InsightsIcon sx={{ fontSize: 20, color: '#3D2C28' }} />
         </button>
       </header>
 

@@ -16,10 +16,10 @@ interface Reflection {
 }
 
 const MOOD_DATA = {
-  great: { emoji: '🚀', label: 'Excelente', bg: 'from-green-400 to-green-500' },
-  good: { emoji: '😊', label: 'Bien', bg: 'from-blue-400 to-blue-500' },
-  okay: { emoji: '😐', label: 'Normal', bg: 'from-yellow-400 to-yellow-500' },
-  tough: { emoji: '😤', label: 'Difícil', bg: 'from-red-400 to-red-500' },
+  great: { emoji: '🚀', label: 'Excelente', bg: 'from-[#FF9B7B] to-[#FFC0A9]', color: '#FF9B7B' },
+  good: { emoji: '😊', label: 'Bien', bg: 'from-[#8EB7D1] to-[#CBE3EE]', color: '#8EB7D1' },
+  okay: { emoji: '😐', label: 'Normal', bg: 'from-[#FFB4A8] to-[#FFD4C7]', color: '#FFB4A8' },
+  tough: { emoji: '😤', label: 'Difícil', bg: 'from-[#A67B6B] to-[#C4A09E]', color: '#A67B6B' },
 };
 
 export default function ReflexionesPage() {
@@ -153,7 +153,11 @@ export default function ReflexionesPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="bg-white rounded-2xl p-6 border border-[#FFB4A8]/30 mb-6 shadow-sm"
+              className="rounded-2xl p-6 mb-6 backdrop-blur-xl border border-white/20 transition-all duration-300"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.6) 100%)',
+                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.5)',
+              }}
             >
               <h2 className="text-xl font-semibold text-[#3D2C28] mb-4">
                 Nueva Reflexión
@@ -178,8 +182,8 @@ export default function ReflexionesPage() {
                       onClick={() => setMood(key)}
                       className={`py-3 px-2 rounded-xl font-medium transition-all ${
                         mood === key
-                          ? `bg-gradient-to-br ${data.bg} text-white shadow-lg`
-                          : 'bg-[#FFF5F0] hover:bg-[#FFE8E1] text-[#3D2C28] border border-[#FFB4A8]/20'
+                          ? `bg-gradient-to-br ${data.bg} text-white shadow-lg backdrop-blur-md`
+                          : 'bg-white/40 hover:bg-white/60 text-[#3D2C28] border border-white/30 backdrop-blur-md'
                       }`}
                     >
                       <div className="text-2xl mb-1">{data.emoji}</div>
@@ -200,7 +204,7 @@ export default function ReflexionesPage() {
                     value={achievements}
                     onChange={(e) => setAchievements(e.target.value)}
                     placeholder="Cuéntame tus logros, sin importar el tamaño..."
-                    className="w-full p-3 rounded-xl border border-[#FFB4A8]/30 bg-[#FFF5F0] text-[#3D2C28] placeholder-[#A67B6B] focus:outline-none focus:border-[#FF99AC]"
+                    className="w-full p-3 rounded-xl border border-white/30 bg-white/40 backdrop-blur-md text-[#3D2C28] placeholder-[#A67B6B]/60 focus:outline-none focus:border-white/60 transition-all"
                     rows={3}
                   />
                 </div>
@@ -214,7 +218,7 @@ export default function ReflexionesPage() {
                     value={learnings}
                     onChange={(e) => setLearnings(e.target.value)}
                     placeholder="Lecciones, insights, momentos de claridad..."
-                    className="w-full p-3 rounded-xl border border-[#FFB4A8]/30 bg-[#FFF5F0] text-[#3D2C28] placeholder-[#A67B6B] focus:outline-none focus:border-[#FF99AC]"
+                    className="w-full p-3 rounded-xl border border-white/30 bg-white/40 backdrop-blur-md text-[#3D2C28] placeholder-[#A67B6B]/60 focus:outline-none focus:border-white/60 transition-all"
                     rows={3}
                   />
                 </div>
@@ -228,7 +232,7 @@ export default function ReflexionesPage() {
                     value={improvements}
                     onChange={(e) => setImprovements(e.target.value)}
                     placeholder="Ideas para la próxima semana..."
-                    className="w-full p-3 rounded-xl border border-[#FFB4A8]/30 bg-[#FFF5F0] text-[#3D2C28] placeholder-[#A67B6B] focus:outline-none focus:border-[#FF99AC]"
+                    className="w-full p-3 rounded-xl border border-white/30 bg-white/40 backdrop-blur-md text-[#3D2C28] placeholder-[#A67B6B]/60 focus:outline-none focus:border-white/60 transition-all"
                     rows={3}
                   />
                 </div>
@@ -240,7 +244,7 @@ export default function ReflexionesPage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleCreateReflection}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-medium bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white transition-all hover:shadow-md"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-medium bg-gradient-to-r from-[#FF9B7B] to-[#FFB4A8] text-white transition-all hover:shadow-lg shadow-md"
                 >
                   <Send size={18} />
                   Guardar Reflexión
@@ -249,7 +253,7 @@ export default function ReflexionesPage() {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={() => setIsCreating(false)}
-                  className="py-3 px-4 rounded-xl font-medium bg-[#F0E8E6] text-[#3D2C28] transition-all hover:bg-[#E8DEDE]"
+                  className="py-3 px-4 rounded-xl font-medium bg-white/40 backdrop-blur-md text-[#3D2C28] transition-all hover:bg-white/60 border border-white/30"
                 >
                   Cancelar
                 </motion.button>
@@ -264,7 +268,7 @@ export default function ReflexionesPage() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => setIsCreating(true)}
-            className="w-full py-3 px-4 rounded-xl font-medium mb-6 bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white transition-all hover:shadow-md"
+            className="w-full py-3 px-4 rounded-xl font-medium mb-6 bg-gradient-to-r from-[#FF9B7B] to-[#FFB4A8] text-white transition-all hover:shadow-lg shadow-md"
           >
             + Nueva Reflexión
           </motion.button>
@@ -276,11 +280,15 @@ export default function ReflexionesPage() {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-2xl p-8 border border-[#FFB4A8]/30 text-center shadow-sm"
+              className="rounded-2xl p-8 backdrop-blur-xl border border-white/20 text-center transition-all duration-300"
+              style={{
+                background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.6) 100%)',
+                boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.5)',
+              }}
             >
               <BookOpen
                 size={48}
-                className="text-[#FF99AC] mx-auto mb-4"
+                className="text-[#FF9B7B] mx-auto mb-4"
               />
               <h2 className="text-xl font-semibold text-[#3D2C28] mb-2">
                 Aún no hay reflexiones
@@ -297,7 +305,11 @@ export default function ReflexionesPage() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, x: -100 }}
                 transition={{ delay: index * 0.05 }}
-                className="bg-white rounded-2xl p-6 border border-[#FFB4A8]/30 shadow-sm"
+                className="rounded-2xl p-6 backdrop-blur-xl border border-white/20 transition-all duration-300"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.6) 100%)',
+                  boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.5)',
+                }}
               >
                 {/* Header */}
                 <div className="flex items-start justify-between mb-4">
