@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 type PhaseType = 'prepare' | 'inhale' | 'hold' | 'exhale';
@@ -17,7 +17,6 @@ const PHASES = [
 ];
 
 const TOTAL_CYCLES = 3;
-const PREPARE_DURATION = 3000;
 
 export default function BreathingCircles({ isActive, onComplete }: BreathingCirclesProps) {
   const [phaseIndex, setPhaseIndex] = useState(0);
@@ -28,88 +27,108 @@ export default function BreathingCircles({ isActive, onComplete }: BreathingCirc
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [phaseProgress, setPhaseProgress] = useState(0); // 0 a 1 para animación fluida
 
+  // Timestamps para sincronizar animaciones
+  const phaseStartTimeRef = useRef<number>(0);
+  const prepareStartTimeRef = useRef<number>(0);
+  const animationFrameRef = useRef<number | null>(null);
+
   const currentPhase = PHASES[phaseIndex];
   const phaseType = currentPhase.type;
-  const phaseDuration = currentPhase.duration / 1000; // en segundos
+  const phaseDurationMs = currentPhase.duration;
 
   // Countdown inicial (3, 2, 1, ¡Comienza!)
   useEffect(() => {
     if (!isActive || !isPreparing) return;
 
     const countdownTimer = setTimeout(() => {
-      setCountdown((prev) => prev - 1);
-    }, 1000);
-
-    if (countdown === 0) {
-      setIsPreparing(false);
-      setCountdown(3);
-      setTimeRemaining(Math.ceil(phaseDuration));
-      setPhaseProgress(0);
-    }
-
-    return () => clearTimeout(countdownTimer);
-  }, [isActive, isPreparing, countdown, phaseDuration]);
-
-  // Temporizador para contar hacia atrás durante cada fase
-  useEffect(() => {
-    if (!isActive || isPreparing || isComplete) return;
-
-    const timer = setInterval(() => {
-      setTimeRemaining((prev) => {
-        if (prev <= 1) {
-          // Cambiar a siguiente fase
-          const nextPhaseIndex = (phaseIndex + 1) % PHASES.length;
-          setPhaseIndex(nextPhaseIndex);
+      setCountdown((prev) => {
+        const newCount = prev - 1;
+        if (newCount === 0) {
+          setIsPreparing(false);
+          setCountdown(3);
+          setTimeRemaining(Math.ceil(phaseDurationMs / 1000));
           setPhaseProgress(0);
-
-          // Si completamos un ciclo
-          if (nextPhaseIndex === 0) {
-            const nextCycleCount = cycleCount + 1;
-            setCycleCount(nextCycleCount);
-
-            // Si completamos todos los ciclos
-            if (nextCycleCount > TOTAL_CYCLES) {
-              setIsComplete(true);
-              onComplete?.();
-            } else {
-              // Retornar el tiempo de la siguiente fase
-              return Math.ceil(PHASES[0].duration / 1000);
-            }
-          } else {
-            // Retornar el tiempo de la siguiente fase
-            return Math.ceil(PHASES[nextPhaseIndex].duration / 1000);
-          }
-          return 0;
+          phaseStartTimeRef.current = Date.now();
         }
-        return prev - 1;
+        return newCount;
       });
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, [isActive, isPreparing, phaseIndex, cycleCount, isComplete, onComplete]);
+    return () => clearTimeout(countdownTimer);
+  }, [isActive, isPreparing, countdown, phaseDurationMs]);
 
-  // Actualizar el progreso de la fase (0 a 1) para animación fluida
+  // Actualizar timeRemaining cada segundo (solo para el display)
+  useEffect(() => {
+    if (!isActive || isPreparing || isComplete) return;
+
+    const updateTimer = setInterval(() => {
+      const elapsedMs = Date.now() - phaseStartTimeRef.current;
+      const remainingMs = phaseDurationMs - elapsedMs;
+      const remainingSeconds = Math.max(0, Math.ceil(remainingMs / 1000));
+
+      setTimeRemaining(remainingSeconds);
+
+      // Cambiar de fase cuando el tiempo se acabe
+      if (remainingMs <= 0) {
+        const nextPhaseIndex = (phaseIndex + 1) % PHASES.length;
+        setPhaseIndex(nextPhaseIndex);
+        setPhaseProgress(0);
+        phaseStartTimeRef.current = Date.now();
+
+        // Si completamos un ciclo
+        if (nextPhaseIndex === 0) {
+          const nextCycleCount = cycleCount + 1;
+          setCycleCount(nextCycleCount);
+
+          // Si completamos todos los ciclos
+          if (nextCycleCount > TOTAL_CYCLES) {
+            setIsComplete(true);
+            onComplete?.();
+          } else {
+            setTimeRemaining(Math.ceil(PHASES[0].duration / 1000));
+          }
+        } else {
+          setTimeRemaining(Math.ceil(PHASES[nextPhaseIndex].duration / 1000));
+        }
+      }
+    }, 1000);
+
+    return () => clearInterval(updateTimer);
+  }, [isActive, isPreparing, isComplete, phaseIndex, cycleCount, phaseDurationMs]);
+
+  // AnimationFrame para progreso suave y continuo
   useEffect(() => {
     if (isPreparing || isComplete) return;
 
-    const elapsed = phaseDuration - timeRemaining;
-    setPhaseProgress(Math.max(0, Math.min(1, elapsed / phaseDuration)));
-  }, [timeRemaining, phaseDuration, isPreparing, isComplete]);
+    const updateProgress = () => {
+      const elapsedMs = Date.now() - phaseStartTimeRef.current;
+      const progress = Math.min(1, Math.max(0, elapsedMs / phaseDurationMs));
+      setPhaseProgress(progress);
+      animationFrameRef.current = requestAnimationFrame(updateProgress);
+    };
 
-  // Calcular escala de los círculos según fase
+    animationFrameRef.current = requestAnimationFrame(updateProgress);
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [isPreparing, isComplete, phaseDurationMs]);
+
+  // Calcular escala de los círculos según fase - FLUIDA Y CONTINUA
   const getCircleScale = (layer: number) => {
-    // layer: 1 (principal), 0.7 (interna), 1.3 (externa)
     const baseScale = layer;
 
     if (phaseType === 'inhale') {
-      // Expande de 1 a 1.6 durante inhalación
+      // Expande fluidamente de baseScale a baseScale+0.6 durante toda la inhalación
       return baseScale + (phaseProgress * 0.6);
     }
     if (phaseType === 'exhale') {
-      // Contrae de 1.5 a 0.9 durante exhalación
+      // Contrae fluidamente de baseScale+0.5 a baseScale-0.1 durante toda la exhalación
       return (baseScale + 0.5) - (phaseProgress * 0.6);
     }
-    // Hold: mantiene la escala con pequeña oscillación
+    // Hold: mantiene la escala con pequeña oscillación suave
     return baseScale + (Math.sin(phaseProgress * Math.PI * 2) * 0.05);
   };
 
@@ -148,54 +167,39 @@ export default function BreathingCircles({ isActive, onComplete }: BreathingCirc
         )}
       </AnimatePresence>
 
-      {/* Círculos concéntricos - Efecto Glowin */}
+      {/* Círculos concéntricos - Efecto Glowin - MOVIMIENTO FLUIDO */}
       {!isPreparing && !isComplete && (
         <div className="absolute inset-0 flex items-center justify-center">
           {/* Círculo externo - más grande */}
-          <motion.div
-            animate={{
-              scale: scale13,
-            }}
-            transition={{
-              duration: 0.1,
-              ease: 'linear',
-            }}
+          <div
             className="absolute w-56 h-56 rounded-full border-2"
             style={{
               borderColor: `${currentPhase.color}40`,
               boxShadow: `0 0 40px ${currentPhase.color}20`,
+              transform: `scale(${scale13})`,
+              transition: 'none', // Sin transición para fluidez perfecta
             }}
           />
 
           {/* Círculo medio principal */}
-          <motion.div
-            animate={{
-              scale: scale1,
-            }}
-            transition={{
-              duration: 0.1,
-              ease: 'linear',
-            }}
+          <div
             className="absolute w-48 h-48 rounded-full border-4"
             style={{
               borderColor: `${currentPhase.color}CC`,
               boxShadow: `0 0 80px ${currentPhase.color}50, inset 0 0 40px ${currentPhase.color}30`,
+              transform: `scale(${scale1})`,
+              transition: 'none', // Sin transición para fluidez perfecta
             }}
           />
 
           {/* Círculo interno - más pequeño */}
-          <motion.div
-            animate={{
-              scale: scale07,
-            }}
-            transition={{
-              duration: 0.1,
-              ease: 'linear',
-            }}
+          <div
             className="absolute w-40 h-40 rounded-full border-2"
             style={{
               borderColor: `${currentPhase.color}80`,
               boxShadow: `0 0 30px ${currentPhase.color}30`,
+              transform: `scale(${scale07})`,
+              transition: 'none', // Sin transición para fluidez perfecta
             }}
           />
         </div>
@@ -248,35 +252,20 @@ export default function BreathingCircles({ isActive, onComplete }: BreathingCirc
             </motion.div>
           </AnimatePresence>
 
-          {/* Contador grande y prominente - Flujo suave */}
-          <motion.div
-            className="text-9xl font-bold text-[#8EB7D1]"
-            animate={{
-              scale: phaseType === 'hold' ? 1.05 : 1,
-              opacity: 1,
-            }}
-            transition={{
-              duration: 0.3,
-              ease: 'easeInOut',
-            }}
-          >
+          {/* Contador grande y prominente - Mostrando segundos que quedan */}
+          <div className="text-9xl font-bold text-[#8EB7D1]">
             {timeRemaining}
-          </motion.div>
+          </div>
 
-          {/* Barra de progreso visual */}
+          {/* Barra de progreso visual - FLUIDA */}
           <div className="flex items-center gap-2 mt-4">
             <div className="w-48 h-1 bg-gray-300/30 rounded-full overflow-hidden">
-              <motion.div
+              <div
                 className="h-full rounded-full"
                 style={{
                   backgroundColor: currentPhase.color,
-                }}
-                animate={{
                   width: `${phaseProgress * 100}%`,
-                }}
-                transition={{
-                  duration: 0.1,
-                  ease: 'linear',
+                  transition: 'none', // Sin transición para máxima fluidez
                 }}
               />
             </div>
