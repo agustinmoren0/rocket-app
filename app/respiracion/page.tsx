@@ -25,7 +25,6 @@ export default function RespirationPage() {
 
   const saveBreathingActivity = (durationMinutes: number) => {
     try {
-      const activities = JSON.parse(localStorage.getItem('habika_activities') || '[]');
       const today = new Date().toISOString().split('T')[0];
 
       const newActivity = {
@@ -40,15 +39,25 @@ export default function RespirationPage() {
         createdAt: new Date().toISOString(),
       };
 
+      // Guardar en habika_activities_today (formato por día) - PRINCIPAL
+      const activitiesToday = JSON.parse(localStorage.getItem('habika_activities_today') || '{}');
+      activitiesToday[today] = activitiesToday[today] || [];
+      activitiesToday[today].push(newActivity);
+      localStorage.setItem('habika_activities_today', JSON.stringify(activitiesToday));
+
+      // También guardar en habika_activities (histórico general)
+      const activities = JSON.parse(localStorage.getItem('habika_activities') || '[]');
       activities.push(newActivity);
       localStorage.setItem('habika_activities', JSON.stringify(activities));
 
-      // También guardar en habika_activities_today para calendario
+      // Y en habika_calendar_YYYY-MM-DD para el calendario
       const calendarKey = `habika_calendar_${today}`;
       const calendarData = JSON.parse(localStorage.getItem(calendarKey) || '{"activities": []}');
       calendarData.activities = calendarData.activities || [];
       calendarData.activities.push(newActivity);
       localStorage.setItem(calendarKey, JSON.stringify(calendarData));
+
+      console.log('✅ Actividad de respiración guardada:', newActivity);
     } catch (error) {
       console.error('Error saving breathing activity:', error);
     }

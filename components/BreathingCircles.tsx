@@ -169,11 +169,13 @@ export default function BreathingCircles({ isActive, onComplete }: BreathingCirc
 
       {/* Círculos concéntricos - Efecto Glowin - MOVIMIENTO FLUIDO */}
       {!isPreparing && !isComplete && (
-        <div className="absolute inset-0 flex items-center justify-center">
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           {/* Círculo externo - más grande */}
           <div
-            className="absolute w-56 h-56 rounded-full border-2"
+            className="absolute rounded-full border-2"
             style={{
+              width: '400px',
+              height: '400px',
               borderColor: `${currentPhase.color}40`,
               boxShadow: `0 0 40px ${currentPhase.color}20`,
               transform: `scale(${scale13})`,
@@ -183,10 +185,12 @@ export default function BreathingCircles({ isActive, onComplete }: BreathingCirc
 
           {/* Círculo medio principal */}
           <div
-            className="absolute w-48 h-48 rounded-full border-4"
+            className="absolute rounded-full border-4"
             style={{
+              width: '320px',
+              height: '320px',
               borderColor: `${currentPhase.color}CC`,
-              boxShadow: `0 0 80px ${currentPhase.color}50, inset 0 0 40px ${currentPhase.color}30`,
+              boxShadow: `0 0 100px ${currentPhase.color}60, inset 0 0 60px ${currentPhase.color}40`,
               transform: `scale(${scale1})`,
               transition: 'none', // Sin transición para fluidez perfecta
             }}
@@ -194,10 +198,12 @@ export default function BreathingCircles({ isActive, onComplete }: BreathingCirc
 
           {/* Círculo interno - más pequeño */}
           <div
-            className="absolute w-40 h-40 rounded-full border-2"
+            className="absolute rounded-full border-2"
             style={{
+              width: '240px',
+              height: '240px',
               borderColor: `${currentPhase.color}80`,
-              boxShadow: `0 0 30px ${currentPhase.color}30`,
+              boxShadow: `0 0 50px ${currentPhase.color}40`,
               transform: `scale(${scale07})`,
               transition: 'none', // Sin transición para fluidez perfecta
             }}
