@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useUser } from './context/UserContext';
 import { useCycle } from './context/CycleContext';
 import { motion } from 'framer-motion';
-import { TrendingUp, Clock, Flame, Edit3, Calendar, CheckSquare } from 'lucide-react';
+import { TrendingUp, Clock, Flame, Edit3, Calendar, CheckSquare, Wind } from 'lucide-react';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -130,14 +130,18 @@ export default function DashboardPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="rounded-xl glass-stitch p-4"
+          className="rounded-2xl p-5 backdrop-blur-xl border border-white/20 transition-all duration-300"
+          style={{
+            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.5) 100%)',
+            boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.5)',
+          }}
         >
           <div className="flex justify-between items-start mb-4">
             <p className="text-[#A67B6B] text-sm font-medium">Tu Semana</p>
             {cycleData.isActive && (
               <button
                 onClick={() => router.push('/modo-ciclo')}
-                className="flex items-center justify-center w-10 h-10 bg-pink-100 rounded-full"
+                className="flex items-center justify-center w-10 h-10 bg-pink-200/40 backdrop-blur-md rounded-full border border-pink-300/30 hover:scale-105 transition-transform"
               >
                 <span className="text-xl">🌸</span>
               </button>
@@ -183,7 +187,11 @@ export default function DashboardPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="rounded-xl bg-white p-4 shadow-lg"
+          className="rounded-2xl p-5 backdrop-blur-xl border border-white/20 transition-all duration-300"
+          style={{
+            background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.7) 0%, rgba(255, 255, 255, 0.5) 100%)',
+            boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.5)',
+          }}
         >
           <p className="text-[#3D2C28] text-base font-bold leading-tight mb-2">Mensaje para ti</p>
           <p className="text-[#A67B6B] text-sm">{motivationalMessage}</p>
@@ -195,20 +203,32 @@ export default function DashboardPage() {
           transition={{ delay: 0.3 }}
           className="grid grid-cols-2 gap-4"
         >
-          <button
+          <motion.button
             onClick={() => router.push('/reflexiones')}
-            className="flex flex-col items-center justify-center gap-3 p-5 rounded-xl bg-white shadow-lg hover:scale-105 transition-transform active:scale-95"
+            whileHover={{ scale: 1.05, y: -4 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl backdrop-blur-xl border border-white/20 transition-all duration-300"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.6) 100%)',
+              boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.5)',
+            }}
           >
             <Edit3 className="w-8 h-8 text-[#FF8C66]" />
             <span className="text-sm font-semibold text-[#3D2C28]">Reflexiones</span>
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             onClick={() => router.push('/calendario')}
-            className="flex flex-col items-center justify-center gap-3 p-5 rounded-xl bg-white shadow-lg hover:scale-105 transition-transform active:scale-95"
+            whileHover={{ scale: 1.05, y: -4 }}
+            whileTap={{ scale: 0.95 }}
+            className="flex flex-col items-center justify-center gap-3 p-5 rounded-2xl backdrop-blur-xl border border-white/20 transition-all duration-300"
+            style={{
+              background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.6) 100%)',
+              boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.1), inset 0 1px 1px rgba(255, 255, 255, 0.5)',
+            }}
           >
             <Calendar className="w-8 h-8 text-[#FF8C66]" />
             <span className="text-sm font-semibold text-[#3D2C28]">Calendario</span>
-          </button>
+          </motion.button>
         </motion.div>
 
         <motion.button
@@ -216,13 +236,26 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
           onClick={() => router.push('/respiracion')}
-          className="w-full rounded-xl bg-gradient-to-r from-[#8EB7D1] to-[#6B9B9E] p-5 text-white shadow-lg hover:scale-105 transition-transform active:scale-95"
+          whileHover={{ scale: 1.02, y: -2 }}
+          whileTap={{ scale: 0.98 }}
+          className="w-full rounded-2xl p-6 text-white shadow-2xl backdrop-blur-xl transition-all duration-300 border border-white/20"
+          style={{
+            background: 'linear-gradient(135deg, rgba(255, 218, 185, 0.7) 0%, rgba(255, 200, 169, 0.5) 100%)',
+            boxShadow: '0 8px 32px 0 rgba(255, 200, 169, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.5)',
+          }}
         >
-          <div className="flex items-center justify-center gap-3">
-            <span className="text-2xl">🌬️</span>
-            <div className="text-left">
-              <p className="font-semibold">Respiremos</p>
-              <p className="text-xs opacity-90">Tómate un respiro hoy</p>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center w-14 h-14 rounded-full bg-white/20 backdrop-blur-md border border-white/30">
+                <Wind className="w-7 h-7 text-[#FF9B7B]" />
+              </div>
+              <div className="text-left">
+                <p className="font-bold text-lg tracking-tight">Respiremos</p>
+                <p className="text-xs text-white/80">Tómate un respiro hoy</p>
+              </div>
+            </div>
+            <div className="flex items-center justify-center w-10 h-10 rounded-full bg-white/20 backdrop-blur-md border border-white/30">
+              <span className="text-lg">→</span>
             </div>
           </div>
         </motion.button>
