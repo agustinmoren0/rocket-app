@@ -11,7 +11,8 @@
       "Bash(find:*)",
       "Bash(git checkout:*)",
       "Bash(curl:*)",
-      "Read(//private/tmp/**)"
+      "Read(//private/tmp/**)",
+      "Bash(grep:*)"
     ],
     "deny": [],
     "ask": []
