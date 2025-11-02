@@ -16,7 +16,7 @@ const PHASES = [
   { type: 'exhale' as PhaseType, duration: 8000, label: 'Exhala', shortLabel: 'Exhalando', color: '#E8F0F5', bgColor: 'rgba(232, 240, 245, 0.15)' },
 ];
 
-const TOTAL_CYCLES = 3;
+const TOTAL_CYCLES = 2;
 
 export default function BreathingCircles({ isActive, onComplete }: BreathingCirclesProps) {
   const [phaseIndex, setPhaseIndex] = useState(0);
@@ -214,80 +214,87 @@ export default function BreathingCircles({ isActive, onComplete }: BreathingCirc
       {/* Contenido central - Texto y Countdown */}
       {!isPreparing && !isComplete && (
         <motion.div
-          className="relative z-10 flex flex-col items-center justify-center gap-6"
+          className="relative z-10 flex flex-col items-center justify-center w-full h-full pointer-events-none"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
-          {/* Indicador de fase - Color y nombre */}
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={phaseIndex}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4 }}
-              className="text-center"
-            >
-              {/* Badge de la fase actual */}
+          {/* Sección superior - Fase badge y nombre */}
+          <div className="absolute top-1/4 flex flex-col items-center">
+            <AnimatePresence mode="wait">
               <motion.div
-                className="inline-block px-6 py-2 rounded-full text-white font-semibold mb-4 text-lg"
-                style={{
-                  backgroundColor: currentPhase.color,
-                }}
-                animate={{
-                  opacity: [0.8, 1, 0.8],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                }}
+                key={phaseIndex}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4 }}
+                className="text-center"
               >
-                {currentPhase.shortLabel}
+                {/* Badge de la fase actual */}
+                <motion.div
+                  className="inline-block px-6 py-2 rounded-full text-white font-semibold mb-4 text-lg"
+                  style={{
+                    backgroundColor: currentPhase.color,
+                  }}
+                  animate={{
+                    opacity: [0.8, 1, 0.8],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                  }}
+                >
+                  {currentPhase.shortLabel}
+                </motion.div>
+
+                {/* Nombre de la fase grande */}
+                <motion.h2
+                  className="text-7xl font-bold text-[#3D2C28]"
+                  animate={{
+                    scale: phaseType === 'hold' ? 1.05 : 1,
+                  }}
+                  transition={{ duration: 0.3 }}
+                >
+                  {currentPhase.label}
+                </motion.h2>
               </motion.div>
-
-              {/* Nombre de la fase grande */}
-              <motion.h2
-                className="text-7xl font-bold text-[#3D2C28]"
-                animate={{
-                  scale: phaseType === 'hold' ? 1.05 : 1,
-                }}
-                transition={{ duration: 0.3 }}
-              >
-                {currentPhase.label}
-              </motion.h2>
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Contador grande y prominente - Mostrando segundos que quedan */}
-          <div className="text-9xl font-bold text-[#8EB7D1]">
-            {timeRemaining}
+            </AnimatePresence>
           </div>
 
-          {/* Barra de progreso visual - FLUIDA */}
-          <div className="flex items-center gap-2 mt-4">
-            <div className="w-48 h-1 bg-gray-300/30 rounded-full overflow-hidden">
-              <div
-                className="h-full rounded-full"
-                style={{
-                  backgroundColor: currentPhase.color,
-                  width: `${phaseProgress * 100}%`,
-                  transition: 'none', // Sin transición para máxima fluidez
-                }}
-              />
+          {/* Sección central - Contador PERFECTAMENTE CENTRADO */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-9xl font-bold text-[#8EB7D1] leading-none">
+              {timeRemaining}
             </div>
           </div>
 
-          {/* Información del ciclo con mejor visibilidad */}
-          <motion.div
-            className="mt-2 px-4 py-2 rounded-full"
-            style={{
-              backgroundColor: `${currentPhase.color}20`,
-            }}
-          >
-            <p className="text-sm font-semibold text-[#3D2C28]">
-              Ciclo {cycleCount} de {TOTAL_CYCLES}
-            </p>
-          </motion.div>
+          {/* Sección inferior - Barra y ciclo */}
+          <div className="absolute bottom-1/4 flex flex-col items-center gap-4">
+            {/* Barra de progreso visual - FLUIDA */}
+            <div className="flex items-center gap-2">
+              <div className="w-48 h-1 bg-gray-300/30 rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full"
+                  style={{
+                    backgroundColor: currentPhase.color,
+                    width: `${phaseProgress * 100}%`,
+                    transition: 'none', // Sin transición para máxima fluidez
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Información del ciclo con mejor visibilidad */}
+            <motion.div
+              className="px-4 py-2 rounded-full"
+              style={{
+                backgroundColor: `${currentPhase.color}20`,
+              }}
+            >
+              <p className="text-sm font-semibold text-[#3D2C28]">
+                Ciclo {cycleCount} de {TOTAL_CYCLES}
+              </p>
+            </motion.div>
+          </div>
         </motion.div>
       )}
 
@@ -340,10 +347,10 @@ export default function BreathingCircles({ isActive, onComplete }: BreathingCirc
               className="bg-white/80 backdrop-blur rounded-3xl p-6 mt-4"
             >
               <p className="text-sm text-[#6B9B9E]">
-                ✓ Completaste 3 ciclos de respiración completa
+                ✓ Completaste 2 ciclos de respiración completa
               </p>
               <p className="text-xs text-[#A67B6B] mt-2">
-                Sesión: ~1 minuto • Actividad registrada
+                Sesión: ~38 segundos • Actividad registrada
               </p>
             </motion.div>
           </motion.div>

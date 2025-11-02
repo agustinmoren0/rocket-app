@@ -17,8 +17,8 @@ export default function RespirationPage() {
   };
 
   const handleCompleteSession = () => {
-    // El ciclo completo de 3 respiraciones = ~19 * 3 = 57 segundos ≈ 1 minuto
-    const durationMinutes = 2; // 2 minutos estimados para la sesión completa
+    // 2 ciclos: 2 × (4s inhala + 7s mantén + 8s exhala) = 38 segundos ≈ 1 minuto
+    const durationMinutes = 1; // 1 minuto para la sesión completa de 2 ciclos
     saveBreathingActivity(durationMinutes);
     setPageState('complete');
   };
