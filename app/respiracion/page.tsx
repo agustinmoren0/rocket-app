@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { X, Volume2, VolumeX } from 'lucide-react';
+import { X } from 'lucide-react';
 import BreathingCircles from '@/components/BreathingCircles';
 
 type PageState = 'intro' | 'breathing' | 'complete';
@@ -11,12 +11,8 @@ type PageState = 'intro' | 'breathing' | 'complete';
 export default function RespirationPage() {
   const router = useRouter();
   const [pageState, setPageState] = useState<PageState>('intro');
-  const [soundEnabled, setSoundEnabled] = useState(false);
-  const [cyclesDone, setCyclesDone] = useState(0);
-  const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
 
   const handleStartBreathing = () => {
-    setSessionStartTime(new Date());
     setPageState('breathing');
   };
 
@@ -62,7 +58,7 @@ export default function RespirationPage() {
     <div className="min-h-screen bg-gradient-to-b from-[#F8FAFB] to-[#EAF0F4] pb-40">
       {/* Header con botón cerrar */}
       {pageState !== 'intro' && (
-        <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-gradient-to-b from-[#F8FAFB] to-transparent">
+        <div className="fixed top-0 left-0 right-0 z-50 flex items-center justify-start px-6 py-4 bg-gradient-to-b from-[#F8FAFB] to-transparent">
           <motion.button
             whileTap={{ scale: 0.9 }}
             onClick={() => router.back()}
@@ -70,16 +66,6 @@ export default function RespirationPage() {
           >
             <X size={24} className="text-[#3D2C28]" />
           </motion.button>
-          <button
-            onClick={() => setSoundEnabled(!soundEnabled)}
-            className="p-2 rounded-full bg-[#F3EEEA] hover:bg-white transition-colors"
-          >
-            {soundEnabled ? (
-              <Volume2 size={24} className="text-[#3D2C28]" />
-            ) : (
-              <VolumeX size={24} className="text-[#A67B6B]" />
-            )}
-          </button>
         </div>
       )}
 
