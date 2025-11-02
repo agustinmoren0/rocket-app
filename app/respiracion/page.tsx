@@ -21,10 +21,9 @@ export default function RespirationPage() {
   };
 
   const handleCompleteSession = () => {
-    if (sessionStartTime) {
-      const duration = (new Date().getTime() - sessionStartTime.getTime()) / 60000; // minutes
-      saveBreathingActivity(Math.round(duration));
-    }
+    // El ciclo completo de 3 respiraciones = ~19 * 3 = 57 segundos ≈ 1 minuto
+    const durationMinutes = 2; // 2 minutos estimados para la sesión completa
+    saveBreathingActivity(durationMinutes);
     setPageState('complete');
   };
 
@@ -184,19 +183,10 @@ export default function RespirationPage() {
           exit={{ opacity: 0 }}
           className="flex flex-col items-center justify-center min-h-screen px-6 pt-20"
         >
-          <BreathingCircles isActive={pageState === 'breathing'} />
-
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={handleCompleteSession}
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 1 }}
-            className="mt-16 px-12 py-4 bg-gradient-to-r from-[#8EB7D1] to-[#6B9B9E] text-white rounded-2xl font-bold shadow-lg hover:shadow-xl transition-shadow"
-          >
-            Listo ✓
-          </motion.button>
+          <BreathingCircles
+            isActive={pageState === 'breathing'}
+            onComplete={handleCompleteSession}
+          />
         </motion.div>
       )}
 

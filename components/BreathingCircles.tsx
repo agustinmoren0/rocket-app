@@ -1,129 +1,188 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-type Phase = 'inhale' | 'hold' | 'exhale' | 'pause';
+type PhaseType = 'inhale' | 'hold' | 'exhale';
 
 interface BreathingCirclesProps {
   isActive: boolean;
-  onPhaseChange?: (phase: Phase) => void;
+  onComplete?: () => void;
 }
 
-export default function BreathingCircles({ isActive, onPhaseChange }: BreathingCirclesProps) {
-  const [phase, setPhase] = useState<Phase>('inhale');
+const PHASES = [
+  { type: 'inhale' as PhaseType, duration: 4000, label: 'Inhala 🌿', emoji: '🌿' },
+  { type: 'hold' as PhaseType, duration: 7000, label: 'Mantén ✨', emoji: '✨' },
+  { type: 'exhala' as PhaseType, duration: 8000, label: 'Exhala 💨', emoji: '💨' },
+];
+
+const TOTAL_CYCLES = 3;
+const CYCLE_DURATION = PHASES.reduce((sum, p) => sum + p.duration, 0);
+
+export default function BreathingCircles({ isActive, onComplete }: BreathingCirclesProps) {
+  const [phaseIndex, setPhaseIndex] = useState(0);
   const [cycleCount, setCycleCount] = useState(1);
+  const [isComplete, setIsComplete] = useState(false);
 
-  const phases: { name: Phase; duration: number; label: string; scale: number; color: string }[] = [
-    { name: 'inhale', duration: 4, label: 'Inhala', scale: 1.3, color: '#8EB7D1' },
-    { name: 'hold', duration: 5, label: 'Retén el aire', scale: 1.3, color: '#CBE3EE' },
-    { name: 'exhale', duration: 6, label: 'Exhala', scale: 0.8, color: '#F8F9F7' },
-    { name: 'pause', duration: 2, label: 'Respira naturalmente', scale: 0.8, color: '#EAF0F4' },
-  ];
+  const currentPhase = PHASES[phaseIndex];
+  const phaseType = currentPhase.type;
 
+  // Sincronizar fases con timers precisos
   useEffect(() => {
-    if (!isActive) return;
+    if (!isActive || isComplete) return;
 
-    let currentPhaseIndex = 0;
-    const interval = setInterval(() => {
-      const currentPhase = phases[currentPhaseIndex];
-      setPhase(currentPhase.name);
-      onPhaseChange?.(currentPhase.name);
+    const timer = setTimeout(() => {
+      // Avanzar a siguiente fase
+      const nextPhaseIndex = (phaseIndex + 1) % PHASES.length;
+      setPhaseIndex(nextPhaseIndex);
 
-      // Cambiar a siguiente fase después de su duración
-      setTimeout(() => {
-        currentPhaseIndex++;
-        if (currentPhaseIndex >= phases.length) {
-          currentPhaseIndex = 0;
-          setCycleCount((prev) => prev + 1);
+      // Si completamos un ciclo
+      if (nextPhaseIndex === 0) {
+        const nextCycleCount = cycleCount + 1;
+        setCycleCount(nextCycleCount);
+
+        // Si completamos todos los ciclos
+        if (nextCycleCount > TOTAL_CYCLES) {
+          setIsComplete(true);
+          onComplete?.();
         }
-      }, currentPhase.duration * 1000);
-    }, 17); // 60fps
+      }
+    }, currentPhase.duration);
 
-    return () => clearInterval(interval);
-  }, [isActive, onPhaseChange, phases]);
+    return () => clearTimeout(timer);
+  }, [isActive, phaseIndex, cycleCount, isComplete, currentPhase.duration, onComplete]);
 
-  const currentPhaseData = phases.find((p) => p.name === phase);
+  // Calcular escala según fase
+  const getScale = () => {
+    if (phaseType === 'inhale') return 1.4;
+    if (phaseType === 'exhale') return 0.9;
+    return 1.1;
+  };
+
+  // Calcular opacidad según fase
+  const getOpacity = () => {
+    if (phaseType === 'hold') return 0.8;
+    return 0.5;
+  };
+
+  // Calcular progreso visual (círculos indicadores)
+  const getTotalProgress = () => {
+    return (cycleCount - 1) * PHASES.length + phaseIndex + 1;
+  };
+
+  const totalSteps = TOTAL_CYCLES * PHASES.length;
 
   return (
-    <div className="relative flex flex-col items-center justify-center w-full h-full min-h-[400px]">
-      {/* Círculos animados */}
-      <div className="relative w-48 h-48 flex items-center justify-center">
-        {/* Círculo exterior (capa 3) */}
-        <motion.div
-          animate={{
-            scale: phase === 'inhale' ? 1.3 : phase === 'exhale' ? 0.8 : 1,
-            opacity: phase === 'hold' ? 0.7 : 0.5,
-          }}
-          transition={{ duration: phases[phases.findIndex((p) => p.name === phase)].duration, ease: 'easeInOut' }}
-          className="absolute w-48 h-48 rounded-full border-4 border-opacity-30"
-          style={{ borderColor: currentPhaseData?.color }}
-        />
-
-        {/* Círculo medio (capa 2) */}
-        <motion.div
-          animate={{
-            scale: phase === 'inhale' ? 1.2 : phase === 'exhale' ? 0.85 : 1,
-            opacity: phase === 'hold' ? 0.6 : 0.4,
-          }}
-          transition={{ duration: phases[phases.findIndex((p) => p.name === phase)].duration, ease: 'easeInOut' }}
-          className="absolute w-36 h-36 rounded-full border-3 border-opacity-40"
-          style={{ borderColor: currentPhaseData?.color }}
-        />
-
-        {/* Círculo interior (capa 1) */}
-        <motion.div
-          animate={{
-            scale: phase === 'inhale' ? 1.1 : phase === 'exhale' ? 0.9 : 1,
-            opacity: phase === 'hold' ? 0.5 : 0.3,
-          }}
-          transition={{ duration: phases[phases.findIndex((p) => p.name === phase)].duration, ease: 'easeInOut' }}
-          className="absolute w-24 h-24 rounded-full border-2 border-opacity-50"
-          style={{ borderColor: currentPhaseData?.color }}
-        />
-
-        {/* Punto central */}
-        <motion.div
-          animate={{
-            scale: phase === 'hold' ? 1.1 : 0.9,
-            opacity: phase === 'hold' ? 1 : 0.6,
-          }}
-          transition={{ duration: 0.3 }}
-          className="absolute w-2 h-2 rounded-full"
-          style={{ backgroundColor: currentPhaseData?.color }}
-        />
-      </div>
-
-      {/* Texto guía */}
-      <motion.div
-        key={phase}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: -10 }}
-        transition={{ duration: 0.3 }}
-        className="mt-12 text-center"
-      >
-        <h2 className="text-3xl font-bold text-[#3D2C28] mb-2">{currentPhaseData?.label}</h2>
-        <p className="text-sm text-[#6B9B9E] mb-6">Respiración {cycleCount}</p>
-      </motion.div>
-
-      {/* Indicador de progreso visual */}
-      <div className="mt-8 flex gap-2">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <motion.div
-            key={i}
-            animate={{
-              scale: i < cycleCount ? 1 : 0.8,
-              opacity: i < cycleCount ? 1 : 0.3,
-            }}
-            transition={{ duration: 0.3 }}
-            className="w-2 h-2 rounded-full"
+    <div className="relative flex flex-col items-center justify-center w-full min-h-[500px] px-6">
+      {!isComplete ? (
+        <>
+          {/* Fondo con degradado suave */}
+          <div className="absolute inset-0 -z-10 rounded-3xl"
             style={{
-              backgroundColor: i < cycleCount ? currentPhaseData?.color : '#D4D4D4',
+              background: 'radial-gradient(circle at center, #F5FAFB 0%, #E9F1F5 100%)',
             }}
           />
-        ))}
-      </div>
+
+          {/* Contenedor de círculos */}
+          <div className="relative w-64 h-64 flex items-center justify-center mb-8">
+            {/* Tres círculos concéntricos con leve offset de delay */}
+            {[0, 1, 2].map((i) => (
+              <motion.div
+                key={i}
+                animate={{
+                  scale: phaseType === 'inhale' ? 1.2 + i * 0.1 : phaseType === 'exhale' ? 0.9 - i * 0.05 : 1 + i * 0.05,
+                  opacity: 0.3 + i * 0.2,
+                }}
+                transition={{
+                  duration: currentPhase.duration / 1000,
+                  ease: 'easeInOut',
+                  delay: i * 0.1,
+                }}
+                className="absolute rounded-full border-2"
+                style={{
+                  width: `${160 - i * 40}px`,
+                  height: `${160 - i * 40}px`,
+                  borderColor: '#A7C3CF',
+                }}
+              />
+            ))}
+
+            {/* Punto central que brilla */}
+            <motion.div
+              animate={{
+                scale: phaseType === 'hold' ? 1.2 : 0.8,
+                opacity: phaseType === 'hold' ? 1 : 0.4,
+              }}
+              transition={{
+                duration: currentPhase.duration / 1000,
+                ease: 'easeInOut',
+              }}
+              className="absolute w-3 h-3 rounded-full"
+              style={{ backgroundColor: '#8EB7D1' }}
+            />
+          </div>
+
+          {/* Texto guía sincronizado */}
+          <div className="text-center mb-12">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={phaseIndex}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4 }}
+                className="flex flex-col items-center gap-2"
+              >
+                <div className="text-5xl">{currentPhase.emoji}</div>
+                <h2 className="text-4xl font-semibold text-[#3D2C28]">
+                  {currentPhase.label.split(' ')[0]}
+                </h2>
+                <p className="text-sm text-[#6B9B9E] mt-2">
+                  Ciclo {cycleCount} de {TOTAL_CYCLES}
+                </p>
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Indicador de progreso */}
+          <div className="flex gap-1.5 flex-wrap justify-center">
+            {Array.from({ length: totalSteps }).map((_, i) => (
+              <motion.div
+                key={i}
+                animate={{
+                  scale: i < getTotalProgress() ? 1 : 0.7,
+                  opacity: i < getTotalProgress() ? 1 : 0.2,
+                }}
+                transition={{ duration: 0.3 }}
+                className="w-2 h-2 rounded-full"
+                style={{
+                  backgroundColor: i < getTotalProgress() ? '#8EB7D1' : '#D4D4D4',
+                }}
+              />
+            ))}
+          </div>
+
+          {/* Timer visual */}
+          <div className="mt-12 text-center">
+            <p className="text-sm text-[#6B9B9E]">
+              {Math.ceil(currentPhase.duration / 1000)} segundos
+            </p>
+          </div>
+        </>
+      ) : (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          className="text-center"
+        >
+          <div className="text-6xl mb-4">✨</div>
+          <h2 className="text-3xl font-bold text-[#3D2C28] mb-2">¡Bien hecho!</h2>
+          <p className="text-[#6B9B9E] text-lg">
+            Tu cuerpo y mente están en calma
+          </p>
+        </motion.div>
+      )}
     </div>
   );
 }
