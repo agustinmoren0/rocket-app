@@ -340,8 +340,13 @@ export default function PerfilPage() {
 
   function handleDeleteData() {
     clearAllData();
-    showToast('Datos eliminados', 'success');
-    setTimeout(() => router.replace('/onboarding'), 1000);
+    // Reset username context to default
+    setUsername('Usuario');
+    showToast('Todos tus datos han sido eliminados', 'success');
+    // Redirect to onboarding with a slight delay to allow toast to show
+    setTimeout(() => {
+      router.replace('/onboarding');
+    }, 1200);
   }
 
   return (

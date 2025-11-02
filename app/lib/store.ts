@@ -350,7 +350,43 @@ export function setUserName(name: string) {
 // Borrar todos los datos
 export function clearAllData() {
   if (typeof window === 'undefined') return;
-  localStorage.removeItem(STORAGE_KEY);
+
+  // Lista completa de todas las claves de localStorage que usa HABIKA
+  const keysToRemove = [
+    // Main storage
+    STORAGE_KEY,
+    // User data
+    'habika_username',
+    // Activities
+    'habika_activities',
+    'habika_activities_today',
+    // Habits
+    'habika_custom_habits',
+    'habika_completions',
+    'habika_streaks',
+    // Reflections
+    'habika_reflections',
+    // Cycle data
+    'habika_cycle_data',
+    'habika_period_history',
+    // Favorites
+    'habika_favorite_pages',
+    // Calendar data (pattern: habika_calendar_YYYY-MM-DD)
+    'habika_calendar',
+  ];
+
+  // Remove all known keys
+  keysToRemove.forEach(key => {
+    localStorage.removeItem(key);
+  });
+
+  // Also remove all dynamic calendar keys (habika_calendar_YYYY-MM-DD pattern)
+  const allKeys = Object.keys(localStorage);
+  allKeys.forEach(key => {
+    if (key.startsWith('habika_calendar_')) {
+      localStorage.removeItem(key);
+    }
+  });
 }
 
 // ==========================================
