@@ -18,7 +18,7 @@ export default function TopBar() {
   if (pathname === '/app/onboarding') return null;
 
   return (
-    <div className="hidden lg:block fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-b border-slate-200 z-30">
+    <div className="hidden lg:block fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-sm border-b border-slate-200 z-30">
       <div className="flex items-center justify-between px-6 h-16">
         {/* Logo/Brand */}
         <div className="flex items-center gap-3">

@@ -236,7 +236,7 @@ export default function HabitosPage() {
 
       <div className="fixed bottom-20 left-0 right-0 px-6 z-10">
         <button
-          onClick={() => router.push('/biblioteca')}
+          onClick={() => router.push('/app/biblioteca')}
           className="w-full bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white py-4 rounded-full font-semibold shadow-lg flex items-center justify-center gap-2"
         >
           <Plus className="w-5 h-5" />

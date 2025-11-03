@@ -384,7 +384,7 @@ export default function ActividadesPage() {
                   </div>
                   <p className="text-[#A67B6B] mb-4">No tienes hábitos activos</p>
                   <button
-                    onClick={() => router.push('/biblioteca')}
+                    onClick={() => router.push('/app/biblioteca')}
                     className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white rounded-full font-semibold shadow-md"
                   >
                     <Plus className="w-5 h-5" />

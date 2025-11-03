@@ -345,7 +345,7 @@ export default function PerfilPage() {
     showToast('Todos tus datos han sido eliminados', 'success');
     // Redirect to onboarding with a slight delay to allow toast to show
     setTimeout(() => {
-      router.replace('/onboarding');
+      router.replace('/app/onboarding');
     }, 1200);
   }
 
@@ -651,7 +651,7 @@ export default function PerfilPage() {
           whileTap={{ scale: 0.995 }}
         >
           <Link
-            href="/"
+            href="/app"
             className="block w-full h-12 rounded-2xl bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white font-medium flex items-center justify-center shadow-md hover:shadow-lg transition-all"
           >
             Volver al inicio
