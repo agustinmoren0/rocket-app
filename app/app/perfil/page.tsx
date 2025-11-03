@@ -517,31 +517,48 @@ export default function PerfilPage() {
             Si instalaste HABIKA como PWA, usá esto para obtener la última versión y limpiar la caché.
           </p>
           <button
-            onClick={() => {
-              showToast('Limpiando caché y recargando...', 'info');
+            onClick={async () => {
+              showToast('🔄 Limpiando caché...', 'info');
+              console.log('🔄 Starting cache cleanup and SW unregistration...');
 
-              // Clear all caches
-              if ('caches' in window) {
-                caches.keys().then((cacheNames) => {
-                  cacheNames.forEach((cacheName) => {
-                    caches.delete(cacheName);
-                  });
-                });
+              try {
+                // Clear all caches - wait for completion
+                if ('caches' in window) {
+                  const cacheNames = await caches.keys();
+                  console.log(`📦 Found ${cacheNames.length} caches:`, cacheNames);
+                  await Promise.all(
+                    cacheNames.map((cacheName) => {
+                      console.log(`🗑️ Deleting cache: ${cacheName}`);
+                      return caches.delete(cacheName);
+                    })
+                  );
+                  console.log('✅ All caches cleared');
+                }
+
+                // Unregister all service workers - wait for completion
+                if ('serviceWorker' in navigator) {
+                  const registrations = await navigator.serviceWorker.getRegistrations();
+                  console.log(`⚙️ Found ${registrations.length} service workers`);
+                  await Promise.all(
+                    registrations.map((registration) => {
+                      console.log(`🛑 Unregistering SW: ${registration.scope}`);
+                      return registration.unregister();
+                    })
+                  );
+                  console.log('✅ All service workers unregistered');
+                }
+
+                showToast('✅ Caché limpiado. Recargando...', 'success');
+                console.log('✅ Cache cleanup complete. Reloading page...');
+
+                // Reload after everything is done
+                setTimeout(() => {
+                  window.location.href = window.location.href;
+                }, 1500);
+              } catch (error) {
+                console.error('❌ Error during cache cleanup:', error);
+                showToast('❌ Error al limpiar caché. Intenta de nuevo.', 'error');
               }
-
-              // Unregister all service workers
-              if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistrations().then((registrations) => {
-                  registrations.forEach((registration) => {
-                    registration.unregister();
-                  });
-                });
-              }
-
-              // Hard refresh after cleanup
-              setTimeout(() => {
-                window.location.href = window.location.href;
-              }, 800);
             }}
             className="w-full h-10 rounded-xl bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white text-sm font-medium hover:shadow-md transition-shadow"
           >
