@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { ChevronDown, ChevronRight, Plus, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LUCIDE_ICONS } from '../utils/icons';
+import { syncHabitToCalendar, removeHabitFromCalendar } from '@/app/lib/store';
 
 const HABIT_LIBRARY_FORMAR = {
   fisica: {
@@ -289,16 +290,22 @@ function CreateHabitModal({ editingHabit, onClose, onSuccess }: any) {
           ...habits[index],
           ...formData,
         };
+        // Re-sync hábito actualizado al calendario
+        removeHabitFromCalendar(editingHabit.id);
+        syncHabitToCalendar(habits[index]);
       }
     } else {
       // Crear nuevo hábito
-      habits.push({
+      const newHabit = {
         id: `habit_${Date.now()}`,
         ...formData,
         status: 'active',
         createdAt: new Date().toISOString(),
         completedDates: [],
-      });
+      };
+      habits.push(newHabit);
+      // Sincronizar nuevo hábito al calendario
+      syncHabitToCalendar(newHabit);
     }
 
     localStorage.setItem('habika_custom_habits', JSON.stringify(habits));

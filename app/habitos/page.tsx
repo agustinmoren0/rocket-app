@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion, useMotionValue, PanInfo } from 'framer-motion';
 import { Plus, Play, Pause, Edit2, Trash2, AlertCircle } from 'lucide-react';
 import { LUCIDE_ICONS } from '../utils/icons';
+import { removeHabitFromCalendar, syncHabitToCalendar } from '@/app/lib/store';
 
 export default function HabitosPage() {
   const router = useRouter();
@@ -85,6 +86,18 @@ export default function HabitosPage() {
 
     setHabits(updatedHabits);
     localStorage.setItem('habika_custom_habits', JSON.stringify(updatedHabits));
+
+    // Sincronizar cambio de estado en el calendario
+    const updatedHabit = updatedHabits.find(h => h.id === confirmAction.habitId);
+    if (updatedHabit?.status === 'active') {
+      // Si se reactivó, re-sincronizar al calendario
+      removeHabitFromCalendar(confirmAction.habitId);
+      syncHabitToCalendar(updatedHabit);
+    } else {
+      // Si se pausó, remover del calendario
+      removeHabitFromCalendar(confirmAction.habitId);
+    }
+
     setConfirmAction(null);
   };
 
@@ -98,9 +111,12 @@ export default function HabitosPage() {
   };
 
   const confirmDelete = () => {
+    const habitToDelete = habits.find(h => h.id === confirmAction.habitId);
     const updatedHabits = habits.filter(h => h.id !== confirmAction.habitId);
     setHabits(updatedHabits);
     localStorage.setItem('habika_custom_habits', JSON.stringify(updatedHabits));
+    // Remover hábito del calendario
+    removeHabitFromCalendar(confirmAction.habitId);
     setConfirmAction(null);
   };
 
@@ -114,6 +130,9 @@ export default function HabitosPage() {
     );
     setHabits(updatedHabits);
     localStorage.setItem('habika_custom_habits', JSON.stringify(updatedHabits));
+    // Re-sincronizar hábito actualizado al calendario
+    removeHabitFromCalendar(updatedHabit.id);
+    syncHabitToCalendar(updatedHabit);
     setEditingHabit(null);
   };
 

@@ -390,6 +390,84 @@ export function clearAllData() {
 }
 
 // ==========================================
+// SINCRONIZACIÓN CON CALENDARIO
+// ==========================================
+
+export function syncHabitToCalendar(habit: any): void {
+  if (typeof window === 'undefined') return;
+
+  try {
+    const calendar = JSON.parse(localStorage.getItem('habika_calendar') || '{}');
+    const today = new Date();
+
+    // Sincrónizar hábito para los próximos 30 días basado en su frecuencia
+    for (let i = 0; i < 30; i++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() + i);
+      const dateStr = date.toISOString().split('T')[0];
+
+      let shouldAddHabit = false;
+
+      if (habit.frequency === 'diario' || habit.frequency === 'daily') {
+        shouldAddHabit = true;
+      } else if (habit.frequency === 'semanal' || habit.frequency === 'weekly') {
+        // Verificar si el día está en daysOfWeek (0=lunes, 6=domingo)
+        const dayOfWeek = date.getDay();
+        const mondayAdjustedDay = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Convertir a lunes=0
+        shouldAddHabit = habit.daysOfWeek?.includes(mondayAdjustedDay) || habit.selectedDays?.includes(mondayAdjustedDay);
+      } else if (habit.frequency === 'mensual' || habit.frequency === 'monthly') {
+        // Verificar si la fecha está en selectedDates
+        const dayOfMonth = date.getDate();
+        shouldAddHabit = habit.selectedDates?.includes(dayOfMonth);
+      }
+
+      if (shouldAddHabit) {
+        if (!calendar[dateStr]) {
+          calendar[dateStr] = { activities: [], habits: [] };
+        }
+        if (!calendar[dateStr].habits) {
+          calendar[dateStr].habits = [];
+        }
+
+        // Evitar duplicados
+        const habitExists = calendar[dateStr].habits.some((h: any) => h.id === habit.id);
+        if (!habitExists) {
+          calendar[dateStr].habits.push({
+            id: habit.id,
+            name: habit.name,
+            duration: habit.minutes || habit.duration || 20,
+            color: habit.color || '#FFC0A9',
+            timestamp: new Date().toISOString(),
+          });
+        }
+      }
+    }
+
+    localStorage.setItem('habika_calendar', JSON.stringify(calendar));
+  } catch (error) {
+    console.error('❌ Error syncing habit to calendar:', error);
+  }
+}
+
+export function removeHabitFromCalendar(habitId: string): void {
+  if (typeof window === 'undefined') return;
+
+  try {
+    const calendar = JSON.parse(localStorage.getItem('habika_calendar') || '{}');
+
+    Object.keys(calendar).forEach(dateStr => {
+      if (calendar[dateStr].habits) {
+        calendar[dateStr].habits = calendar[dateStr].habits.filter((h: any) => h.id !== habitId);
+      }
+    });
+
+    localStorage.setItem('habika_calendar', JSON.stringify(calendar));
+  } catch (error) {
+    console.error('❌ Error removing habit from calendar:', error);
+  }
+}
+
+// ==========================================
 // HÁBITOS PERSONALIZADOS
 // ==========================================
 
