@@ -213,20 +213,26 @@ export default function BibliotecaPage() {
         </button>
       </div>
 
-      {showCreateModal && (
-        <CreateHabitModal
-          editingHabit={editingHabit}
-          onClose={() => {
-            setShowCreateModal(false);
-            setEditingHabit(null);
-          }}
-          onSuccess={() => {
-            setShowCreateModal(false);
-            setEditingHabit(null);
-            router.push('/app/habitos');
-          }}
-        />
-      )}
+      <AnimatePresence mode="wait">
+        {showCreateModal && (
+          <CreateHabitModal
+            editingHabit={editingHabit}
+            onClose={() => {
+              setShowCreateModal(false);
+              setEditingHabit(null);
+            }}
+            onSuccess={() => {
+              console.log('🎯 onSuccess called - closing modal and navigating...');
+              setShowCreateModal(false);
+              setEditingHabit(null);
+
+              // Asegurar navegación inmediata
+              console.log('→ Pushing to /app/habitos...');
+              router.push('/app/habitos');
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -272,7 +278,7 @@ function CreateHabitModal({ editingHabit, onClose, onSuccess }: any) {
   const WEEKDAYS = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
   const MONTH_DATES = Array.from({ length: 31 }, (_, i) => i + 1);
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!formData.name.trim()) {
       alert('Ingresa un nombre para el hábito');
       return;
@@ -294,8 +300,7 @@ function CreateHabitModal({ editingHabit, onClose, onSuccess }: any) {
             removeHabitFromCalendar(editingHabit.id);
             syncHabitToCalendar(habits[index]);
           } catch (syncError) {
-            console.error('Error syncing habit:', syncError);
-            // Continue anyway, the habit will be saved even if sync fails
+            console.warn('⚠️ Sync warning (habit will still be saved):', syncError);
           }
         }
       } else {
@@ -308,19 +313,20 @@ function CreateHabitModal({ editingHabit, onClose, onSuccess }: any) {
           completedDates: [],
         };
         habits.push(newHabit);
+        console.log('✅ Habit created:', newHabit);
         // Sincronizar nuevo hábito al calendario
         try {
           syncHabitToCalendar(newHabit);
         } catch (syncError) {
-          console.error('Error syncing habit:', syncError);
-          // Continue anyway, the habit will be saved even if sync fails
+          console.warn('⚠️ Sync warning (habit will still be saved):', syncError);
         }
       }
 
       localStorage.setItem('habika_custom_habits', JSON.stringify(habits));
+      console.log('💾 Saved to localStorage, calling onSuccess()...');
       onSuccess();
     } catch (error) {
-      console.error('Error saving habit:', error);
+      console.error('❌ Error saving habit:', error);
       alert('Error al guardar el hábito. Por favor intenta de nuevo.');
     }
   };
@@ -331,12 +337,16 @@ function CreateHabitModal({ editingHabit, onClose, onSuccess }: any) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.15 }}
       className="fixed inset-0 bg-black/50 z-50 flex items-end"
       onClick={onClose}
     >
       <motion.div
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
+        exit={{ y: '100%' }}
+        transition={{ duration: 0.15 }}
         onClick={(e) => e.stopPropagation()}
         className="w-full bg-white rounded-t-3xl max-h-[85vh] overflow-hidden flex flex-col"
       >

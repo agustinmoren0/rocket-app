@@ -29,6 +29,23 @@
 }
 
 @layer utilities {
+  /* Safe area inset for notches */
+  .pt-safe {
+    padding-top: max(0.75rem, env(safe-area-inset-top));
+  }
+
+  .pb-safe {
+    padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+  }
+
+  .pl-safe {
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+  }
+
+  .pr-safe {
+    padding-right: max(0.75rem, env(safe-area-inset-right));
+  }
+
   /* Glassmorphism exacto de Stitch */
   .glass-stitch {
     background: rgba(255, 255, 255, 0.6);
