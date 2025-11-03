@@ -45,43 +45,81 @@ export default function CalendarioPage() {
     return { isPeriod, isFertile, cycleDay };
   }, [cycleData, currentDate]);
 
-  // Función optimizada para cargar eventos
+  // Función optimizada para cargar eventos de toda la semana/mes
   const loadEventsFromCalendar = useCallback(() => {
     try {
       const calendar = JSON.parse(localStorage.getItem('habika_calendar') || '{}');
-      const dateStr = currentDate.toISOString().split('T')[0];
-      const dayData = calendar[dateStr];
+      const allEvents: Event[] = [];
 
-      if (dayData && (dayData.activities || dayData.habits)) {
-        const loadedActivities = (dayData.activities || []).map((act: any) => ({
-          id: act.id,
-          hour: new Date(act.timestamp).getHours(),
-          day: currentDate.getDate(),
-          title: act.name,
-          duration: act.unit === 'hora(s)' ? act.duration * 60 : act.duration,
-          color: act.color || '#FF99AC',
-          type: 'activity' as const
-        }));
+      // Determinar qué fechas cargar según la vista
+      let datesToLoad: Date[] = [];
 
-        const loadedHabits = (dayData.habits || []).map((hab: any) => ({
-          id: hab.id,
-          hour: new Date(hab.timestamp || new Date()).getHours(),
-          day: currentDate.getDate(),
-          title: hab.name,
-          duration: hab.duration || 20,
-          color: hab.color || '#FFC0A9',
-          type: 'habit' as const
-        }));
-
-        setEvents([...loadedActivities, ...loadedHabits]);
-      } else {
-        setEvents([]);
+      if (view === 'day') {
+        // Vista diaria: solo el día actual
+        datesToLoad = [currentDate];
+      } else if (view === 'week') {
+        // Vista semanal: toda la semana
+        const startOfWeek = new Date(currentDate);
+        startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
+        for (let i = 0; i < 7; i++) {
+          const date = new Date(startOfWeek);
+          date.setDate(startOfWeek.getDate() + i);
+          datesToLoad.push(date);
+        }
+      } else if (view === 'month') {
+        // Vista mensual: todo el mes
+        const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+        for (let d = firstDay.getDate(); d <= lastDay.getDate(); d++) {
+          const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), d);
+          datesToLoad.push(date);
+        }
       }
+
+      // Cargar eventos para todas las fechas
+      datesToLoad.forEach(date => {
+        const dateStr = date.toISOString().split('T')[0];
+        const dayData = calendar[dateStr];
+
+        if (dayData) {
+          // Cargar actividades
+          if (dayData.activities) {
+            dayData.activities.forEach((act: any) => {
+              allEvents.push({
+                id: act.id,
+                hour: new Date(act.timestamp).getHours(),
+                day: date.getDate(),
+                title: act.name,
+                duration: act.unit === 'hora(s)' ? act.duration * 60 : act.duration,
+                color: act.color || '#FF99AC',
+                type: 'activity' as const
+              });
+            });
+          }
+
+          // Cargar hábitos
+          if (dayData.habits) {
+            dayData.habits.forEach((hab: any) => {
+              allEvents.push({
+                id: hab.id,
+                hour: new Date(hab.timestamp || new Date()).getHours(),
+                day: date.getDate(),
+                title: hab.name,
+                duration: hab.duration || 20,
+                color: hab.color || '#FFC0A9',
+                type: 'habit' as const
+              });
+            });
+          }
+        }
+      });
+
+      setEvents(allEvents);
     } catch (error) {
       console.error('❌ Error al cargar eventos:', error);
       setEvents([]);
     }
-  }, [currentDate]);
+  }, [currentDate, view]);
 
   // Load events from localStorage con optimización
   useEffect(() => {
