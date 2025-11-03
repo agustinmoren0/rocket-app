@@ -1,5 +1,17 @@
 @import "tailwindcss";
 
+/* Accessibility: Reduce motion for devices with accessibility settings */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 @layer base {
   html {
     /* Prevenir zoom en doble tap */
@@ -148,9 +160,10 @@ body {
   animation: pulse 2s ease-in-out infinite;
 }
 
-/* Transiciones suaves globales - Removida para evitar layout reflows */
+/* Botones - transiciones optimizadas para no causar flicker */
 button {
-  transition: all 0.3s ease;
+  transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.15s ease;
+  will-change: transform;
 }
 
 button:active {
@@ -305,16 +318,14 @@ main {
   border-color: var(--indigo) !important;
 }
 
-/* Transiciones suaves */
-body,
-main,
-.bg-white,
-.bg-slate-50,
-.bg-slate-100,
+/* Transiciones optimizadas - solo donde sea necesario */
 input,
 textarea {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
+
+/* Remover transiciones globales de body/main para evitar flicker */
+/* body y main ya tienen background especificado sin transición */
 
 /* ============================================
    DESKTOP RESPONSIVE - Optimizaciones para lg+

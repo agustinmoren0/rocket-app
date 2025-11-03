@@ -37,11 +37,11 @@ export default function ChangeNameModal({ isOpen, onClose, currentName }: Props)
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-6 animate-fadeIn"
+      className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 px-6"
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-3xl p-6 w-full max-w-sm animate-scaleIn"
+        className="bg-white rounded-3xl p-6 w-full max-w-sm"
         onClick={(e) => e.stopPropagation()}
       >
         <h2 className="text-2xl font-bold text-slate-800 mb-4">

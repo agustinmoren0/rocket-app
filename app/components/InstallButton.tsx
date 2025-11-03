@@ -79,11 +79,11 @@ export default function InstallButton() {
       {/* Modal iOS */}
       {showInstructions && isIOS && (
         <div
-          className="fixed inset-0 bg-black/60 flex items-end z-50 animate-fadeIn"
+          className="fixed inset-0 bg-black/60 flex items-end z-50"
           onClick={() => setShowInstructions(false)}
         >
           <div
-            className="bg-white rounded-t-3xl p-6 w-full animate-slideUp"
+            className="bg-white rounded-t-3xl p-6 w-full"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="w-12 h-1 bg-slate-300 rounded-full mx-auto mb-6" />

@@ -253,31 +253,35 @@ export default function CalendarioPage() {
             className="bg-white rounded-2xl p-6 border border-[#FFB4A8]/30 shadow-sm space-y-2"
           >
             {Array.from({ length: 24 }).map((_, hour) => {
-              const event = events.find(e => e.hour === hour && e.day === selectedDay);
+              // Mostrar MÚLTIPLES eventos en el mismo horario (como Google Calendar)
+              const hourEvents = events.filter(e => e.hour === hour && e.day === selectedDay);
               return (
                 <div key={hour} className="flex items-start gap-3 py-3 border-b border-[#FFB4A8]/20 last:border-0">
                   <span className="text-sm text-[#A67B6B] w-16 font-medium">
                     {hour.toString().padStart(2, '0')}:00
                   </span>
-                  <div className="flex-1">
-                    {event ? (
-                      <motion.button
-                        whileHover={{ scale: 1.01 }}
-                        whileTap={{ scale: 0.99 }}
-                        onClick={() => setSelectedEvent(event)}
-                        className="w-full p-3 rounded-xl text-white text-left transition-all"
-                        style={{ backgroundColor: event.color }}
-                      >
-                        <div className="flex items-center gap-2">
-                          {event.type === 'habit' ? (
-                            <CheckCircle2 size={16} />
-                          ) : (
-                            <Activity size={16} />
-                          )}
-                          <p className="font-medium flex-1">{event.title}</p>
-                        </div>
-                        <p className="text-xs opacity-80 ml-6">{event.duration} min</p>
-                      </motion.button>
+                  <div className="flex-1 space-y-2">
+                    {hourEvents.length > 0 ? (
+                      <div className={`grid gap-2 ${hourEvents.length > 1 ? 'grid-cols-' + Math.min(hourEvents.length, 2) : ''}`}>
+                        {hourEvents.map((event) => (
+                          <button
+                            key={event.id}
+                            onClick={() => setSelectedEvent(event)}
+                            className="p-3 rounded-xl text-white text-left transition-all hover:opacity-90 active:scale-[0.98]"
+                            style={{ backgroundColor: event.color }}
+                          >
+                            <div className="flex items-center gap-2">
+                              {event.type === 'habit' ? (
+                                <CheckCircle2 size={14} className="shrink-0" />
+                              ) : (
+                                <Activity size={14} className="shrink-0" />
+                              )}
+                              <p className="font-medium text-sm flex-1 truncate">{event.title}</p>
+                            </div>
+                            <p className="text-xs opacity-80 ml-6">{event.duration} min</p>
+                          </button>
+                        ))}
+                      </div>
                     ) : (
                       <div className="h-2" />
                     )}
