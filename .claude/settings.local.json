@@ -15,7 +15,12 @@
       "Bash(grep:*)",
       "Bash(cat:*)",
       "Bash(node /tmp/test-habits.js:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(awk:*)",
+      "Bash(__NEW_LINE__ echo \"=== Verifying updated imports in calendario/page.tsx ===\" head -15 /Users/agustinmoren0/rocket-app/app/app/calendario/page.tsx)",
+      "Bash(__NEW_LINE__ find /Users/agustinmoren0/rocket-app -name \"HabitCheckbox*\" -type f)",
+      "Bash(__NEW_LINE__ cd /Users/agustinmoren0/rocket-app git status --short)",
+      "Bash(__NEW_LINE__ git add -A)"
     ],
     "deny": [],
     "ask": []
