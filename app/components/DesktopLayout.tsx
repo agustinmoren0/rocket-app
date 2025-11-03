@@ -16,7 +16,7 @@ export default function DesktopLayout({ children }: { children: React.ReactNode 
       <DesktopSidebar />
 
       {/* Main Content con margin para desktop */}
-      <div className="lg:ml-72 min-h-screen">
+      <div className="lg:ml-72 min-h-screen pb-20 lg:pb-0">
         {children}
       </div>
 
