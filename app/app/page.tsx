@@ -149,7 +149,7 @@ export default function DashboardPage() {
         <div className="absolute top-20 -right-20 w-80 h-80 bg-[#FDF0D5]/30 rounded-full filter blur-3xl opacity-60 animate-float" style={{ animationDelay: '4s' }} />
       </div>
 
-      <header className="relative flex items-center justify-between px-6 py-4 z-10">
+      <header className="fixed top-0 left-0 right-0 flex items-center justify-between px-6 py-4 z-20 bg-gradient-to-b from-[#FFF5F0] via-[#FFF5F0] to-[#FFF5F0]/80 pt-safe lg:hidden">
         <div className="flex flex-col">
           <p className="text-[#A67B6B] text-sm leading-none">Hola, {username}</p>
           <p className="text-[#3D2C28] text-xl font-bold tracking-tight">{getGreeting()}</p>
@@ -162,7 +162,7 @@ export default function DashboardPage() {
         </button>
       </header>
 
-      <main className="relative flex-grow p-6 pt-4 space-y-6 z-10">
+      <main className="relative flex-grow p-6 pt-28 lg:pt-4 space-y-6 z-10 lg:z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

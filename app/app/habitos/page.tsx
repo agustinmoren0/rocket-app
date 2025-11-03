@@ -170,7 +170,7 @@ export default function HabitosPage() {
 
   return (
     <div className="min-h-screen bg-[#FFF5F0] pb-24">
-      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-10">
+      <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-30 lg:z-10">
         <div className="px-6 py-3 pt-safe">
           <h1 className="text-2xl font-bold text-[#3D2C28]">Mis Hábitos</h1>
         </div>

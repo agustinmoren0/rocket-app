@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
 import { completeOnboarding } from '@/app/lib/store';
 import { useTheme } from '@/app/context/ThemeContext';
 import { useUser } from '@/app/context/UserContext';
@@ -60,101 +59,11 @@ export default function OnboardingPage() {
         <div className="absolute -top-10 right-0 w-80 h-80 bg-[#FFC0A9]/30 rounded-full filter blur-3xl opacity-60 animate-float" style={{ animationDelay: '2s' }} />
         <div className="absolute top-20 -right-20 w-80 h-80 bg-[#FDF0D5]/30 rounded-full filter blur-3xl opacity-60 animate-float" style={{ animationDelay: '4s' }} />
       </div>
-      <AnimatePresence mode="wait">
-        {!showNameInput ? (
-          <motion.div
-            key={step}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2, ease: 'easeInOut' }}
-            className="w-full max-w-md relative z-10"
-          >
-            <motion.div
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.3, delay: 0.1 }}
-              className="text-8xl text-center mb-8"
-            >
-              {currentStep.emoji}
-            </motion.div>
-
-            <motion.h1
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.2 }}
-              className="text-3xl font-bold text-center text-[#3D2C28] mb-4"
-            >
-              {currentStep.title}
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="text-base text-center text-[#6B9B9E] mb-12 leading-relaxed"
-            >
-              {currentStep.description}
-            </motion.p>
-
-            <div className="flex gap-2 justify-center mb-8">
-              {steps.map((_, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.4 + i * 0.05 }}
-                  className={`h-2 rounded-full transition-all ${
-                    i === step ? 'w-8' : 'w-2'
-                  }`}
-                  style={{
-                    backgroundColor: i === step ? '#FF9B7B' : '#FFB4A8'
-                  }}
-                />
-              ))}
-            </div>
-
-            <motion.button
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleNext}
-              className="w-full h-12 rounded-2xl bg-gradient-to-r from-[#FF9B7B] to-[#FFB4A8] text-white font-semibold shadow-lg hover:shadow-xl transition-all"
-            >
-              {isLastStep ? 'Empezar' : 'Siguiente'}
-            </motion.button>
-
-            {step > 0 && (
-              <motion.button
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6 }}
-                onClick={() => setStep(step - 1)}
-                className="w-full mt-3 text-sm text-[#A67B6B] hover:text-[#6B9B9E] transition-colors"
-              >
-                Atrás
-              </motion.button>
-            )}
-          </motion.div>
-        ) : (
-          <motion.div
-            key="name-input"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
-            className="w-full max-w-md relative z-10"
-          >
-            <motion.div
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.3 }}
-              className="text-6xl text-center mb-8"
-            >
+      {showNameInput ? (
+          <div className="w-full max-w-md relative z-10">
+            <div className="text-6xl text-center mb-8">
               ✨
-            </motion.div>
+            </div>
 
             <h2 className="text-3xl font-bold text-center text-[#3D2C28] mb-3">
               ¿Cómo te llamamos?
@@ -164,10 +73,7 @@ export default function OnboardingPage() {
               Personaliza tu experiencia
             </p>
 
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.1 }}
+            <div
               className="rounded-2xl p-6 mb-6 backdrop-blur-xl border border-white/20 transition-all duration-300"
               style={{
                 background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.6) 100%)',
@@ -183,33 +89,71 @@ export default function OnboardingPage() {
                 autoFocus
                 className="w-full bg-transparent text-[#3D2C28] text-xl font-semibold placeholder-[#A67B6B]/50 focus:outline-none"
               />
-            </motion.div>
+            </div>
 
-            <motion.button
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+            <button
               onClick={handleFinish}
               disabled={!name.trim()}
               className="w-full h-12 rounded-2xl bg-gradient-to-r from-[#FF9B7B] to-[#FFB4A8] text-white font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Comenzar mi viaje
-            </motion.button>
+            </button>
 
-            <motion.button
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
+            <button
               onClick={() => setShowNameInput(false)}
               className="w-full mt-3 text-sm text-[#A67B6B] hover:text-[#6B9B9E] transition-colors"
             >
               Atrás
-            </motion.button>
-          </motion.div>
+            </button>
+          </div>
+        ) : (
+        <div
+          key={step}
+          className="w-full max-w-md relative z-10"
+        >
+          <div className="text-8xl text-center mb-8">
+            {currentStep.emoji}
+          </div>
+
+          <h1 className="text-3xl font-bold text-center text-[#3D2C28] mb-4">
+            {currentStep.title}
+          </h1>
+
+          <p className="text-base text-center text-[#6B9B9E] mb-12 leading-relaxed">
+            {currentStep.description}
+          </p>
+
+          <div className="flex gap-2 justify-center mb-8">
+            {steps.map((_, i) => (
+              <div
+                key={i}
+                className={`h-2 rounded-full transition-all ${
+                  i === step ? 'w-8' : 'w-2'
+                }`}
+                style={{
+                  backgroundColor: i === step ? '#FF9B7B' : '#FFB4A8'
+                }}
+              />
+            ))}
+          </div>
+
+          <button
+            onClick={handleNext}
+            className="w-full h-12 rounded-2xl bg-gradient-to-r from-[#FF9B7B] to-[#FFB4A8] text-white font-semibold shadow-lg hover:shadow-xl transition-all"
+          >
+            {isLastStep ? 'Empezar' : 'Siguiente'}
+          </button>
+
+          {step > 0 && (
+            <button
+              onClick={() => setStep(step - 1)}
+              className="w-full mt-3 text-sm text-[#A67B6B] hover:text-[#6B9B9E] transition-colors"
+            >
+              Atrás
+            </button>
+          )}
+        </div>
         )}
-      </AnimatePresence>
     </main>
   );
 }
