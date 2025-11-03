@@ -12,6 +12,7 @@ import OfflineIndicator from '@/app/components/OfflineIndicator';
 import QuickPeriodTracker from '@/app/components/QuickPeriodTracker';
 import TopBar from '@/app/components/TopBar';
 import DesktopLayout from '@/app/components/DesktopLayout';
+import LogViewer from '@/app/components/LogViewer';
 
 export default function AppLayout({
   children,
@@ -64,6 +65,7 @@ export default function AppLayout({
             <>
               <ToastContainer />
               <RegisterSW />
+              <LogViewer />
             </>
           )}
         </CycleProvider>
