@@ -6,7 +6,7 @@ import BottomNav from './BottomNav';
 
 export default function DesktopLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isOnboarding = pathname === '/onboarding';
+  const isOnboarding = pathname === '/app/onboarding';
 
   if (isOnboarding) return <>{children}</>;
 

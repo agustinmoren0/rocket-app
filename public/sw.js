@@ -71,26 +71,30 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Network first for pages
+  // Network first for pages with stale-while-revalidate pattern
   event.respondWith(
     fetch(request)
       .then((response) => {
         if (response && response.status === 200) {
           const responseToCache = response.clone();
           caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, responseToCache);
+            // Only cache successfully loaded pages
+            if (request.mode === 'navigate') {
+              cache.put(request, responseToCache);
+            }
           });
         }
         return response;
       })
       .catch(() => {
+        // Only return cached version if network fails
         const cached = caches.match(request);
         if (cached) {
           return cached;
         }
         // Return offline page for navigation requests
         if (request.mode === 'navigate') {
-          return caches.match('/offline');
+          return caches.match('/app/offline') || caches.match('/offline');
         }
         return null;
       })

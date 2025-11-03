@@ -169,14 +169,14 @@ export default function HabitosPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF5F0] pb-32 pt-0">
+    <div className="min-h-screen bg-[#FFF5F0] pb-24 pt-0">
       <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-10">
-        <div className="px-6 py-4">
+        <div className="px-6 py-3">
           <h1 className="text-2xl font-bold text-[#3D2C28]">Mis Hábitos</h1>
         </div>
       </header>
 
-      <div className="px-6 py-4 flex gap-3">
+      <div className="px-6 py-3 flex gap-3">
         <button
           onClick={() => setActiveTab('formar')}
           className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${
@@ -209,7 +209,7 @@ export default function HabitosPage() {
         </button>
       </div>
 
-      <div className="px-6 space-y-3 pb-6">
+      <div className="px-6 space-y-3 pb-4">
         {filteredHabits.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-[#A67B6B]">
@@ -578,7 +578,7 @@ function EditHabitModal({ habit, onSave, onClose }: any) {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto pb-6 p-6 space-y-6">
+        <div className="flex-1 overflow-y-auto pb-4 p-6 space-y-6">
           <div>
             <label className="block text-sm font-semibold text-[#3D2C28] mb-2">Nombre</label>
             <input

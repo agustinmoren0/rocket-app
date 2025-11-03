@@ -109,11 +109,7 @@ body {
   animation: pulse 2s ease-in-out infinite;
 }
 
-/* Transiciones suaves globales */
-* {
-  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
-}
-
+/* Transiciones suaves globales - Removida para evitar layout reflows */
 button {
   transition: all 0.3s ease;
 }

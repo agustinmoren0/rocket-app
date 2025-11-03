@@ -110,15 +110,15 @@ export default function BibliotecaPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF5F0] pb-32 pt-0">
+    <div className="min-h-screen bg-[#FFF5F0] pb-24 pt-0">
       <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-10">
-        <div className="px-6 py-4">
+        <div className="px-6 py-3">
           <h1 className="text-2xl font-bold text-[#3D2C28]">Elige tu próximo hábito</h1>
           <p className="text-sm text-[#A67B6B] mt-1">Explora por categoría o crea uno propio.</p>
         </div>
       </header>
 
-      <div className="px-6 py-4 flex gap-3">
+      <div className="px-6 py-3 flex gap-3">
         <button
           onClick={() => setActiveTab('formar')}
           className={`px-6 py-2.5 rounded-full text-sm font-semibold transition-all ${
@@ -141,7 +141,7 @@ export default function BibliotecaPage() {
         </button>
       </div>
 
-      <div className="px-6 space-y-3 pb-6">
+      <div className="px-6 space-y-3 pb-4">
         {Object.entries(currentLibrary).map(([categoryId, category]) => {
           const Icon = LUCIDE_ICONS[category.icon] || LUCIDE_ICONS['Star'];
           const isExpanded = expandedCategory === categoryId;
@@ -280,36 +280,51 @@ function CreateHabitModal({ editingHabit, onClose, onSuccess }: any) {
       return;
     }
 
-    const habits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
+    try {
+      const habits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
 
-    if (editingHabit && !editingHabit.isPreset) {
-      // Editar hábito existente
-      const index = habits.findIndex((h: any) => h.id === editingHabit.id);
-      if (index !== -1) {
-        habits[index] = {
-          ...habits[index],
+      if (editingHabit && !editingHabit.isPreset) {
+        // Editar hábito existente
+        const index = habits.findIndex((h: any) => h.id === editingHabit.id);
+        if (index !== -1) {
+          habits[index] = {
+            ...habits[index],
+            ...formData,
+          };
+          // Re-sync hábito actualizado al calendario
+          try {
+            removeHabitFromCalendar(editingHabit.id);
+            syncHabitToCalendar(habits[index]);
+          } catch (syncError) {
+            console.error('Error syncing habit:', syncError);
+            // Continue anyway, the habit will be saved even if sync fails
+          }
+        }
+      } else {
+        // Crear nuevo hábito
+        const newHabit = {
+          id: `habit_${Date.now()}`,
           ...formData,
+          status: 'active',
+          createdAt: new Date().toISOString(),
+          completedDates: [],
         };
-        // Re-sync hábito actualizado al calendario
-        removeHabitFromCalendar(editingHabit.id);
-        syncHabitToCalendar(habits[index]);
+        habits.push(newHabit);
+        // Sincronizar nuevo hábito al calendario
+        try {
+          syncHabitToCalendar(newHabit);
+        } catch (syncError) {
+          console.error('Error syncing habit:', syncError);
+          // Continue anyway, the habit will be saved even if sync fails
+        }
       }
-    } else {
-      // Crear nuevo hábito
-      const newHabit = {
-        id: `habit_${Date.now()}`,
-        ...formData,
-        status: 'active',
-        createdAt: new Date().toISOString(),
-        completedDates: [],
-      };
-      habits.push(newHabit);
-      // Sincronizar nuevo hábito al calendario
-      syncHabitToCalendar(newHabit);
-    }
 
-    localStorage.setItem('habika_custom_habits', JSON.stringify(habits));
-    onSuccess();
+      localStorage.setItem('habika_custom_habits', JSON.stringify(habits));
+      onSuccess();
+    } catch (error) {
+      console.error('Error saving habit:', error);
+      alert('Error al guardar el hábito. Por favor intenta de nuevo.');
+    }
   };
 
   const SelectedIcon = LUCIDE_ICONS[formData.icon] || LUCIDE_ICONS['Star'];
@@ -330,8 +345,8 @@ function CreateHabitModal({ editingHabit, onClose, onSuccess }: any) {
         className="w-full bg-white rounded-t-3xl max-h-[85vh] overflow-hidden flex flex-col"
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-100 shrink-0">
-          <button onClick={onClose} className="text-[#A67B6B] font-medium">
+        <div className="flex items-center justify-between p-3 border-b border-gray-100 shrink-0">
+          <button onClick={onClose} className="text-[#A67B6B] font-medium text-sm">
             Cancelar
           </button>
           <h2 className="text-lg font-bold text-[#3D2C28]">
@@ -347,7 +362,7 @@ function CreateHabitModal({ editingHabit, onClose, onSuccess }: any) {
         </div>
 
         {/* Contenido */}
-        <div className="flex-1 overflow-y-auto pb-28">
+        <div className="flex-1 overflow-y-auto pb-20">
           <div className="p-6 space-y-6">
 
             {/* Icono + Nombre */}
