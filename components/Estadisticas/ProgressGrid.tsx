@@ -1,17 +1,16 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { CheckCircle2, Clock, Heart, BookOpen } from 'lucide-react';
+import { CheckCircle2, Clock, TrendingUp } from 'lucide-react';
 
 interface ProgressGridProps {
   habitsCompleted: number;
   totalHabits: number;
   totalActivityHours: number;
-  meditationMinutes: number;
-  gratitudeCount: number;
+  consistencyPercent: number;
   comparison?: {
     habitsLastWeek?: number;
-    meditationDelta?: number;
+    consistencyDelta?: number;
   };
 }
 
@@ -39,11 +38,12 @@ export default function ProgressGrid({
   habitsCompleted,
   totalHabits,
   totalActivityHours,
-  meditationMinutes,
-  gratitudeCount,
+  consistencyPercent,
   comparison,
 }: ProgressGridProps) {
-  const habitsPercent = Math.round((habitsCompleted / totalHabits) * 100);
+  const habitsPercent = totalHabits > 0 ? Math.round((habitsCompleted / totalHabits) * 100) : 0;
+  const hours = Math.floor(totalActivityHours);
+  const minutes = Math.round((totalActivityHours % 1) * 60);
 
   return (
     <motion.div
@@ -62,11 +62,14 @@ export default function ProgressGrid({
         </div>
         <div className="mb-2">
           <p className="text-2xl font-bold text-[#3D2C28]">
-            {habitsCompleted}/{totalHabits}
+            {totalHabits > 0 ? `${habitsCompleted}/${totalHabits}` : '—'}
           </p>
           <p className="text-xs text-[#A67B6B]">Hábitos completados</p>
         </div>
-        {comparison?.habitsLastWeek !== undefined && (
+        {totalHabits === 0 && (
+          <p className="text-xs text-[#A67B6B]">Crea hábitos para empezar</p>
+        )}
+        {comparison?.habitsLastWeek !== undefined && totalHabits > 0 && (
           <p className="text-xs text-[#FF99AC] font-medium">
             {habitsCompleted > comparison.habitsLastWeek
               ? `+${habitsCompleted - comparison.habitsLastWeek} vs semana pasada`
@@ -80,54 +83,41 @@ export default function ProgressGrid({
         <div className="flex items-start justify-between mb-3">
           <Clock size={24} className="text-[#FF99AC] flex-shrink-0" />
           <span className="text-xs font-semibold text-[#FF99AC] bg-[#FFE8F0] px-2 py-1 rounded-full">
-            {totalActivityHours}h
+            {totalActivityHours > 0 ? `${hours}h` : '—'}
           </span>
         </div>
         <div className="mb-2">
           <p className="text-2xl font-bold text-[#3D2C28]">
-            {totalActivityHours}h {Math.round((totalActivityHours % 1) * 60)}m
+            {totalActivityHours > 0 ? `${hours}h ${minutes}m` : '—'}
           </p>
-          <p className="text-xs text-[#A67B6B]">Tiempo total activo</p>
+          <p className="text-xs text-[#A67B6B]">Tiempo activo</p>
         </div>
-        <p className="text-xs text-[#A67B6B]">En actividades registradas</p>
-      </motion.div>
-
-      {/* Meditación */}
-      <motion.div variants={itemVariants} className="bg-white rounded-2xl p-5 border border-[#FFB4A8]/30 shadow-sm">
-        <div className="flex items-start justify-between mb-3">
-          <Heart size={24} className="text-[#FF99AC] flex-shrink-0" />
-          <span className="text-xs font-semibold text-[#FF99AC] bg-[#FFE8F0] px-2 py-1 rounded-full">
-            {meditationMinutes}m
-          </span>
-        </div>
-        <div className="mb-2">
-          <p className="text-2xl font-bold text-[#3D2C28]">
-            {Math.floor(meditationMinutes / 60)}h {meditationMinutes % 60}m
-          </p>
-          <p className="text-xs text-[#A67B6B]">Meditación</p>
-        </div>
-        {comparison?.meditationDelta !== undefined && (
-          <p className="text-xs text-[#FF99AC] font-medium">
-            {comparison.meditationDelta > 0
-              ? `+${comparison.meditationDelta}m vs semana pasada`
-              : 'Sin cambios'}
-          </p>
+        {totalActivityHours === 0 && (
+          <p className="text-xs text-[#A67B6B]">Registra actividades</p>
         )}
       </motion.div>
 
-      {/* Gratitud */}
+      {/* Consistencia */}
       <motion.div variants={itemVariants} className="bg-white rounded-2xl p-5 border border-[#FFB4A8]/30 shadow-sm">
         <div className="flex items-start justify-between mb-3">
-          <BookOpen size={24} className="text-[#FF99AC] flex-shrink-0" />
+          <TrendingUp size={24} className="text-[#FF99AC] flex-shrink-0" />
           <span className="text-xs font-semibold text-[#FF99AC] bg-[#FFE8F0] px-2 py-1 rounded-full">
-            {gratitudeCount}
+            {consistencyPercent}%
           </span>
         </div>
         <div className="mb-2">
-          <p className="text-2xl font-bold text-[#3D2C28]">{gratitudeCount}</p>
-          <p className="text-xs text-[#A67B6B]">Entradas de gratitud</p>
+          <p className="text-2xl font-bold text-[#3D2C28]">
+            {consistencyPercent}%
+          </p>
+          <p className="text-xs text-[#A67B6B]">Consistencia</p>
         </div>
-        <p className="text-xs text-[#A67B6B]">Registradas</p>
+        {comparison?.consistencyDelta !== undefined && (
+          <p className="text-xs text-[#FF99AC] font-medium">
+            {comparison.consistencyDelta > 0
+              ? `+${comparison.consistencyDelta}% vs semana pasada`
+              : 'Sin cambios'}
+          </p>
+        )}
       </motion.div>
     </motion.div>
   );

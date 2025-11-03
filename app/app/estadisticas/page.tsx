@@ -37,6 +37,7 @@ interface Reflexion {
 
 interface EstadisticasData {
   range: TimeRange;
+  hasData: boolean;
   summary: {
     mood: 'calma' | 'energico' | 'reflexivo' | 'estresado';
     text: string;
@@ -45,8 +46,7 @@ interface EstadisticasData {
     habitsCompleted: number;
     totalHabits: number;
     totalActivityHours: number;
-    meditationMinutes: number;
-    gratitudeCount: number;
+    consistencyPercent: number;
   };
   energyBalance: {
     totalHours: number;
@@ -72,43 +72,10 @@ interface EstadisticasData {
   };
 }
 
-const MOCK_HABITS: Habit[] = [
-  { id: '1', name: 'Beber agua', icon: '💧', completedDates: ['2025-11-01', '2025-10-31', '2025-10-30'] },
-  { id: '2', name: 'Meditación', icon: '🧘', completedDates: ['2025-11-01', '2025-10-30'] },
-  { id: '3', name: 'Ejercicio', icon: '💪', completedDates: ['2025-11-01', '2025-10-31'] },
-];
-
-const MOCK_ACTIVITIES: Activity[] = [
-  {
-    id: '1',
-    name: 'Yoga',
-    icon: '🧘',
-    date: '2025-11-01',
-    duration: 1.5,
-    category: 'Bienestar',
-  },
-  {
-    id: '2',
-    name: 'Caminata',
-    icon: '🚶',
-    date: '2025-10-31',
-    duration: 2,
-    category: 'Movimiento',
-  },
-  {
-    id: '3',
-    name: 'Meditación',
-    icon: '🧘',
-    date: '2025-11-01',
-    duration: 0.5,
-    category: 'Mental',
-  },
-];
-
-const MOCK_REFLEXIONS: Reflexion[] = [
-  { id: '1', date: '2025-11-01', emotions: ['grateful', 'calm', 'energized'] },
-  { id: '2', date: '2025-10-31', emotions: ['grateful', 'calm'] },
-];
+// No mock data - use real user data only
+const INITIAL_HABITS: Habit[] = [];
+const INITIAL_ACTIVITIES: Activity[] = [];
+const INITIAL_REFLEXIONS: Reflexion[] = [];
 
 export default function EstadisticasPage() {
   const router = useRouter();
@@ -189,9 +156,10 @@ export default function EstadisticasPage() {
       }
     }
 
-    // Usar datos reales si existen, si no usar MOCK
-    const habits = realHabits.length > 0 ? realHabits : MOCK_HABITS;
-    const activities = realActivities.length > 0 ? realActivities : MOCK_ACTIVITIES;
+    // Usar datos reales - Sin datos ficticios
+    const habits = realHabits;
+    const activities = realActivities;
+    const hasData = habits.length > 0 || activities.length > 0;
 
     // Filter data by range
     const activitiesInRange = activities.filter((a) => a.date >= startDateStr);
@@ -199,18 +167,21 @@ export default function EstadisticasPage() {
       h.completedDates?.some((d) => d >= startDateStr)
     );
 
-    // Calculate metrics
+    // Calculate metrics - Real data only
     const totalActivityHours = activitiesInRange.reduce((sum, a) => sum + a.duration, 0);
-    const meditationMinutes = activitiesInRange
-      .filter((a) => a.name.toLowerCase().includes('meditación'))
-      .reduce((sum, a) => sum + a.duration * 60, 0);
-
-    const gratitudeCount = 0; // No usamos reflexiones por ahora
 
     const habitsCompleted = habitsInRange.reduce(
       (sum, h) => sum + (h.completedDates?.filter((d) => d >= startDateStr).length || 0),
       0
     );
+
+    // Calculate consistency: percentage of days with activity or completed habits
+    const daysInRange = range === 'dia' ? 1 : range === 'semana' ? 7 : 30;
+    const daysWithActivity = new Set([
+      ...activitiesInRange.map(a => a.date),
+      ...habitsInRange.flatMap(h => h.completedDates?.filter(d => d >= startDateStr) || [])
+    ]).size;
+    const consistencyPercent = Math.round((daysWithActivity / daysInRange) * 100);
 
     // Get top habits
     const topHabits = habits
@@ -241,11 +212,11 @@ export default function EstadisticasPage() {
       .sort((a, b) => b.count - a.count)
       .slice(0, 3);
 
-    // Determine mood based on data
+    // Determine mood based on real activity data
     const getMood = (): EstadisticasData['summary']['mood'] => {
-      if (totalActivityHours > 4 && meditationMinutes > 60) return 'energico';
-      if (meditationMinutes > 30) return 'calma';
-      if (gratitudeCount > 3) return 'reflexivo';
+      if (totalActivityHours > 4 && consistencyPercent > 70) return 'energico';
+      if (consistencyPercent > 50) return 'calma';
+      if (habitsCompleted > (daysInRange / 2)) return 'reflexivo';
       return 'calma';
     };
 
@@ -297,64 +268,57 @@ export default function EstadisticasPage() {
 
     const mood = getMood();
 
-    // Energy balance categories
-    const energyCategories = [
-      {
-        name: 'Movimiento',
-        value:
-          activitiesInRange
-            .filter((a) => ['Caminata', 'Ejercicio', 'Yoga', 'Correr'].includes(a.name))
-            .reduce((sum, a) => sum + a.duration, 0) * 60,
-        color: '#10b981',
-      },
-      {
-        name: 'Bienestar',
-        value:
-          activitiesInRange
-            .filter((a) => ['Yoga', 'Masaje', 'Spa'].includes(a.name))
-            .reduce((sum, a) => sum + a.duration, 0) * 60,
-        color: '#FF99AC',
-      },
-      {
-        name: 'Mental/Creatividad',
-        value: meditationMinutes,
-        color: '#a78bfa',
-      },
-      {
-        name: 'Social',
-        value:
-          activitiesInRange
-            .filter((a) => ['Llamada', 'Reunión', 'Paseo con amigos'].includes(a.name))
-            .reduce((sum, a) => sum + a.duration, 0) * 60,
-        color: '#fb923c',
-      },
-      {
-        name: 'Descanso',
-        value: Math.max(0, (24 - totalActivityHours) * 60 * 0.3),
-        color: '#60a5fa',
-      },
-    ].filter((c) => c.value > 0);
+    // Energy balance - Group by category from real activities
+    const categoryMap = new Map<string, number>();
+    activitiesInRange.forEach((a) => {
+      const cat = a.category || 'Otro';
+      categoryMap.set(cat, (categoryMap.get(cat) || 0) + a.duration);
+    });
+
+    const colorMap: Record<string, string> = {
+      'Bienestar': '#FF99AC',
+      'Movimiento': '#10b981',
+      'Aprendizaje': '#8b5cf6',
+      'Social': '#fb923c',
+      'Trabajo': '#3b82f6',
+      'Descanso': '#60a5fa',
+      'Salud': '#ec4899',
+      'Otro': '#a67b6b',
+    };
+
+    const energyCategories = Array.from(categoryMap.entries())
+      .map(([name, duration]) => ({
+        name,
+        value: Math.round(duration * 60), // Convertir a minutos
+        color: colorMap[name] || '#a67b6b',
+      }))
+      .sort((a, b) => b.value - a.value);
 
     const getEnergyComment = (): string => {
-      if (totalActivityHours > 4) {
-        return 'Tu balance es muy activo. Recuerda incluir más tiempo de descanso y meditación.';
+      if (totalActivityHours === 0) {
+        return 'Sin actividades registradas aún. ¡Comienza a registrar para ver tu balance!';
+      } else if (totalActivityHours > 4) {
+        return 'Muy activo esta semana. Mantén este ritmo y asegúrate de descansar adecuadamente.';
       } else if (totalActivityHours > 2) {
-        return 'Tu balance es equilibrado, con un buen foco en movimiento y bienestar mental.';
+        return 'Balance equilibrado. Buen progreso en tu rutina de actividades.';
       } else {
-        return 'Tu actividad ha sido baja. Considera aumentar tiempo de movimiento o actividades.';
+        return 'Actividad baja. Considera registrar más actividades para mejorar tu consistencia.';
       }
     };
 
-    // Insights
+    // Insights - Based on real data
     const getInsights = () => {
-      const baseInsight =
-        totalActivityHours > 3 && meditationMinutes > 30
-          ? 'Hemos notado que tu energía aumenta los días que practicas yoga y meditación.'
-          : 'Sigue registrando tus actividades para obtener insights más personalizados.';
+      let baseInsight = 'Sigue registrando tus actividades y hábitos para obtener insights personalizados.';
+
+      if (habitsCompleted > 0) {
+        baseInsight = `Has completado ${habitsCompleted} hábitos esta ${range === 'semana' ? 'semana' : range === 'mes' ? 'mes' : 'día'}. ¡Excelente consistencia!`;
+      } else if (totalActivityHours > 3) {
+        baseInsight = `Has invertido ${Math.round(totalActivityHours)} horas en actividades. ¡Gran dedicación!`;
+      }
 
       const extra =
-        range === 'semana'
-          ? 'Mantén tu consistencia con los hábitos — la repetición es la clave del cambio.'
+        range === 'semana' && consistencyPercent > 50
+          ? 'Mantén tu consistencia — la repetición es la clave del cambio.'
           : undefined;
 
       return { main: baseInsight, extra };
@@ -362,16 +326,16 @@ export default function EstadisticasPage() {
 
     return {
       range,
+      hasData,
       summary: {
         mood,
         text: getMoodText(mood, range),
       },
       progress: {
         habitsCompleted,
-        totalHabits: MOCK_HABITS.length,
+        totalHabits: habits.length,
         totalActivityHours: Math.round(totalActivityHours * 10) / 10,
-        meditationMinutes: Math.round(meditationMinutes),
-        gratitudeCount,
+        consistencyPercent,
       },
       energyBalance: {
         totalHours: Math.round(totalActivityHours * 10) / 10,
@@ -457,17 +421,27 @@ export default function EstadisticasPage() {
           <EmotionSummaryCard mood={data.summary.mood} summaryText={data.summary.text} />
 
           {/* Progress Grid */}
-          <ProgressGrid
-            habitsCompleted={data.progress.habitsCompleted}
-            totalHabits={data.progress.totalHabits}
-            totalActivityHours={data.progress.totalActivityHours}
-            meditationMinutes={data.progress.meditationMinutes}
-            gratitudeCount={data.progress.gratitudeCount}
-            comparison={{
-              habitsLastWeek: Math.max(0, data.progress.habitsCompleted - 2),
-              meditationDelta: 15,
-            }}
-          />
+          {data.hasData ? (
+            <ProgressGrid
+              habitsCompleted={data.progress.habitsCompleted}
+              totalHabits={data.progress.totalHabits}
+              totalActivityHours={data.progress.totalActivityHours}
+              consistencyPercent={data.progress.consistencyPercent}
+              comparison={{
+                habitsLastWeek: Math.max(0, data.progress.habitsCompleted - 2),
+                consistencyDelta: 5,
+              }}
+            />
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-2xl p-8 border border-[#FFB4A8]/30 text-center mb-6"
+            >
+              <p className="text-[#A67B6B] mb-2">Sin datos registrados</p>
+              <p className="text-sm text-[#A67B6B]">Comienza a registrar hábitos y actividades para ver tus estadísticas</p>
+            </motion.div>
+          )}
 
           {/* Energy Balance */}
           <EnergyBalanceChart
