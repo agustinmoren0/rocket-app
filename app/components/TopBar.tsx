@@ -15,7 +15,7 @@ export default function TopBar() {
   const { username } = useUser();
 
   // Hide on onboarding
-  if (pathname === '/onboarding') return null;
+  if (pathname === '/app/onboarding') return null;
 
   return (
     <div className="hidden lg:block fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-b border-slate-200 z-30">
@@ -37,7 +37,7 @@ export default function TopBar() {
           {cycleData.isActive && (
             <motion.button
               whileTap={{ scale: 0.9 }}
-              onClick={() => router.push('/modo-ciclo')}
+              onClick={() => router.push('/app/modo-ciclo')}
               className="relative p-2 bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl border border-rose-200"
             >
               <span className="text-xl">🌸</span>
@@ -48,7 +48,7 @@ export default function TopBar() {
           {/* Settings */}
           <motion.button
             whileTap={{ scale: 0.9 }}
-            onClick={() => router.push('/perfil')}
+            onClick={() => router.push('/app/perfil')}
             className={`p-2 ${currentTheme.bgHover} rounded-xl transition-colors`}
           >
             <Settings size={20} className="text-slate-700" />

@@ -11,10 +11,10 @@ export default function BottomNav() {
   const [showFAB, setShowFAB] = useState(false);
 
   const navItems = [
-    { icon: Home, label: 'Hoy', path: '/' },
-    { icon: Rocket, label: 'Actividades', path: '/actividades' },
-    { icon: CheckSquare, label: 'Hábitos', path: '/habitos' },
-    { icon: User, label: 'Perfil', path: '/perfil' },
+    { icon: Home, label: 'Hoy', path: '/app' },
+    { icon: Rocket, label: 'Actividades', path: '/app/actividades' },
+    { icon: CheckSquare, label: 'Hábitos', path: '/app/habitos' },
+    { icon: User, label: 'Perfil', path: '/app/perfil' },
   ];
 
   return (
@@ -41,7 +41,7 @@ export default function BottomNav() {
           >
             <button
               onClick={() => {
-                router.push('/actividades?open=true');
+                router.push('/app/actividades?open=true');
                 setShowFAB(false);
               }}
               className="flex items-center gap-3 bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white px-6 py-3 rounded-full shadow-lg hover:scale-105 transition-transform"
@@ -51,7 +51,7 @@ export default function BottomNav() {
             </button>
             <button
               onClick={() => {
-                router.push('/biblioteca');
+                router.push('/app/biblioteca');
                 setShowFAB(false);
               }}
               className="flex items-center gap-3 bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white px-6 py-3 rounded-full shadow-lg hover:scale-105 transition-transform"

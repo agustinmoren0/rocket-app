@@ -29,13 +29,13 @@ export default function DesktopSidebar() {
   const [loading, setLoading] = useState(true);
 
   const allMenuItems: MenuItem[] = [
-    { icon: Home, label: 'Inicio', path: '/', hotkey: '1' },
-    { icon: Activity, label: 'Actividades', path: '/actividades', hotkey: '2' },
-    { icon: FileText, label: 'Mis Hábitos', path: '/habitos', hotkey: '3' },
-    { icon: Calendar, label: 'Calendario', path: '/calendario', hotkey: '4' },
-    { icon: TrendingUp, label: 'Progreso', path: '/progreso', hotkey: '5' },
-    { icon: BookOpen, label: 'Reflexiones', path: '/reflexiones', hotkey: '6' },
-    { icon: PauseCircle, label: 'Pausados', path: '/pausados', hotkey: '7' },
+    { icon: Home, label: 'Inicio', path: '/app', hotkey: '1' },
+    { icon: Activity, label: 'Actividades', path: '/app/actividades', hotkey: '2' },
+    { icon: FileText, label: 'Mis Hábitos', path: '/app/habitos', hotkey: '3' },
+    { icon: Calendar, label: 'Calendario', path: '/app/calendario', hotkey: '4' },
+    { icon: TrendingUp, label: 'Progreso', path: '/app/progreso', hotkey: '5' },
+    { icon: BookOpen, label: 'Reflexiones', path: '/app/reflexiones', hotkey: '6' },
+    { icon: PauseCircle, label: 'Pausados', path: '/app/pausados', hotkey: '7' },
   ];
 
   // Load favorites from localStorage on mount
@@ -175,11 +175,11 @@ export default function DesktopSidebar() {
                       setSearchQuery('');
                       setSearchResults([]);
                       if (result.type === 'habit') {
-                        router.push(`/habito/${result.id}`);
+                        router.push(`/app/habito/${result.id}`);
                       } else if (result.type === 'activity') {
-                        router.push(`/actividades`);
+                        router.push(`/app/actividades`);
                       } else {
-                        router.push(`/reflexiones`);
+                        router.push(`/app/reflexiones`);
                       }
                     }}
                     className={`w-full text-left px-3 py-2 rounded-lg hover:${currentTheme.bgHover} transition-colors text-sm flex items-center gap-2`}
@@ -280,7 +280,7 @@ export default function DesktopSidebar() {
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
-          onClick={() => router.push('/perfil')}
+          onClick={() => router.push('/app/perfil')}
           className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl ${currentTheme.buttonHover} ${currentTheme.text} transition-all hover:shadow-md`}
         >
           <Settings size={20} />
