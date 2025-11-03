@@ -330,17 +330,11 @@ function CreateHabitModal({ editingHabit, onClose, onSuccess }: any) {
   const SelectedIcon = LUCIDE_ICONS[formData.icon] || LUCIDE_ICONS['Star'];
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+    <div
       className="fixed inset-0 bg-black/50 z-[60] flex items-end"
       onClick={onClose}
     >
-      <motion.div
-        initial={{ y: '100%' }}
-        animate={{ y: 0 }}
-        exit={{ y: '100%' }}
+      <div
         onClick={(e) => e.stopPropagation()}
         className="w-full bg-white rounded-t-3xl max-h-[85vh] overflow-hidden flex flex-col"
       >
@@ -675,7 +669,7 @@ function CreateHabitModal({ editingHabit, onClose, onSuccess }: any) {
 
           </div>
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }
