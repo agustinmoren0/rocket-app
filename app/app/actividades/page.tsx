@@ -423,7 +423,7 @@ export default function ActividadesPage() {
 
         {/* Botón flotante solo en vista actividades */}
         {activeTab === 'actividades' && activities.length > 0 && (
-          <div className="fixed bottom-20 left-0 right-0 px-6 z-10">
+          <div className="fixed bottom-24 left-0 right-0 px-6 z-10">
             <button
               onClick={() => {
                 setEditingActivity(null);
