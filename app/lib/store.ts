@@ -255,6 +255,11 @@ export function completeOnboarding(name: string): void {
   data.name = name;
   data.onboardingDone = true;
   saveData(data);
+
+  // Also set hasOnboarded flag for layout detection
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('hasOnboarded', 'true');
+  }
 }
 
 export function getCurrentStreak(): number {
@@ -373,6 +378,8 @@ export function clearAllData() {
     'habika_favorite_pages',
     // Calendar data (pattern: habika_calendar_YYYY-MM-DD)
     'habika_calendar',
+    // Onboarding flag
+    'hasOnboarded',
   ];
 
   // Remove all known keys

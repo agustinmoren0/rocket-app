@@ -49,7 +49,7 @@ export default function OnboardingPage() {
 
     completeOnboarding(name.trim());
     setUsername(name.trim());
-    router.replace('/');
+    router.replace('/app');
   }
 
   return (

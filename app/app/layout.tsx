@@ -20,36 +20,52 @@ export default function AppLayout({
 }) {
   const router = useRouter();
   const pathname = usePathname();
+  const isOnboarding = pathname === '/app/onboarding';
 
   useEffect(() => {
     // Check if user has completed onboarding
     const hasOnboarded = localStorage.getItem('hasOnboarded') === 'true';
 
     // Allow access to onboarding page regardless of onboarding status
-    if (pathname === '/app/onboarding') {
+    if (isOnboarding) {
       return;
     }
 
     // If not onboarded and trying to access app routes (except onboarding), redirect to onboarding
-    if (!hasOnboarded && pathname !== '/app/onboarding') {
+    if (!hasOnboarded && !isOnboarding) {
       router.push('/app/onboarding');
     }
-  }, [pathname, router]);
+  }, [pathname, router, isOnboarding]);
 
   return (
     <ThemeProvider>
       <UserProvider>
         <CycleProvider>
-          <OfflineIndicator />
-          <QuickPeriodTracker />
-          <TopBar />
-          <DesktopLayout>
-            <PageTransition>
-              {children}
-            </PageTransition>
-          </DesktopLayout>
-          <ToastContainer />
-          <RegisterSW />
+          {/* Only show app components if NOT onboarding */}
+          {!isOnboarding && (
+            <>
+              <OfflineIndicator />
+              <QuickPeriodTracker />
+              <TopBar />
+            </>
+          )}
+
+          {!isOnboarding ? (
+            <DesktopLayout>
+              <PageTransition>
+                {children}
+              </PageTransition>
+            </DesktopLayout>
+          ) : (
+            children
+          )}
+
+          {!isOnboarding && (
+            <>
+              <ToastContainer />
+              <RegisterSW />
+            </>
+          )}
         </CycleProvider>
       </UserProvider>
     </ThemeProvider>
