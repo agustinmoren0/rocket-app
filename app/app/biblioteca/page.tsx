@@ -110,9 +110,9 @@ export default function BibliotecaPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF5F0] pb-24 pt-0">
+    <div className="min-h-screen bg-[#FFF5F0] pb-24">
       <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-10">
-        <div className="px-6 py-3">
+        <div className="px-6 py-3 pt-safe">
           <h1 className="text-2xl font-bold text-[#3D2C28]">Elige tu próximo hábito</h1>
           <p className="text-sm text-[#A67B6B] mt-1">Explora por categoría o crea uno propio.</p>
         </div>

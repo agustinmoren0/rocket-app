@@ -275,9 +275,9 @@ export default function ActividadesPage() {
         <ModalOpener setShowModal={setShowModal} />
       </Suspense>
 
-      <div className="min-h-screen bg-[#FFF5F0] pb-24 pt-0">
+      <div className="min-h-screen bg-[#FFF5F0] pb-24">
         <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 sticky top-0 z-10">
-          <div className="px-6 py-3">
+          <div className="px-6 py-3 pt-safe">
             <div className="flex items-center justify-between mb-4">
               <h1 className="text-2xl font-bold text-[#3D2C28]">Mi Día</h1>
               <button
