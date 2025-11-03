@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import RootLayoutContent from './RootLayoutContent';
@@ -9,6 +9,14 @@ const inter = Inter({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+};
+
 export const metadata: Metadata = {
   title: "HABIKA - Tu progreso real",
   description: "Visualizá tu progreso sin tareas, sin culpa",
@@ -16,7 +24,7 @@ export const metadata: Metadata = {
   themeColor: "#8b5cf6",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "HABIKA",
   },
 };

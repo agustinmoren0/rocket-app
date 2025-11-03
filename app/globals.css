@@ -1,8 +1,30 @@
 @import "tailwindcss";
 
 @layer base {
+  html {
+    /* Prevenir zoom en doble tap */
+    touch-action: manipulation;
+  }
+
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    /* Prevenir behaviors no nativos */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    /* Optimización para iOS */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* Prevenir overflow horizontal */
+    overflow-x: hidden;
+  }
+
+  /* Permitir selección solo en inputs y textareas */
+  input,
+  textarea,
+  [contenteditable="true"] {
+    -webkit-user-select: text;
+    user-select: text;
   }
 }
 
@@ -512,4 +534,75 @@ textarea {
 
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* ============================================
+   NATIVE APP EXPERIENCE OPTIMIZATIONS
+   ============================================ */
+
+/* Prevent accidental zoom on input focus */
+input,
+textarea,
+select {
+  font-size: 16px !important;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Prevent pull-to-refresh on iOS */
+body {
+  overscroll-behavior-y: contain;
+  overscroll-behavior-x: none;
+}
+
+/* Double-tap zoom prevention */
+a,
+button,
+input,
+[role="button"] {
+  touch-action: manipulation;
+}
+
+/* Native-like tap feedback */
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+button {
+  -webkit-tap-highlight-color: transparent;
+  tap-highlight-color: transparent;
+}
+
+/* Prevent text selection on long press for buttons */
+button,
+a,
+[role="button"] {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* iOS specific optimizations */
+@supports (-webkit-touch-callout: none) {
+  /* iOS only */
+  body {
+    width: 100vw;
+    height: 100vh;
+    position: fixed;
+  }
+
+  main,
+  [role="main"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
