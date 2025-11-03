@@ -213,22 +213,20 @@ export default function BibliotecaPage() {
         </button>
       </div>
 
-      <AnimatePresence>
-        {showCreateModal && (
-          <CreateHabitModal
-            editingHabit={editingHabit}
-            onClose={() => {
-              setShowCreateModal(false);
-              setEditingHabit(null);
-            }}
-            onSuccess={() => {
-              setShowCreateModal(false);
-              setEditingHabit(null);
-              router.push('/app/habitos');
-            }}
-          />
-        )}
-      </AnimatePresence>
+      {showCreateModal && (
+        <CreateHabitModal
+          editingHabit={editingHabit}
+          onClose={() => {
+            setShowCreateModal(false);
+            setEditingHabit(null);
+          }}
+          onSuccess={() => {
+            setShowCreateModal(false);
+            setEditingHabit(null);
+            router.push('/app/habitos');
+          }}
+        />
+      )}
     </div>
   );
 }
@@ -330,11 +328,15 @@ function CreateHabitModal({ editingHabit, onClose, onSuccess }: any) {
   const SelectedIcon = LUCIDE_ICONS[formData.icon] || LUCIDE_ICONS['Star'];
 
   return (
-    <div
-      className="fixed inset-0 bg-black/50 z-[60] flex items-end"
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="fixed inset-0 bg-black/50 z-50 flex items-end"
       onClick={onClose}
     >
-      <div
+      <motion.div
+        initial={{ y: '100%' }}
+        animate={{ y: 0 }}
         onClick={(e) => e.stopPropagation()}
         className="w-full bg-white rounded-t-3xl max-h-[85vh] overflow-hidden flex flex-col"
       >
@@ -669,7 +671,7 @@ function CreateHabitModal({ editingHabit, onClose, onSuccess }: any) {
 
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }
