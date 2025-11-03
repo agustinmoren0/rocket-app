@@ -135,9 +135,67 @@ export default function EstadisticasPage() {
     const formatDate = (date: Date) => date.toISOString().split('T')[0];
     const startDateStr = formatDate(startDate);
 
+    // Cargar datos reales de localStorage
+    let realHabits: Habit[] = [];
+    let realActivities: Activity[] = [];
+
+    if (typeof window !== 'undefined') {
+      try {
+        // Cargar hábitos personalizados
+        const customHabits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
+        realHabits = customHabits.map((h: any) => ({
+          id: h.id,
+          name: h.name,
+          icon: h.icon || '✓',
+          completedDates: h.completedDates || []
+        }));
+
+        // Cargar actividades de hoy
+        const activitiesToday = JSON.parse(localStorage.getItem('habika_activities_today') || '{}');
+        const activitiesHistorical = JSON.parse(localStorage.getItem('habika_activities') || '[]');
+
+        // Combinar actividades de hoy y históricas
+        const allActivities: any[] = [];
+        Object.entries(activitiesToday).forEach(([date, activities]: [string, any]) => {
+          if (Array.isArray(activities)) {
+            activities.forEach((a: any) => {
+              allActivities.push({
+                id: a.id,
+                name: a.name,
+                icon: a.icon || '📍',
+                date: date,
+                duration: a.unit === 'hora(s)' || a.unit === 'hs' ? a.duration * 60 / 60 : a.duration / 60,
+                category: a.categoria || 'Actividad'
+              });
+            });
+          }
+        });
+
+        // Agregar actividades históricas
+        activitiesHistorical.forEach((a: any) => {
+          allActivities.push({
+            id: a.id,
+            name: a.name,
+            icon: a.icon || '📍',
+            date: a.date,
+            duration: a.unit === 'hora(s)' || a.unit === 'hs' ? a.duration * 60 / 60 : a.duration / 60,
+            category: a.categoria || 'Actividad'
+          });
+        });
+
+        realActivities = allActivities;
+      } catch (error) {
+        console.error('Error cargando datos de localStorage:', error);
+      }
+    }
+
+    // Usar datos reales si existen, si no usar MOCK
+    const habits = realHabits.length > 0 ? realHabits : MOCK_HABITS;
+    const activities = realActivities.length > 0 ? realActivities : MOCK_ACTIVITIES;
+
     // Filter data by range
-    const activitiesInRange = MOCK_ACTIVITIES.filter((a) => a.date >= startDateStr);
-    const habitsInRange = MOCK_HABITS.filter((h) =>
+    const activitiesInRange = activities.filter((a) => a.date >= startDateStr);
+    const habitsInRange = habits.filter((h) =>
       h.completedDates?.some((d) => d >= startDateStr)
     );
 
@@ -147,7 +205,7 @@ export default function EstadisticasPage() {
       .filter((a) => a.name.toLowerCase().includes('meditación'))
       .reduce((sum, a) => sum + a.duration * 60, 0);
 
-    const gratitudeCount = MOCK_REFLEXIONS.filter((r) => r.date >= startDateStr).length;
+    const gratitudeCount = 0; // No usamos reflexiones por ahora
 
     const habitsCompleted = habitsInRange.reduce(
       (sum, h) => sum + (h.completedDates?.filter((d) => d >= startDateStr).length || 0),
@@ -155,7 +213,7 @@ export default function EstadisticasPage() {
     );
 
     // Get top habits
-    const topHabits = MOCK_HABITS
+    const topHabits = habits
       .map((h) => ({
         id: h.id,
         name: h.name,

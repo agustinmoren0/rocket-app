@@ -13,7 +13,9 @@
       "Bash(curl:*)",
       "Read(//private/tmp/**)",
       "Bash(grep:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(node /tmp/test-habits.js:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []
