@@ -519,14 +519,29 @@ export default function PerfilPage() {
           <button
             onClick={() => {
               showToast('Limpiando caché y recargando...', 'info');
-              if ('serviceWorker' in navigator) {
-                navigator.serviceWorker.getRegistrations().then((registrations) => {
-                  registrations.forEach((registration) => registration.unregister());
+
+              // Clear all caches
+              if ('caches' in window) {
+                caches.keys().then((cacheNames) => {
+                  cacheNames.forEach((cacheName) => {
+                    caches.delete(cacheName);
+                  });
                 });
               }
+
+              // Unregister all service workers
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistrations().then((registrations) => {
+                  registrations.forEach((registration) => {
+                    registration.unregister();
+                  });
+                });
+              }
+
+              // Hard refresh after cleanup
               setTimeout(() => {
-                window.location.reload();
-              }, 500);
+                window.location.href = window.location.href;
+              }, 800);
             }}
             className="w-full h-10 rounded-xl bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white text-sm font-medium hover:shadow-md transition-shadow"
           >

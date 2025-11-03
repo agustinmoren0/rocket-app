@@ -1,12 +1,14 @@
-const CACHE_NAME = 'habika-v2';
+const CACHE_NAME = 'habika-v3';
 const urlsToCache = [
   '/',
-  '/actividades',
-  '/mis-habitos',
-  '/estadisticas',
-  '/perfil',
-  '/offline',
-  '/manifest.json'
+  '/app',
+  '/app/actividades',
+  '/app/habitos',
+  '/app/estadisticas',
+  '/app/perfil',
+  '/app/offline',
+  '/manifest.json',
+  '/landing'
 ];
 
 // Instalar service worker
