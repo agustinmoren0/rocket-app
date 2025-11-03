@@ -8,11 +8,11 @@ export default function RegisterSW() {
         console.log('✅ Service Worker registered successfully');
         console.log(`   Scope: ${registration.scope}`);
 
-        // Check for updates periodically (every 60 seconds)
+        // Check for updates more frequently (every 30 seconds)
         const interval = setInterval(() => {
           console.log('🔄 Checking for SW updates...');
           registration.update();
-        }, 60000);
+        }, 30000);
 
         // Listen for new service worker ready
         registration.addEventListener('updatefound', () => {
@@ -23,6 +23,8 @@ export default function RegisterSW() {
               console.log(`⚙️  SW state changed to: ${newWorker.state}`);
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
                 console.log('💡 New service worker available, refresh to update');
+                // Automatically reload to get the new version
+                window.location.reload();
               }
             });
           }

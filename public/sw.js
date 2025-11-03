@@ -1,4 +1,4 @@
-const CACHE_NAME = 'habika-v3';
+const CACHE_NAME = 'habika-v4';
 const urlsToCache = [
   '/',
   '/app',
