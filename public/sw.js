@@ -1,46 +1,58 @@
-const CACHE_NAME = 'habika-v4';
-const urlsToCache = [
+// Cache version - increment when making breaking changes
+const CACHE_VERSION = '5';
+const CACHE_NAMES = {
+  PAGES: `habika-pages-v${CACHE_VERSION}`,
+  ASSETS: `habika-assets-v${CACHE_VERSION}`,
+  IMAGES: `habika-images-v${CACHE_VERSION}`,
+};
+
+const CRITICAL_URLS = [
   '/',
   '/app',
+  '/offline',
+  '/manifest.json',
+];
+
+const APP_URLS = [
   '/app/actividades',
   '/app/habitos',
   '/app/estadisticas',
   '/app/perfil',
-  '/app/offline',
-  '/manifest.json',
   '/landing'
 ];
 
-// Instalar service worker
+// Instalar service worker - cache critical resources
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(urlsToCache).catch(() => {
-        // Some URLs might not be available, that's OK
-        return Promise.resolve();
+    // Cache critical pages first
+    caches.open(CACHE_NAMES.PAGES).then((cache) => {
+      return cache.addAll(CRITICAL_URLS).catch(() => Promise.resolve());
+    }).then(() => {
+      // Then cache app pages (non-critical)
+      return caches.open(CACHE_NAMES.PAGES).then((cache) => {
+        return cache.addAll(APP_URLS).catch(() => Promise.resolve());
       });
     })
   );
   self.skipWaiting();
 });
 
-// Activar y limpiar caches viejos
+// Activate and clean up old caches
 self.addEventListener('activate', (event) => {
+  const validCacheNames = Object.values(CACHE_NAMES);
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
+        cacheNames
+          .filter(name => !validCacheNames.includes(name))
+          .map(cacheName => caches.delete(cacheName))
       );
     })
   );
-  return self.clients.claim();
+  self.clients.claim();
 });
 
-// Cache First for images and assets, Network First for pages
+// Fetch strategy: Cache First for assets, Network First for pages
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -50,20 +62,21 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache assets (images, css, js)
-  if (url.pathname.match(/\.(jpg|jpeg|png|gif|css|js|woff|woff2|eot|ttf|otf)$/)) {
+  // Cache First strategy for images (long-lived assets)
+  if (url.pathname.match(/\.(jpg|jpeg|png|gif|svg)$/i)) {
     event.respondWith(
       caches.match(request).then((response) => {
         return (
           response ||
           fetch(request).then((response) => {
-            if (response && response.status === 200) {
-              const responseToCache = response.clone();
-              caches.open(CACHE_NAME).then((cache) => {
-                cache.put(request, responseToCache);
-              });
+            if (response?.status === 200) {
+              const cache = caches.open(CACHE_NAMES.IMAGES);
+              cache.then(c => c.put(request, response.clone()));
             }
             return response;
+          }).catch(() => {
+            // Return placeholder or cached fallback
+            return caches.match('/app/offline');
           })
         );
       })
@@ -71,32 +84,46 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Network first for pages with stale-while-revalidate pattern
+  // Cache First for static assets (css, js fonts)
+  if (url.pathname.match(/\.(css|js|woff|woff2|eot|ttf|otf)$/i)) {
+    event.respondWith(
+      caches.match(request).then((response) => {
+        return (
+          response ||
+          fetch(request).then((response) => {
+            if (response?.status === 200) {
+              const cache = caches.open(CACHE_NAMES.ASSETS);
+              cache.then(c => c.put(request, response.clone()));
+            }
+            return response;
+          }).catch(() => null)
+        );
+      })
+    );
+    return;
+  }
+
+  // Network First for pages with stale-while-revalidate fallback
   event.respondWith(
     fetch(request)
       .then((response) => {
-        if (response && response.status === 200) {
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            // Only cache successfully loaded pages
-            if (request.mode === 'navigate') {
-              cache.put(request, responseToCache);
-            }
-          });
+        if (response?.status === 200 && request.mode === 'navigate') {
+          const cache = caches.open(CACHE_NAMES.PAGES);
+          cache.then(c => c.put(request, response.clone()));
         }
         return response;
       })
       .catch(() => {
-        // Only return cached version if network fails
-        const cached = caches.match(request);
-        if (cached) {
-          return cached;
-        }
-        // Return offline page for navigation requests
-        if (request.mode === 'navigate') {
-          return caches.match('/app/offline') || caches.match('/offline');
-        }
-        return null;
+        // Return cached version if network fails
+        return caches.match(request).then((cached) => {
+          if (cached) return cached;
+
+          // Fallback for navigation requests
+          if (request.mode === 'navigate') {
+            return caches.match('/app/offline');
+          }
+          return null;
+        });
       })
   );
 });
