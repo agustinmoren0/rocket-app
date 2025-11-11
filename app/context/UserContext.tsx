@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { notifyDataChange } from '../lib/storage-utils';
 
 interface UserContextType {
   username: string;
@@ -23,6 +24,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const setUsername = (name: string) => {
     setUsernameState(name);
     localStorage.setItem('habika_username', name);
+    notifyDataChange();
   };
 
   return (

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useTheme } from '@/app/context/ThemeContext';
 import { Save, X } from 'lucide-react';
+import { notifyDataChange } from '@/app/lib/storage-utils';
 
 export default function EditarActividadPage() {
   const router = useRouter();
@@ -30,6 +31,7 @@ export default function EditarActividadPage() {
       a.id === params.id ? { ...formData, id: params.id } : a
     );
     localStorage.setItem('habika_activities', JSON.stringify(updated));
+    notifyDataChange();
     router.push('/app/actividades');
   };
 

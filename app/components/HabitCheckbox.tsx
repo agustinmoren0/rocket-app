@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Check } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { triggerSuccess } from './Confetti';
+import { notifyDataChange } from '../lib/storage-utils';
 import { calculateStreak, recordCompletion, getStreakDisplay } from '../lib/streakLogic';
 
 interface HabitCheckboxProps {
@@ -35,6 +36,7 @@ export default function HabitCheckbox({ habitId, habitName, date, onComplete }: 
       const updated = habitCompletions.filter((d: string) => d.split('T')[0] !== currentDate.split('T')[0]);
       completions[habitId] = updated;
       localStorage.setItem('habika_completions', JSON.stringify(completions));
+      notifyDataChange(); // Notify listeners of data change
     } else {
       // Marcar como completado
       const today = new Date();
@@ -42,6 +44,7 @@ export default function HabitCheckbox({ habitId, habitName, date, onComplete }: 
       habitCompletions.push(todayStr);
       completions[habitId] = habitCompletions;
       localStorage.setItem('habika_completions', JSON.stringify(completions));
+      notifyDataChange(); // Notify listeners of data change
 
       // Registrar en streak logic
       recordCompletion(habitId);

@@ -8,6 +8,7 @@ import { getCustomHabits, deleteCustomHabit } from '@/app/lib/store';
 import {
   Activity, X, Pencil, Trash2, Save
 } from 'lucide-react';
+import { notifyDataChange } from '@/app/lib/storage-utils';
 
 export default function EditarHabitoPage() {
   const router = useRouter();
@@ -51,6 +52,7 @@ export default function EditarHabitoPage() {
         : h
     );
     localStorage.setItem('habika_custom_habits', JSON.stringify(updatedHabits));
+    notifyDataChange();
     router.push('/app/habitos');
   };
 

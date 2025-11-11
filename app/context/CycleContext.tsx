@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { notifyDataChange } from '../lib/storage-utils';
 
 type CyclePhase = 'menstrual' | 'follicular' | 'ovulatory' | 'luteal';
 
@@ -108,6 +109,7 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
 
     setCycleData(updated);
     localStorage.setItem('habika_cycle_data', JSON.stringify(updated));
+    notifyDataChange();
   };
 
   const activateCycleMode = (lastPeriod: string, cycleLength: number, periodLength: number) => {
@@ -130,6 +132,7 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
     const updated = { ...cycleData, isActive: false };
     setCycleData(updated);
     localStorage.setItem('habika_cycle_data', JSON.stringify(updated));
+    notifyDataChange();
   };
 
   const addSymptom = (date: string, symptom: string) => {
@@ -142,6 +145,7 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
     const updated = { ...cycleData, symptoms };
     setCycleData(updated);
     localStorage.setItem('habika_cycle_data', JSON.stringify(updated));
+    notifyDataChange();
   };
 
   const getCurrentPhase = () => cycleData.currentPhase;
@@ -250,6 +254,7 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
       timestamp: new Date().toISOString(),
     });
     localStorage.setItem('habika_period_history', JSON.stringify(history));
+    notifyDataChange();
   };
 
   const resetCycleData = () => {

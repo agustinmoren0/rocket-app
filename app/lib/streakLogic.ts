@@ -9,6 +9,8 @@
  * - Returns visual indicators for UI
  */
 
+import { notifyDataChange } from './storage-utils';
+
 export interface StreakData {
   habitId: string;
   currentStreak: number;
@@ -90,6 +92,7 @@ function saveStreakData(habitId: string, data: StreakData): void {
 
   allStreaks[habitId] = data;
   localStorage.setItem('habika_streaks', JSON.stringify(allStreaks));
+  notifyDataChange();
 }
 
 /**
@@ -245,6 +248,7 @@ export function recordCompletion(habitId: string): void {
   if (!alreadyCompletedToday) {
     allCompletions[habitId].push(today);
     localStorage.setItem('habika_completions', JSON.stringify(allCompletions));
+    notifyDataChange();
   }
 
   // Recalculate streak

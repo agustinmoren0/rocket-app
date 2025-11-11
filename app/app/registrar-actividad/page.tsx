@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Activity, Clock, Calendar, Save, X } from 'lucide-react';
+import { notifyDataChange } from '@/app/lib/storage-utils';
 
 export default function RegistrarActividadPage() {
   const router = useRouter();
@@ -39,6 +40,7 @@ export default function RegistrarActividadPage() {
 
     activities.push(newActivity);
     localStorage.setItem('habika_activities', JSON.stringify(activities));
+    notifyDataChange();
 
     router.push('/app/actividades');
   };

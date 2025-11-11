@@ -10,6 +10,7 @@ import {
   Calendar, BookOpen, PauseCircle, Search, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { notifyDataChange } from '../lib/storage-utils';
 
 interface MenuItem {
   icon: any;
@@ -126,6 +127,7 @@ export default function DesktopSidebar() {
 
     setFavoritePages(items);
     localStorage.setItem('habika_favorite_pages', JSON.stringify(items));
+    notifyDataChange();
   };
 
   if (loading) return null;

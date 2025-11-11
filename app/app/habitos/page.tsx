@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react';
+import { setStorageItem, notifyDataChange } from '@/app/lib/storage-utils';
 import { useRouter } from 'next/navigation';
 import { motion, useMotionValue, PanInfo } from 'framer-motion';
 import { Plus, Play, Pause, Edit2, Trash2, AlertCircle } from 'lucide-react';
@@ -57,7 +58,7 @@ export default function HabitosPage() {
     });
 
     setHabits(updatedHabits);
-    localStorage.setItem('habika_custom_habits', JSON.stringify(updatedHabits));
+    setStorageItem('habika_custom_habits', JSON.stringify(updatedHabits));
   };
 
   const pauseHabit = (habitId: string) => {
@@ -85,7 +86,7 @@ export default function HabitosPage() {
     });
 
     setHabits(updatedHabits);
-    localStorage.setItem('habika_custom_habits', JSON.stringify(updatedHabits));
+    setStorageItem('habika_custom_habits', JSON.stringify(updatedHabits));
 
     // Sincronizar cambio de estado en el calendario
     const updatedHabit = updatedHabits.find(h => h.id === confirmAction.habitId);
@@ -114,7 +115,7 @@ export default function HabitosPage() {
     const habitToDelete = habits.find(h => h.id === confirmAction.habitId);
     const updatedHabits = habits.filter(h => h.id !== confirmAction.habitId);
     setHabits(updatedHabits);
-    localStorage.setItem('habika_custom_habits', JSON.stringify(updatedHabits));
+    setStorageItem('habika_custom_habits', JSON.stringify(updatedHabits));
     // Remover hábito del calendario
     removeHabitFromCalendar(confirmAction.habitId);
     setConfirmAction(null);
@@ -129,7 +130,7 @@ export default function HabitosPage() {
       h.id === updatedHabit.id ? updatedHabit : h
     );
     setHabits(updatedHabits);
-    localStorage.setItem('habika_custom_habits', JSON.stringify(updatedHabits));
+    setStorageItem('habika_custom_habits', JSON.stringify(updatedHabits));
     // Re-sincronizar hábito actualizado al calendario
     removeHabitFromCalendar(updatedHabit.id);
     syncHabitToCalendar(updatedHabit);

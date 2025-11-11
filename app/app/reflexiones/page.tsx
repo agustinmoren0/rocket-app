@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTheme } from '@/app/context/ThemeContext';
 import { BookOpen, Send, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { notifyDataChange } from '@/app/lib/storage-utils';
 
 interface Reflection {
   id: string;
@@ -87,6 +88,7 @@ export default function ReflexionesPage() {
     const updated = [newReflection, ...reflections];
     setReflections(updated);
     localStorage.setItem('habika_reflections', JSON.stringify(updated));
+    notifyDataChange();
 
     // Reset form
     setAchievements('');
@@ -100,6 +102,7 @@ export default function ReflexionesPage() {
     const updated = reflections.filter((r) => r.id !== id);
     setReflections(updated);
     localStorage.setItem('habika_reflections', JSON.stringify(updated));
+    notifyDataChange();
   };
 
   const formatDate = (dateString: string) => {

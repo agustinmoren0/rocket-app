@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { X, Wind, Clock, CheckCircle } from 'lucide-react';
 import BreathingCircles from '@/components/BreathingCircles';
+import { notifyDataChange } from '@/app/lib/storage-utils';
 
 type PageState = 'intro' | 'breathing' | 'complete';
 
@@ -57,6 +58,7 @@ export default function RespirationPage() {
       calendarData.activities.push(newActivity);
       localStorage.setItem(calendarKey, JSON.stringify(calendarData));
 
+      notifyDataChange();
       console.log('✅ Actividad de respiración guardada:', newActivity);
     } catch (error) {
       console.error('Error saving breathing activity:', error);

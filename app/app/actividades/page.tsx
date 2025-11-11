@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, useMotionValue, PanInfo } from 'framer-motion';
 import { Plus, Clock, Edit2, Trash2, Sparkles, Calendar as CalendarIcon, Check } from 'lucide-react';
 import { LUCIDE_ICONS } from '@/app/utils/icons';
+import { setStorageItem, notifyDataChange } from '@/app/lib/storage-utils';
 
 const CATEGORIAS = [
   { id: 'bienestar', name: 'Bienestar', icon: 'Heart' },
@@ -109,7 +110,7 @@ export default function ActividadesPage() {
       if (allActivities[today] && allActivities[today].length > 0) {
         syncToCalendar(today, allActivities[today]);
         delete allActivities[today];
-        localStorage.setItem('habika_activities_today', JSON.stringify(allActivities));
+        setStorageItem('habika_activities_today', JSON.stringify(allActivities));
       }
 
       loadTodayData();
@@ -139,6 +140,7 @@ export default function ActividadesPage() {
       }));
 
       localStorage.setItem('habika_calendar', JSON.stringify(calendar));
+      notifyDataChange();
       console.log('📚 Sincronizado con calendario');
     } catch (error) {
       console.error('❌ Error al sincronizar:', error);
@@ -172,7 +174,7 @@ export default function ActividadesPage() {
         allActivities[today].push(newActivity);
       }
 
-      localStorage.setItem('habika_activities_today', JSON.stringify(allActivities));
+      setStorageItem('habika_activities_today', JSON.stringify(allActivities));
       syncToCalendar(today, allActivities[today]);
 
       loadTodayData();
@@ -192,7 +194,7 @@ export default function ActividadesPage() {
       const filtered = (allActivities[today] || []).filter((a: any) => a.id !== activityId);
       allActivities[today] = filtered;
 
-      localStorage.setItem('habika_activities_today', JSON.stringify(allActivities));
+      setStorageItem('habika_activities_today', JSON.stringify(allActivities));
       syncToCalendar(today, filtered);
 
       loadTodayData();
@@ -222,6 +224,7 @@ export default function ActividadesPage() {
       });
 
       localStorage.setItem('habika_custom_habits', JSON.stringify(updatedHabits));
+      notifyDataChange();
       loadTodayData();
     } catch (error) {
       console.error('❌ Error al completar hábito:', error);

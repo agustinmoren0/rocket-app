@@ -6,6 +6,7 @@ import { ChevronDown, ChevronRight, Plus, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LUCIDE_ICONS } from '@/app/utils/icons';
 import { syncHabitToCalendar, removeHabitFromCalendar } from '@/app/lib/store';
+import { notifyDataChange } from '@/app/lib/storage-utils';
 
 const HABIT_LIBRARY_FORMAR = {
   fisica: {
@@ -323,6 +324,7 @@ function CreateHabitModal({ editingHabit, onClose, onSuccess }: any) {
       }
 
       localStorage.setItem('habika_custom_habits', JSON.stringify(habits));
+      notifyDataChange();
       console.log('💾 Saved to localStorage, calling onSuccess()...');
       onSuccess();
     } catch (error) {
