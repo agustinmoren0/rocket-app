@@ -103,28 +103,31 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Network First for pages with stale-while-revalidate fallback
+  // Stale-while-revalidate pattern for pages
+  // Improved: Returns cached immediately if available, fetches in background
   event.respondWith(
-    fetch(request)
-      .then((response) => {
-        if (response?.status === 200 && request.mode === 'navigate') {
-          const cache = caches.open(CACHE_NAMES.PAGES);
-          cache.then(c => c.put(request, response.clone()));
-        }
-        return response;
-      })
-      .catch(() => {
-        // Return cached version if network fails
-        return caches.match(request).then((cached) => {
-          if (cached) return cached;
-
-          // Fallback for navigation requests
+    caches.match(request).then((cachedResponse) => {
+      // Start fetching in background regardless
+      const fetchPromise = fetch(request)
+        .then((response) => {
+          // Only cache successful responses for navigation requests
+          if (response?.status === 200 && request.mode === 'navigate') {
+            const cache = caches.open(CACHE_NAMES.PAGES);
+            cache.then(c => c.put(request, response.clone()));
+          }
+          return response;
+        })
+        .catch(() => {
+          // Network failed - fallback to offline page for navigation
           if (request.mode === 'navigate') {
             return caches.match('/app/offline');
           }
           return null;
         });
-      })
+
+      // Return cached immediately, or wait for network if no cache
+      return cachedResponse || fetchPromise;
+    })
   );
 });
 

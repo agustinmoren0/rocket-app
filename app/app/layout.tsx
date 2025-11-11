@@ -65,7 +65,8 @@ export default function AppLayout({
             <>
               <ToastContainer />
               <RegisterSW />
-              <LogViewer />
+              {/* Only show LogViewer in development mode */}
+              {process.env.NODE_ENV === 'development' && <LogViewer />}
             </>
           )}
         </CycleProvider>

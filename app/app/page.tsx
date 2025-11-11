@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUser } from '@/app/context/UserContext';
 import { useCycle } from '@/app/context/CycleContext';
@@ -19,13 +19,39 @@ export default function DashboardPage() {
     streak: 0,
   });
 
+  // Debounce timer and cache management for performance optimization
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const statsTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const lastCalculationRef = useRef<number>(0);
+  const DEBOUNCE_DELAY = 1000; // 1 second debounce
+  const CACHE_DURATION = 30000; // 30 seconds cache
+
+  // Debounced stats calculation - prevents excessive recalculation
+  const calculateStatsDebounced = useCallback(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    debounceTimerRef.current = setTimeout(() => {
+      const now = Date.now();
+      // Only recalculate if cache expired (avoid double calculations within 30s)
+      if (now - lastCalculationRef.current >= CACHE_DURATION) {
+        calculateStats();
+        lastCalculationRef.current = now;
+      }
+    }, DEBOUNCE_DELAY);
+  }, []);
+
   useEffect(() => {
+    // Initial calculation on mount
     calculateStats();
+    lastCalculationRef.current = Date.now();
 
     // Listener para cambios en localStorage (desde otras tabs o cambios internos)
+    // Only triggers debounced recalculation instead of immediate calculation
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'habika_activities_today' || e.key === 'habika_completions' || e.key === 'habika_activities' || e.key === 'habika_custom_habits') {
-        calculateStats();
+        calculateStatsDebounced();
       }
     };
 
@@ -33,7 +59,7 @@ export default function DashboardPage() {
 
     // Custom event listener para cambios internos en esta tab
     const handleDataChange = () => {
-      calculateStats();
+      calculateStatsDebounced();
     };
 
     window.addEventListener('habika-data-changed', handleDataChange as EventListener);
@@ -41,8 +67,11 @@ export default function DashboardPage() {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('habika-data-changed', handleDataChange as EventListener);
+      // Cleanup timers on unmount
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+      if (statsTimerRef.current) clearTimeout(statsTimerRef.current);
     };
-  }, []);
+  }, [calculateStatsDebounced]);
 
   const calculateStats = () => {
     const habits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
