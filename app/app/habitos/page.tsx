@@ -7,15 +7,16 @@ import { motion, useMotionValue, PanInfo } from 'framer-motion';
 import { Plus, Play, Pause, Edit2, Trash2, AlertCircle } from 'lucide-react';
 import { LUCIDE_ICONS } from '@/app/utils/icons';
 import { removeHabitFromCalendar, syncHabitToCalendar } from '@/app/lib/store';
+import { Habit, StreakData } from '@/app/types';
 
 export default function HabitosPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'formar' | 'dejar' | 'pausados'>('formar');
-  const [habits, setHabits] = useState<any[]>([]);
+  const [habits, setHabits] = useState<Habit[]>([]);
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
-  const [confirmAction, setConfirmAction] = useState<any>(null);
-  const [editingHabit, setEditingHabit] = useState<any>(null);
+  const [confirmAction, setConfirmAction] = useState<{ type: string; habitId: string; message?: string; confirmText?: string } | null>(null);
+  const [editingHabit, setEditingHabit] = useState<Partial<Habit> | null>(null);
 
   useEffect(() => {
     loadHabits();
@@ -74,13 +75,15 @@ export default function HabitosPage() {
   };
 
   const confirmPause = () => {
+    if (!confirmAction) return;
+
     const updatedHabits = habits.map(h => {
       if (h.id === confirmAction.habitId) {
-        return {
+        const updated: Habit = {
           ...h,
-          status: h.status === 'paused' ? 'active' : 'paused',
-          pausedAt: h.status === 'paused' ? null : new Date().toISOString()
+          status: h.status === 'paused' ? 'active' : 'paused'
         };
+        return updated;
       }
       return h;
     });
@@ -112,6 +115,8 @@ export default function HabitosPage() {
   };
 
   const confirmDelete = () => {
+    if (!confirmAction) return;
+
     const habitToDelete = habits.find(h => h.id === confirmAction.habitId);
     const updatedHabits = habits.filter(h => h.id !== confirmAction.habitId);
     setHabits(updatedHabits);
@@ -121,11 +126,11 @@ export default function HabitosPage() {
     setConfirmAction(null);
   };
 
-  const editHabit = (habit: any) => {
+  const editHabit = (habit: Habit): void => {
     setEditingHabit(habit);
   };
 
-  const saveEditedHabit = (updatedHabit: any) => {
+  const saveEditedHabit = (updatedHabit: Habit): void => {
     const updatedHabits = habits.map(h =>
       h.id === updatedHabit.id ? updatedHabit : h
     );
@@ -137,7 +142,7 @@ export default function HabitosPage() {
     setEditingHabit(null);
   };
 
-  const calculateStreak = (habit: any) => {
+  const calculateStreak = (habit: Habit): number => {
     if (!habit.completedDates || habit.completedDates.length === 0) return 0;
 
     const sortedDates = [...habit.completedDates].sort().reverse();
@@ -159,7 +164,7 @@ export default function HabitosPage() {
     return streak;
   };
 
-  const calculateConsistency = (habit: any) => {
+  const calculateConsistency = (habit: Habit): number => {
     if (!habit.completedDates || habit.completedDates.length === 0) return 0;
 
     const daysSinceCreation = Math.ceil(
@@ -251,8 +256,8 @@ export default function HabitosPage() {
 
       {confirmAction && (
         <ConfirmModal
-          message={confirmAction.message}
-          confirmText={confirmAction.confirmText}
+          message={confirmAction.message || '¿Estás seguro?'}
+          confirmText={confirmAction.confirmText || 'Confirmar'}
           onConfirm={confirmAction.type === 'delete' ? confirmDelete : confirmPause}
           onCancel={() => setConfirmAction(null)}
         />
@@ -269,11 +274,21 @@ export default function HabitosPage() {
   );
 }
 
-function HabitCard({ habit, onToggleComplete, onPause, onEdit, onDelete, streak, consistency }: any) {
+interface HabitCardProps {
+  habit: Habit;
+  onToggleComplete: (habitId: string) => void;
+  onPause: (habitId: string) => void;
+  onEdit: (habit: Habit) => void;
+  onDelete: (habitId: string) => void;
+  streak: number;
+  consistency: number;
+}
+
+function HabitCard({ habit, onToggleComplete, onPause, onEdit, onDelete, streak, consistency }: HabitCardProps) {
   const x = useMotionValue(0);
   const [swipeState, setSwipeState] = useState<'closed' | 'edit' | 'actions'>('closed');
 
-  const handleDragEnd = (event: any, info: PanInfo) => {
+  const handleDragEnd = (_event: any, info: PanInfo) => {
     const velocity = info.velocity.x;
     const offset = info.offset.x;
 
@@ -454,7 +469,12 @@ function HabitCard({ habit, onToggleComplete, onPause, onEdit, onDelete, streak,
   );
 }
 
-function AlertModal({ message, onClose }: any) {
+interface AlertModalProps {
+  message: string;
+  onClose: () => void;
+}
+
+function AlertModal({ message, onClose }: AlertModalProps) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -488,7 +508,14 @@ function AlertModal({ message, onClose }: any) {
   );
 }
 
-function ConfirmModal({ message, confirmText, onConfirm, onCancel }: any) {
+interface ConfirmModalProps {
+  message: string;
+  confirmText: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+function ConfirmModal({ message, confirmText, onConfirm, onCancel }: ConfirmModalProps) {
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -523,28 +550,44 @@ function ConfirmModal({ message, confirmText, onConfirm, onCancel }: any) {
   );
 }
 
-function EditHabitModal({ habit, onSave, onClose }: any) {
-  const [formData, setFormData] = useState({
-    name: habit.name || '',
-    type: habit.type || 'formar',
-    frequency: habit.frequency || 'diario',
-    color: habit.color || '#6B9B9E',
-    icon: habit.icon || 'Heart',
-    description: habit.description || '',
-    goal: habit.goal || '',
-    startTime: habit.startTime || '09:00',
-    endTime: habit.endTime || '17:00'
+interface EditHabitModalProps {
+  habit: Partial<Habit>;
+  onSave: (habit: Habit) => void;
+  onClose: () => void;
+}
+
+function EditHabitModal({ habit, onSave, onClose }: EditHabitModalProps) {
+  const [formData, setFormData] = useState<any>({
+    name: (habit as any)?.name || '',
+    type: (habit as any)?.type || 'formar',
+    frequency: (habit as any)?.frequency || 'diario',
+    color: (habit as any)?.color || '#6B9B9E',
+    icon: (habit as any)?.icon || 'Heart',
+    description: (habit as any)?.description || '',
+    goal: (habit as any)?.goal || '',
+    startTime: (habit as any)?.startTime || '09:00',
+    endTime: (habit as any)?.endTime || '17:00'
   });
 
-  const handleSave = () => {
+  const handleSave = (): void => {
     if (!formData.name.trim()) {
       alert('Ingresa el nombre del hábito');
       return;
     }
-    onSave({
+    const updated: Habit = {
       ...habit,
-      ...formData
-    });
+      ...formData,
+      id: habit.id || `habit_${Date.now()}`,
+      name: formData.name,
+      icon: formData.icon,
+      color: formData.color,
+      frequency: formData.frequency,
+      goalValue: habit.goalValue || 1,
+      goalUnit: habit.goalUnit || 'veces',
+      status: habit.status || 'active',
+      createdAt: habit.createdAt || new Date().toISOString()
+    };
+    onSave(updated);
   };
 
   const COLORES = [
