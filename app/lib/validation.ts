@@ -319,3 +319,129 @@ export function getErrorForField(errors: ValidationError[], fieldName: string): 
 export function hasFieldError(errors: ValidationError[], fieldName: string): boolean {
   return errors.some(e => e.field === fieldName);
 }
+
+/**
+ * Validate activity duration is positive
+ */
+export function validateActivityDuration(duration: number | undefined): ValidationError | null {
+  if (duration === undefined || duration === null) {
+    return { field: 'duration', message: 'La duración es requerida' };
+  }
+  if (duration <= 0) {
+    return { field: 'duration', message: 'La duración debe ser mayor que 0' };
+  }
+  if (duration > 1440) {
+    return { field: 'duration', message: 'La duración no puede exceder 24 horas (1440 minutos)' };
+  }
+  return null;
+}
+
+/**
+ * Validate activity unit is valid
+ */
+export function validateActivityUnit(unit: string | undefined): ValidationError | null {
+  const validUnits = ['min', 'hs'];
+  if (!unit || !validUnits.includes(unit)) {
+    return { field: 'unit', message: 'La unidad debe ser "min" (minutos) o "hs" (horas)' };
+  }
+  return null;
+}
+
+/**
+ * Validate activity category is valid
+ */
+export function validateActivityCategory(category: string | undefined): ValidationError | null {
+  const validCategories = ['bienestar', 'trabajo', 'creatividad', 'social', 'aprendizaje', 'deporte', 'hogar', 'otro'];
+  if (!category || !validCategories.includes(category)) {
+    return { field: 'categoria', message: 'Debes seleccionar una categoría válida' };
+  }
+  return null;
+}
+
+/**
+ * Validate cycle phase is valid
+ */
+export function validateCyclePhase(phase: string | undefined): ValidationError | null {
+  const validPhases = ['menstrual', 'follicular', 'ovulatory', 'luteal'];
+  if (!phase || !validPhases.includes(phase)) {
+    return { field: 'phase', message: 'La fase del ciclo debe ser válida' };
+  }
+  return null;
+}
+
+/**
+ * Validate cycle data consistency
+ */
+export function validateCycleDataConsistency(data: {
+  lastPeriodStart: string;
+  cycleLengthDays: number;
+  periodLengthDays: number;
+}): ValidationResult {
+  const errors: ValidationError[] = [];
+
+  const dateError = validateCycleDate(data.lastPeriodStart);
+  if (dateError) errors.push(dateError);
+
+  const cycleLenError = validateCycleLength(data.cycleLengthDays);
+  if (cycleLenError) errors.push(cycleLenError);
+
+  const periodLenError = validatePeriodLength(data.periodLengthDays);
+  if (periodLenError) errors.push(periodLenError);
+
+  // Check that period length is less than cycle length
+  if (data.periodLengthDays >= data.cycleLengthDays) {
+    errors.push({
+      field: 'periodLength',
+      message: `La duración del período (${data.periodLengthDays} días) no puede ser mayor o igual a la del ciclo (${data.cycleLengthDays} días)`
+    });
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
+}
+
+/**
+ * Comprehensive activity validation
+ */
+export function validateActivityComprehensive(data: {
+  name?: string;
+  duration?: number;
+  unit?: string;
+  categoria?: string;
+  date?: string;
+  color?: string;
+}): ValidationResult {
+  const errors: ValidationError[] = [];
+
+  if (data.name) {
+    const nameError = validateName(data.name);
+    if (nameError) errors.push(nameError);
+  }
+
+  if (data.duration !== undefined) {
+    const durationError = validateActivityDuration(data.duration);
+    if (durationError) errors.push(durationError);
+  }
+
+  if (data.unit) {
+    const unitError = validateActivityUnit(data.unit);
+    if (unitError) errors.push(unitError);
+  }
+
+  if (data.categoria) {
+    const categoryError = validateActivityCategory(data.categoria);
+    if (categoryError) errors.push(categoryError);
+  }
+
+  if (data.date) {
+    const dateError = validateDateNotFuture(data.date);
+    if (dateError) errors.push(dateError);
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  };
+}
