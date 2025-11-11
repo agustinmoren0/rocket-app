@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { notifyDataChange } from '../lib/storage-utils';
 import { supabase } from '../lib/supabase';
+import { offlineManager } from '../lib/offline-manager';
 import type { User } from '@supabase/supabase-js';
 
 interface UserContextType {
@@ -14,10 +15,15 @@ interface UserContextType {
   isPremium: boolean;
   isLoading: boolean;
   authError: string | null;
+  isOnline: boolean;
   // Auth methods
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, username: string) => Promise<void>;
   logout: () => Promise<void>;
+  // Offline methods
+  queueOperation: (type: 'create' | 'update' | 'delete', table: string, data: any) => void;
+  processOfflineQueue: () => Promise<void>;
+  getQueueSize: () => number;
 }
 
 const UserContext = createContext<UserContextType>({
@@ -28,9 +34,13 @@ const UserContext = createContext<UserContextType>({
   isPremium: false,
   isLoading: true,
   authError: null,
+  isOnline: true,
   login: async () => {},
   signup: async () => {},
   logout: async () => {},
+  queueOperation: () => {},
+  processOfflineQueue: async () => {},
+  getQueueSize: () => 0,
 });
 
 export const UserProvider = ({ children }: { children: ReactNode }) => {
@@ -39,6 +49,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   // Initialize auth state and listen for changes
   useEffect(() => {
@@ -70,6 +81,27 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     // Load username from localStorage (for backward compatibility)
     const stored = localStorage.getItem('habika_username');
     if (stored) setUsernameState(stored);
+  }, []);
+
+  // Listen for online/offline events
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      console.log('📡 App came online');
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+      console.log('📡 App went offline');
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
   }, []);
 
   const setUsername = (name: string) => {
@@ -139,6 +171,18 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   const isPremium = user !== null;
 
+  const queueOperation = (type: 'create' | 'update' | 'delete', table: string, data: any) => {
+    offlineManager.queueOperation(type, table, data);
+  };
+
+  const processOfflineQueue = async () => {
+    await offlineManager.processQueue();
+  };
+
+  const getQueueSize = () => {
+    return offlineManager.getQueueSize();
+  };
+
   return (
     <UserContext.Provider
       value={{
@@ -149,9 +193,13 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         isPremium,
         isLoading,
         authError,
+        isOnline,
         login,
         signup,
         logout,
+        queueOperation,
+        processOfflineQueue,
+        getQueueSize,
       }}
     >
       {children}
