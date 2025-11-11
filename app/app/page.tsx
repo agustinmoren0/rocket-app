@@ -22,21 +22,25 @@ export default function DashboardPage() {
   useEffect(() => {
     calculateStats();
 
-    // Listener para cambios en localStorage
+    // Listener para cambios en localStorage (desde otras tabs o cambios internos)
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'habika_activities_today' || e.key === 'habika_completions' || e.key === 'habika_activities') {
+      if (e.key === 'habika_activities_today' || e.key === 'habika_completions' || e.key === 'habika_activities' || e.key === 'habika_custom_habits') {
         calculateStats();
       }
     };
 
     window.addEventListener('storage', handleStorageChange);
 
-    // También configurar un intervalo para actualizar stats regularmente
-    const interval = setInterval(calculateStats, 5000); // Cada 5 segundos
+    // Custom event listener para cambios internos en esta tab
+    const handleDataChange = () => {
+      calculateStats();
+    };
+
+    window.addEventListener('habika-data-changed', handleDataChange as EventListener);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
+      window.removeEventListener('habika-data-changed', handleDataChange as EventListener);
     };
   }, []);
 

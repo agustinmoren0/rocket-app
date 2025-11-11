@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import ErrorBoundary from './components/ErrorBoundary';
 
 export default function RootLayoutContent({
   children,
@@ -21,5 +22,9 @@ export default function RootLayoutContent({
     }
   }, [pathname, router]);
 
-  return children;
+  return (
+    <ErrorBoundary>
+      {children}
+    </ErrorBoundary>
+  );
 }

@@ -3,7 +3,16 @@
 import { useEffect } from 'react';
 import confetti from 'canvas-confetti';
 
+// Check if user prefers reduced motion
+function shouldReduceMotion(): boolean {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
 export const triggerConfetti = () => {
+  // Respect user's motion preferences
+  if (shouldReduceMotion()) return;
+
   const duration = 3000;
   const end = Date.now() + duration;
 
@@ -32,6 +41,9 @@ export const triggerConfetti = () => {
 };
 
 export const triggerSuccess = () => {
+  // Respect user's motion preferences
+  if (shouldReduceMotion()) return;
+
   confetti({
     particleCount: 100,
     spread: 70,

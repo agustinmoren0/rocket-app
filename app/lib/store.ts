@@ -198,9 +198,17 @@ export function loadData(): UserData {
   }
 }
 
+// Helper function to notify listeners of data changes
+function notifyDataChange(): void {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new Event('habika-data-changed'));
+  }
+}
+
 export function saveData(data: UserData): void {
   if (typeof window === 'undefined') return;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  notifyDataChange();
 }
 
 export function addActivity(minutes: number, note: string, emotion?: string, category?: Category): void {
@@ -451,6 +459,7 @@ export function syncHabitToCalendar(habit: any): void {
     }
 
     localStorage.setItem('habika_calendar', JSON.stringify(calendar));
+    notifyDataChange();
   } catch (error) {
     console.error('❌ Error syncing habit to calendar:', error);
   }
@@ -469,6 +478,7 @@ export function removeHabitFromCalendar(habitId: string): void {
     });
 
     localStorage.setItem('habika_calendar', JSON.stringify(calendar));
+    notifyDataChange();
   } catch (error) {
     console.error('❌ Error removing habit from calendar:', error);
   }
@@ -504,6 +514,7 @@ export function saveCustomHabit(habit: Omit<CustomHabit, 'id' | 'createdAt'>): C
   const current = getCustomHabits();
   const updated = [...current, newHabit];
   localStorage.setItem('habika_custom_habits', JSON.stringify(updated));
+  notifyDataChange();
 
   return newHabit;
 }
@@ -512,6 +523,7 @@ export function deleteCustomHabit(id: string): void {
   const current = getCustomHabits();
   const updated = current.filter(h => h.id !== id);
   localStorage.setItem('habika_custom_habits', JSON.stringify(updated));
+  notifyDataChange();
 }
 
 export function getAllHabits(): CustomHabit[] {
