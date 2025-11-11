@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import ErrorBoundary from './components/ErrorBoundary';
+import DebugPanel from './components/DebugPanel';
 
 export default function RootLayoutContent({
   children,
@@ -25,6 +26,7 @@ export default function RootLayoutContent({
   return (
     <ErrorBoundary>
       {children}
+      {process.env.NODE_ENV === 'development' && <DebugPanel />}
     </ErrorBoundary>
   );
 }
