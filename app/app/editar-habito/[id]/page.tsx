@@ -6,9 +6,10 @@ import { motion } from 'framer-motion';
 import { useTheme } from '@/app/context/ThemeContext';
 import { getCustomHabits, deleteCustomHabit } from '@/app/lib/store';
 import {
-  Activity, X, Pencil, Trash2, Save
+  Activity, X, Pencil, Trash2, Save, AlertCircle
 } from 'lucide-react';
 import { notifyDataChange } from '@/app/lib/storage-utils';
+import { validateName, validateGoalValue, ValidationError } from '@/app/lib/validation';
 
 export default function EditarHabitoPage() {
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function EditarHabitoPage() {
     targetPeriod: 'por día',
     frequency: 'daily' as 'daily' | 'weekly' | '3x-week' | 'flexible',
   });
+  const [errors, setErrors] = useState<ValidationError[]>([]);
 
   useEffect(() => {
     const habits = getCustomHabits();
@@ -39,6 +41,21 @@ export default function EditarHabitoPage() {
   }, [params.id]);
 
   const handleSave = () => {
+    const newErrors: ValidationError[] = [];
+
+    // Validate all fields
+    const nameError = validateName(formData.name);
+    if (nameError) newErrors.push(nameError);
+
+    const goalError = validateGoalValue(formData.targetValue);
+    if (goalError) newErrors.push(goalError);
+
+    setErrors(newErrors);
+
+    if (newErrors.length > 0) {
+      return;
+    }
+
     // Actualizar hábito en localStorage
     const habits = getCustomHabits();
     const updatedHabits = habits.map(h =>

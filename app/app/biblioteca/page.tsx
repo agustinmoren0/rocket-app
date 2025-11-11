@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronDown, ChevronRight, Plus, X } from 'lucide-react';
+import { ChevronDown, ChevronRight, Plus, X, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { LUCIDE_ICONS } from '@/app/utils/icons';
 import { syncHabitToCalendar, removeHabitFromCalendar } from '@/app/lib/store';
 import { notifyDataChange } from '@/app/lib/storage-utils';
+import { validateName, validateGoalValue, ValidationError } from '@/app/lib/validation';
 
 const HABIT_LIBRARY_FORMAR = {
   fisica: {
@@ -257,7 +258,7 @@ function CreateHabitModal({ editingHabit, onClose, onSuccess }: any) {
     startTime: editingHabit?.startTime || '09:00',
     endTime: editingHabit?.endTime || '17:00',
   });
-
+  const [errors, setErrors] = useState<ValidationError[]>([]);
   const [showIconPicker, setShowIconPicker] = useState(false);
 
   // PALETA DE COLORES PARA LOS GLOBOS DE HÁBITOS
@@ -280,8 +281,18 @@ function CreateHabitModal({ editingHabit, onClose, onSuccess }: any) {
   const MONTH_DATES = Array.from({ length: 31 }, (_, i) => i + 1);
 
   const handleSave = async () => {
-    if (!formData.name.trim()) {
-      alert('Ingresa un nombre para el hábito');
+    const newErrors: ValidationError[] = [];
+
+    // Validate all fields
+    const nameError = validateName(formData.name);
+    if (nameError) newErrors.push(nameError);
+
+    const goalError = validateGoalValue(formData.goalValue);
+    if (goalError) newErrors.push(goalError);
+
+    setErrors(newErrors);
+
+    if (newErrors.length > 0) {
       return;
     }
 

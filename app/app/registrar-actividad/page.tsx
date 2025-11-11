@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Activity, Clock, Calendar, Save, X } from 'lucide-react';
+import { Activity, Clock, Calendar, Save, X, AlertCircle } from 'lucide-react';
 import { notifyDataChange } from '@/app/lib/storage-utils';
+import { validateName, validateDuration, validateDateNotFuture, ValidationError } from '@/app/lib/validation';
 
 export default function RegistrarActividadPage() {
   const router = useRouter();
@@ -16,6 +17,7 @@ export default function RegistrarActividadPage() {
     date: new Date().toISOString().split('T')[0],
     notes: '',
   });
+  const [errors, setErrors] = useState<ValidationError[]>([]);
 
   const categories = [
     { value: 'energia-fisica', label: 'Energía Física', color: 'bg-green-100 text-green-700' },
@@ -26,8 +28,21 @@ export default function RegistrarActividadPage() {
   ];
 
   const handleSave = () => {
-    if (!formData.name.trim()) {
-      alert('Por favor ingresá el nombre de la actividad');
+    const newErrors: ValidationError[] = [];
+
+    // Validate all fields
+    const nameError = validateName(formData.name);
+    if (nameError) newErrors.push(nameError);
+
+    const durationError = validateDuration(formData.minutes, 1, 1440);
+    if (durationError) newErrors.push(durationError);
+
+    const dateError = validateDateNotFuture(formData.date);
+    if (dateError) newErrors.push(dateError);
+
+    setErrors(newErrors);
+
+    if (newErrors.length > 0) {
       return;
     }
 
@@ -35,6 +50,7 @@ export default function RegistrarActividadPage() {
     const newActivity = {
       id: Date.now().toString(),
       ...formData,
+      minutes: parseInt(formData.minutes.toString()),
       createdAt: new Date().toISOString(),
     };
 
@@ -62,6 +78,27 @@ export default function RegistrarActividadPage() {
           <div className="w-10" />
         </div>
 
+        {/* Error Summary */}
+        {errors.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6"
+          >
+            <div className="flex gap-3">
+              <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-red-900 mb-2">Por favor corregi los siguientes errores:</h3>
+                <ul className="space-y-1">
+                  {errors.map((error, idx) => (
+                    <li key={idx} className="text-sm text-red-700">• {error.message}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Form */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -76,9 +113,14 @@ export default function RegistrarActividadPage() {
             <input
               type="text"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) => {
+                setFormData({ ...formData, name: e.target.value });
+                setErrors(errors.filter(e => e.field !== 'name'));
+              }}
               placeholder="Ej: Caminar en el parque"
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all"
+              className={`w-full px-4 py-3 rounded-xl border outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 ${
+                errors.some(e => e.field === 'name') ? 'border-red-400 focus:ring-red-100' : 'border-slate-200'
+              }`}
             />
           </div>
 
@@ -92,8 +134,15 @@ export default function RegistrarActividadPage() {
               <input
                 type="number"
                 value={formData.minutes}
-                onChange={(e) => setFormData({...formData, minutes: parseInt(e.target.value) || 0})}
-                className="flex-1 px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 outline-none"
+                onChange={(e) => {
+                  setFormData({...formData, minutes: parseInt(e.target.value) || 0});
+                  setErrors(errors.filter(e => e.field !== 'duration'));
+                }}
+                min="1"
+                max="1440"
+                className={`flex-1 px-4 py-3 rounded-xl border outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 ${
+                  errors.some(e => e.field === 'duration') ? 'border-red-400 focus:ring-red-100' : 'border-slate-200'
+                }`}
               />
               <select
                 value={formData.unit || 'min'}
@@ -115,8 +164,13 @@ export default function RegistrarActividadPage() {
             <input
               type="date"
               value={formData.date}
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none transition-all"
+              onChange={(e) => {
+                setFormData({ ...formData, date: e.target.value });
+                setErrors(errors.filter(e => e.field !== 'date'));
+              }}
+              className={`w-full px-4 py-3 rounded-xl border outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 ${
+                errors.some(e => e.field === 'date') ? 'border-red-400 focus:ring-red-100' : 'border-slate-200'
+              }`}
             />
           </div>
 

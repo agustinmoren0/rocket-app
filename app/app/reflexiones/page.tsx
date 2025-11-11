@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { useTheme } from '@/app/context/ThemeContext';
-import { BookOpen, Send, Trash2 } from 'lucide-react';
+import { BookOpen, Send, Trash2, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { notifyDataChange } from '@/app/lib/storage-utils';
+import { validateTextArea, ValidationError } from '@/app/lib/validation';
 
 interface Reflection {
   id: string;
@@ -31,6 +32,7 @@ export default function ReflexionesPage() {
   const [learnings, setLearnings] = useState('');
   const [improvements, setImprovements] = useState('');
   const [loading, setLoading] = useState(true);
+  const [errors, setErrors] = useState<ValidationError[]>([]);
   const { currentTheme } = useTheme();
 
   useEffect(() => {
@@ -70,8 +72,27 @@ export default function ReflexionesPage() {
   };
 
   const handleCreateReflection = () => {
-    if (!achievements.trim()) {
-      alert('Por favor, cuéntame al menos qué lograste.');
+    const newErrors: ValidationError[] = [];
+
+    // Validate achievements (required)
+    const achievementsError = validateTextArea(achievements, 1, 5000, true);
+    if (achievementsError) newErrors.push(achievementsError);
+
+    // Validate learnings (optional, but if provided must be valid)
+    if (learnings) {
+      const learningsError = validateTextArea(learnings, 1, 5000, false);
+      if (learningsError) newErrors.push(learningsError);
+    }
+
+    // Validate improvements (optional, but if provided must be valid)
+    if (improvements) {
+      const improvementsError = validateTextArea(improvements, 1, 5000, false);
+      if (improvementsError) newErrors.push(improvementsError);
+    }
+
+    setErrors(newErrors);
+
+    if (newErrors.length > 0) {
       return;
     }
 
@@ -96,6 +117,7 @@ export default function ReflexionesPage() {
     setImprovements('');
     setMood('good');
     setIsCreating(false);
+    setErrors([]);
   };
 
   const handleDeleteReflection = (id: string) => {
