@@ -88,8 +88,20 @@ export interface Reflection {
 }
 
 // ===== CALENDAR =====
+export interface CalendarActivity {
+  id: string;
+  name: string;
+  duration: number;
+  unit: 'min' | 'hs';
+  categoria: string;
+  color: string;
+  notes: string;
+  timestamp: string;
+  type: string;
+}
+
 export interface CalendarDay {
-  activities: Activity[];
+  activities: CalendarActivity[];
   habits?: string[];
   notes?: string;
 }

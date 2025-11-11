@@ -6,6 +6,7 @@ import { motion, useMotionValue, PanInfo } from 'framer-motion';
 import { Plus, Clock, Edit2, Trash2, Sparkles, Calendar as CalendarIcon, Check } from 'lucide-react';
 import { LUCIDE_ICONS } from '@/app/utils/icons';
 import { setStorageItem, notifyDataChange } from '@/app/lib/storage-utils';
+import { Activity, Habit, CalendarData, CalendarActivity } from '@/app/types';
 
 const CATEGORIAS = [
   { id: 'bienestar', name: 'Bienestar', icon: 'Heart' },
@@ -25,7 +26,11 @@ const COLORES = [
 ];
 
 // Componente que usa useSearchParams (dentro de Suspense)
-function ModalOpener({ setShowModal }: any) {
+interface ModalOpenerProps {
+  setShowModal: (show: boolean) => void;
+}
+
+function ModalOpener({ setShowModal }: ModalOpenerProps) {
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -41,10 +46,10 @@ function ModalOpener({ setShowModal }: any) {
 export default function ActividadesPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'actividades' | 'habitos' | 'timeline'>('actividades');
-  const [activities, setActivities] = useState<any[]>([]);
-  const [habits, setHabits] = useState<any[]>([]);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [habits, setHabits] = useState<Habit[]>([]);
   const [showModal, setShowModal] = useState(false);
-  const [editingActivity, setEditingActivity] = useState<any>(null);
+  const [editingActivity, setEditingActivity] = useState<Partial<Activity> | null>(null);
 
   useEffect(() => {
     loadTodayData();
@@ -119,15 +124,15 @@ export default function ActividadesPage() {
     }
   };
 
-  const syncToCalendar = (date: string, activities: any[]) => {
+  const syncToCalendar = (date: string, activities: Activity[]): void => {
     try {
-      const calendar = JSON.parse(localStorage.getItem('habika_calendar') || '{}');
+      const calendar: CalendarData = JSON.parse(localStorage.getItem('habika_calendar') || '{}');
 
       if (!calendar[date]) {
         calendar[date] = { activities: [], habits: [], notes: '' };
       }
 
-      calendar[date].activities = activities.map((act: any) => ({
+      calendar[date].activities = activities.map((act: Activity): CalendarActivity => ({
         id: act.id,
         name: act.name,
         duration: act.duration,
@@ -147,29 +152,36 @@ export default function ActividadesPage() {
     }
   };
 
-  const saveActivity = (activityData: any) => {
+  const saveActivity = (activityData: Partial<Activity>): void => {
     try {
       const today = new Date().toISOString().split('T')[0];
-      const allActivities = JSON.parse(localStorage.getItem('habika_activities_today') || '{}');
+      const allActivities: { [key: string]: Activity[] } = JSON.parse(localStorage.getItem('habika_activities_today') || '{}');
 
       if (!allActivities[today]) {
         allActivities[today] = [];
       }
 
-      if (editingActivity) {
-        const index = allActivities[today].findIndex((a: any) => a.id === editingActivity.id);
+      if (editingActivity && editingActivity.id) {
+        const index = allActivities[today].findIndex((a: Activity) => a.id === editingActivity.id);
         if (index !== -1) {
           allActivities[today][index] = {
             ...activityData,
             id: editingActivity.id,
-            timestamp: editingActivity.timestamp
-          };
+            timestamp: editingActivity.timestamp || new Date().toISOString()
+          } as Activity;
         }
       } else {
-        const newActivity = {
+        const newActivity: Activity = {
           id: `activity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           timestamp: new Date().toISOString(),
-          ...activityData
+          date: today,
+          createdAt: new Date().toISOString(),
+          name: activityData.name || 'Sin nombre',
+          duration: activityData.duration || 0,
+          unit: activityData.unit || 'min',
+          categoria: activityData.categoria || 'otro',
+          color: activityData.color || '#6B9B9E',
+          notes: activityData.notes || ''
         };
         allActivities[today].push(newActivity);
       }
@@ -260,7 +272,7 @@ export default function ActividadesPage() {
 
   const getTotalMinutes = () => {
     return activities.reduce((total, activity) => {
-      const minutes = activity.unit === 'hora(s)' ? activity.duration * 60 : activity.duration;
+      const minutes = activity.unit === 'hs' ? activity.duration * 60 : activity.duration;
       return total + minutes;
     }, 0);
   };
@@ -455,11 +467,17 @@ export default function ActividadesPage() {
   );
 }
 
-function ActivityCard({ activity, onEdit, onDelete }: any) {
+interface ActivityCardProps {
+  activity: Activity;
+  onEdit: (activity: Activity) => void;
+  onDelete: (id: string) => void;
+}
+
+function ActivityCard({ activity, onEdit, onDelete }: ActivityCardProps) {
   const x = useMotionValue(0);
   const [swipeState, setSwipeState] = useState<'closed' | 'edit' | 'delete'>('closed');
 
-  const handleDragEnd = (event: any, info: PanInfo) => {
+  const handleDragEnd = (_event: any, info: PanInfo) => {
     const velocity = info.velocity.x;
     const offset = info.offset.x;
 
@@ -511,7 +529,7 @@ function ActivityCard({ activity, onEdit, onDelete }: any) {
         >
           <button
             onClick={() => {
-              onEdit();
+              onEdit(activity);
               closeSwipe();
             }}
             className="w-20 h-16 rounded-2xl bg-[#6B9B9E] flex flex-col items-center justify-center shadow-md"
@@ -530,7 +548,7 @@ function ActivityCard({ activity, onEdit, onDelete }: any) {
         >
           <button
             onClick={() => {
-              onDelete();
+              onDelete(activity.id);
               closeSwipe();
             }}
             className="w-20 h-16 rounded-2xl bg-[#FF6B6B] flex flex-col items-center justify-center shadow-md"
@@ -587,10 +605,15 @@ function ActivityCard({ activity, onEdit, onDelete }: any) {
   );
 }
 
-function HabitCard({ habit, onToggle }: any) {
+interface HabitCardProps {
+  habit: Habit;
+  onToggle: () => void;
+}
+
+function HabitCard({ habit, onToggle }: HabitCardProps) {
   const Icon = LUCIDE_ICONS[habit.icon] || LUCIDE_ICONS['Star'];
   const today = new Date().toISOString().split('T')[0];
-  const isCompleted = habit.completedDates?.includes(today);
+  const isCompleted = habit.completedDates?.includes(today) || false;
 
   return (
     <div className="bg-white rounded-2xl p-4 shadow-sm flex items-center gap-4">
@@ -628,7 +651,22 @@ function HabitCard({ habit, onToggle }: any) {
   );
 }
 
-function TimelineCard({ item }: any) {
+interface TimelineItem {
+  icon: string;
+  name: string;
+  color: string;
+  type: 'activity' | 'habit';
+  timestamp?: string;
+  duration?: number;
+  unit?: string;
+  categoria?: string;
+}
+
+interface TimelineCardProps {
+  item: TimelineItem;
+}
+
+function TimelineCard({ item }: TimelineCardProps) {
   const Icon = LUCIDE_ICONS[item.icon] || LUCIDE_ICONS['Circle'];
   const categoria = item.type === 'activity'
     ? CATEGORIAS.find(c => c.id === item.categoria)
@@ -682,8 +720,14 @@ function TimelineCard({ item }: any) {
   );
 }
 
-function ActivityModal({ activity, onSave, onClose }: any) {
-  const [formData, setFormData] = useState({
+interface ActivityModalProps {
+  activity?: Partial<Activity> | null;
+  onSave: (data: Partial<Activity>) => void;
+  onClose: () => void;
+}
+
+function ActivityModal({ activity, onSave, onClose }: ActivityModalProps) {
+  const [formData, setFormData] = useState<Partial<Activity>>({
     name: activity?.name || '',
     duration: activity?.duration || 30,
     unit: activity?.unit || 'min',
@@ -692,8 +736,8 @@ function ActivityModal({ activity, onSave, onClose }: any) {
     notes: activity?.notes || ''
   });
 
-  const handleSave = () => {
-    if (!formData.name.trim()) {
+  const handleSave = (): void => {
+    if (!formData.name?.trim()) {
       alert('Ingresa el nombre de la actividad');
       return;
     }
@@ -768,9 +812,9 @@ function ActivityModal({ activity, onSave, onClose }: any) {
                   Min
                 </button>
                 <button
-                  onClick={() => setFormData({ ...formData, unit: 'hora(s)' })}
+                  onClick={() => setFormData({ ...formData, unit: 'hs' })}
                   className={`flex-1 py-3 rounded-xl font-medium transition-colors ${
-                    formData.unit === 'hora(s)'
+                    formData.unit === 'hs'
                       ? 'bg-[#FF99AC] text-white'
                       : 'bg-[#FFF5F0] text-[#A67B6B]'
                   }`}
