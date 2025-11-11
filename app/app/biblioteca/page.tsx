@@ -8,6 +8,7 @@ import { LUCIDE_ICONS } from '@/app/utils/icons';
 import { syncHabitToCalendar, removeHabitFromCalendar } from '@/app/lib/store';
 import { notifyDataChange } from '@/app/lib/storage-utils';
 import { validateName, validateGoalValue, ValidationError } from '@/app/lib/validation';
+import { Habit, ModalProps } from '@/app/types';
 
 const HABIT_LIBRARY_FORMAR = {
   fisica: {
@@ -97,11 +98,11 @@ export default function BibliotecaPage() {
   const [activeTab, setActiveTab] = useState<'formar' | 'dejar'>('formar');
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [editingHabit, setEditingHabit] = useState<any>(null);
+  const [editingHabit, setEditingHabit] = useState<Partial<Habit> | null>(null);
 
   const currentLibrary = activeTab === 'formar' ? HABIT_LIBRARY_FORMAR : HABIT_LIBRARY_DEJAR;
 
-  const handleSelectHabit = (habit: any) => {
+  const handleSelectHabit = (habit: { id: string; name: string; icon: string; description: string }) => {
     setEditingHabit({
       name: habit.name,
       icon: habit.icon,
@@ -243,7 +244,11 @@ export default function BibliotecaPage() {
 // MODAL CREAR/EDITAR HÁBITO
 // ═══════════════════════════════════════════════════════════════════
 
-function CreateHabitModal({ editingHabit, onClose, onSuccess }: any) {
+interface CreateHabitModalProps extends ModalProps {
+  editingHabit?: Partial<Habit> | null;
+}
+
+function CreateHabitModal({ editingHabit, onClose, onSuccess }: CreateHabitModalProps) {
   const [formData, setFormData] = useState({
     name: editingHabit?.name || '',
     icon: editingHabit?.icon || 'Star',
@@ -299,7 +304,7 @@ function CreateHabitModal({ editingHabit, onClose, onSuccess }: any) {
     try {
       const habits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
 
-      if (editingHabit && !editingHabit.isPreset) {
+      if (editingHabit && !editingHabit.isPreset && editingHabit.id) {
         // Editar hábito existente
         const index = habits.findIndex((h: any) => h.id === editingHabit.id);
         if (index !== -1) {
@@ -337,7 +342,7 @@ function CreateHabitModal({ editingHabit, onClose, onSuccess }: any) {
       localStorage.setItem('habika_custom_habits', JSON.stringify(habits));
       notifyDataChange();
       console.log('💾 Saved to localStorage, calling onSuccess()...');
-      onSuccess();
+      onSuccess?.();
     } catch (error) {
       console.error('❌ Error saving habit:', error);
       alert('Error al guardar el hábito. Por favor intenta de nuevo.');
