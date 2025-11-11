@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
+
 import { Activity, Clock, Calendar, Save, X, AlertCircle } from 'lucide-react';
 import { notifyDataChange } from '@/app/lib/storage-utils';
 import { validateName, validateDuration, validateDateNotFuture, ValidationError } from '@/app/lib/validation';
+import { useFocusOnError } from '@/app/lib/useFocusManagement';
 
 export default function RegistrarActividadPage() {
   const router = useRouter();
@@ -18,6 +19,7 @@ export default function RegistrarActividadPage() {
     notes: '',
   });
   const [errors, setErrors] = useState<ValidationError[]>([]);
+  const formRef = useFocusOnError([errors]);
 
   const categories = [
     { value: 'energia-fisica', label: 'Energía Física', color: 'bg-green-100 text-green-700' },
@@ -80,11 +82,7 @@ export default function RegistrarActividadPage() {
 
         {/* Error Summary */}
         {errors.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6"
-          >
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
             <div className="flex gap-3">
               <AlertCircle size={20} className="text-red-600 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
@@ -96,13 +94,12 @@ export default function RegistrarActividadPage() {
                 </ul>
               </div>
             </div>
-          </motion.div>
+          </div>
         )}
 
         {/* Form */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+        <div
+          ref={formRef}
           className="bg-white/60 backdrop-blur-xl rounded-2xl border border-white/40 p-6 space-y-6"
         >
           {/* Nombre */}
@@ -226,7 +223,7 @@ export default function RegistrarActividadPage() {
               Guardar
             </button>
           </div>
-        </motion.div>
+        </div>
       </div>
     </main>
   );
