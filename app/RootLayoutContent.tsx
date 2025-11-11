@@ -5,6 +5,26 @@ import { useRouter, usePathname } from "next/navigation";
 import ErrorBoundary from './components/ErrorBoundary';
 import DebugPanel from './components/DebugPanel';
 import InstallPrompt from './components/InstallPrompt';
+import { UserProvider } from './context/UserContext';
+import { useSyncData } from './hooks/useSyncData';
+
+// Wrapper component to use the sync hook inside UserProvider
+function RootLayoutWithSync({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  // Activate sync when component mounts
+  useSyncData();
+
+  return (
+    <ErrorBoundary>
+      {children}
+      <InstallPrompt />
+      {process.env.NODE_ENV === 'development' && <DebugPanel />}
+    </ErrorBoundary>
+  );
+}
 
 export default function RootLayoutContent({
   children,
@@ -47,10 +67,10 @@ export default function RootLayoutContent({
   }
 
   return (
-    <ErrorBoundary>
-      {children}
-      <InstallPrompt />
-      {process.env.NODE_ENV === 'development' && <DebugPanel />}
-    </ErrorBoundary>
+    <UserProvider>
+      <RootLayoutWithSync>
+        {children}
+      </RootLayoutWithSync>
+    </UserProvider>
   );
 }
