@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation';
 
 import { Activity, Clock, Calendar, Save, X, AlertCircle } from 'lucide-react';
 import { useActivity } from '@/app/context/ActivityContext';
+import { useUser } from '@/app/context/UserContext';
 import { validateName, validateDuration, validateDateNotFuture, ValidationError } from '@/app/lib/validation';
 import { useFocusOnError } from '@/app/lib/useFocusManagement';
 
 export default function RegistrarActividadPage() {
   const router = useRouter();
   const { addActivity } = useActivity();
+  const { user } = useUser();
   const [formData, setFormData] = useState({
     name: '',
     minutes: 20,
@@ -33,6 +35,8 @@ export default function RegistrarActividadPage() {
   const handleSave = async () => {
     const newErrors: ValidationError[] = [];
 
+    console.log('🔵 [RegistrarActividad] Starting save with user:', { userId: user?.id, authenticated: !!user });
+
     // Validate all fields
     const nameError = validateName(formData.name);
     if (nameError) newErrors.push(nameError);
@@ -46,21 +50,35 @@ export default function RegistrarActividadPage() {
     setErrors(newErrors);
 
     if (newErrors.length > 0) {
+      console.warn('⚠️ [RegistrarActividad] Validation errors:', newErrors);
       return;
     }
 
-    // Use ActivityContext to save with dual-layer persistence
-    await addActivity({
-      name: formData.name,
-      duration: parseInt(formData.minutes.toString()),
-      unit: formData.unit as 'min' | 'hs',
-      categoria: formData.category,
-      color: '#6366f1', // Default indigo color
-      date: formData.date,
-      notes: formData.notes,
-    });
+    console.log('✅ [RegistrarActividad] Validation passed, creating activity');
 
-    router.push('/app/actividades');
+    try {
+      // Use ActivityContext to save with dual-layer persistence
+      const activityData = {
+        name: formData.name,
+        duration: parseInt(formData.minutes.toString()),
+        unit: formData.unit as 'min' | 'hs',
+        categoria: formData.category,
+        color: '#6366f1', // Default indigo color
+        date: formData.date,
+        notes: formData.notes,
+      };
+
+      console.log('📤 [RegistrarActividad] Calling addActivity() with:', activityData);
+      await addActivity(activityData);
+      console.log('✅ [RegistrarActividad] Activity created successfully');
+
+      // Navigate to activities page
+      console.log('🔄 [RegistrarActividad] Navigating to /app/actividades');
+      router.push('/app/actividades');
+    } catch (error) {
+      console.error('❌ [RegistrarActividad] Error saving activity:', error);
+      setErrors([{ field: 'general', message: 'Error al guardar la actividad. Intenta de nuevo.' }]);
+    }
   };
 
   return (

@@ -130,32 +130,41 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
       createdAt: now,
     };
 
-    // Update local state
-    const updated = { ...activities };
-    if (!updated[activity.date]) {
-      updated[activity.date] = [];
-    }
-    updated[activity.date].push(newActivity);
+    console.log('📝 Creating activity:', { id, name: newActivity.name, date: newActivity.date, userId });
 
-    setActivities(updated);
-    localStorage.setItem('habika_activities_today', JSON.stringify(updated));
+    try {
+      // STEP 1: Update local state (sync)
+      const updated = { ...activities };
+      if (!updated[activity.date]) {
+        updated[activity.date] = [];
+      }
+      updated[activity.date].push(newActivity);
 
-    // Emit event for local UI updates
-    window.dispatchEvent(
-      new CustomEvent('activityUpdated', {
-        detail: {
-          eventType: 'INSERT',
-          activity: newActivity,
-          timestamp: new Date().toISOString(),
-        },
-      })
-    );
+      // STEP 2: Persist to localStorage FIRST (this is synchronous and immediate)
+      localStorage.setItem('habika_activities_today', JSON.stringify(updated));
+      console.log('✅ Activity saved to localStorage immediately:', { id, date: activity.date });
 
-    // Persist to Supabase if authenticated
-    if (userId && deviceId) {
-      console.log('📤 Persisting activity to Supabase:', { id: newActivity.id, userId, deviceId });
-      try {
-        const result = await persistData({
+      // STEP 3: Update React state (triggers re-renders)
+      setActivities(updated);
+      console.log('✅ React state updated with new activity:', { id });
+
+      // STEP 4: Emit event for local UI updates (non-blocking)
+      window.dispatchEvent(
+        new CustomEvent('activityUpdated', {
+          detail: {
+            eventType: 'INSERT',
+            activity: newActivity,
+            timestamp: now,
+          },
+        })
+      );
+      console.log('📢 Activity event emitted:', { id, eventType: 'INSERT' });
+
+      // STEP 5: Persist to Supabase if authenticated (async, non-blocking)
+      if (userId && typeof userId === 'string' && userId.trim().length > 0) {
+        console.log('📤 Queueing Supabase persistence for activity:', { id, userId });
+
+        persistData({
           table: 'activities',
           data: {
             user_id: userId,
@@ -163,63 +172,81 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
           },
           userId,
           deviceId,
-        });
-        console.log('✅ Activity persisted successfully:', { stored: result.stored, recordId: result.recordId });
-      } catch (error) {
-        console.error('❌ Error persisting activity to Supabase:', error);
+        })
+          .then((result) => {
+            console.log('✅ Activity persisted to Supabase:', { stored: result.stored, recordId: result.recordId, error: result.error });
+          })
+          .catch((error) => {
+            console.error('❌ Error persisting activity to Supabase:', error);
+          });
+      } else {
+        console.log('ℹ️ Activity saved to localStorage only (user not authenticated)', { userId, authenticated: !!userId });
       }
-    } else {
-      console.log('ℹ️ Activity saved to localStorage only (not authenticated)', { userId, deviceId });
-    }
 
-    notifyDataChange();
+      notifyDataChange();
+    } catch (error) {
+      console.error('❌ Critical error in addActivity:', error);
+      throw error;
+    }
   };
 
   const updateActivity = async (id: string, updates: Partial<Activity>) => {
-    const updated = { ...activities };
-    let found = false;
+    console.log('📝 Updating activity:', { id, updates });
 
-    // Find and update the activity
-    for (const date in updated) {
-      const activityIndex = updated[date].findIndex(a => a.id === id);
-      if (activityIndex !== -1) {
-        updated[date][activityIndex] = {
-          ...updated[date][activityIndex],
-          ...updates,
-          timestamp: new Date().toISOString(),
-        };
-        found = true;
-        break;
-      }
-    }
+    try {
+      const updated = { ...activities };
+      let found = false;
 
-    if (!found) return;
-
-    const updatedActivity = Object.values(updated)
-      .flat()
-      .find(a => a.id === id);
-
-    setActivities(updated);
-    localStorage.setItem('habika_activities_today', JSON.stringify(updated));
-
-    // Emit event for local UI updates
-    if (updatedActivity) {
-      window.dispatchEvent(
-        new CustomEvent('activityUpdated', {
-          detail: {
-            eventType: 'UPDATE',
-            activity: updatedActivity,
+      // Find and update the activity
+      for (const date in updated) {
+        const activityIndex = updated[date].findIndex(a => a.id === id);
+        if (activityIndex !== -1) {
+          updated[date][activityIndex] = {
+            ...updated[date][activityIndex],
+            ...updates,
             timestamp: new Date().toISOString(),
-          },
-        })
-      );
-    }
+          };
+          found = true;
+          break;
+        }
+      }
 
-    // Persist to Supabase if authenticated
-    if (userId && deviceId && updatedActivity) {
-      console.log('📤 Updating activity in Supabase:', { id, userId });
-      try {
-        const result = await persistData({
+      if (!found) {
+        console.warn('⚠️ Activity not found for update:', { id });
+        return;
+      }
+
+      const updatedActivity = Object.values(updated)
+        .flat()
+        .find(a => a.id === id);
+
+      // STEP 1: Save to localStorage FIRST (immediate, synchronous)
+      localStorage.setItem('habika_activities_today', JSON.stringify(updated));
+      console.log('✅ Activity updated in localStorage:', { id });
+
+      // STEP 2: Update React state
+      setActivities(updated);
+      console.log('✅ React state updated for activity:', { id });
+
+      // STEP 3: Emit event for local UI updates
+      if (updatedActivity) {
+        window.dispatchEvent(
+          new CustomEvent('activityUpdated', {
+            detail: {
+              eventType: 'UPDATE',
+              activity: updatedActivity,
+              timestamp: new Date().toISOString(),
+            },
+          })
+        );
+        console.log('📢 Activity update event emitted:', { id });
+      }
+
+      // STEP 4: Persist to Supabase if authenticated (async, non-blocking)
+      if (userId && typeof userId === 'string' && userId.trim().length > 0 && deviceId && updatedActivity) {
+        console.log('📤 Queueing Supabase update for activity:', { id, userId });
+
+        persistData({
           table: 'activities',
           data: {
             user_id: userId,
@@ -227,54 +254,75 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
           },
           userId,
           deviceId,
-        });
-        console.log('✅ Activity updated successfully:', { stored: result.stored });
-      } catch (error) {
-        console.error('❌ Error updating activity in Supabase:', error);
+        })
+          .then((result) => {
+            console.log('✅ Activity updated in Supabase:', { stored: result.stored, error: result.error });
+          })
+          .catch((error) => {
+            console.error('❌ Error updating activity in Supabase:', error);
+          });
       }
-    }
 
-    notifyDataChange();
+      notifyDataChange();
+    } catch (error) {
+      console.error('❌ Critical error in updateActivity:', error);
+      throw error;
+    }
   };
 
   const deleteActivity = async (id: string, date: string) => {
-    const updated = { ...activities };
+    console.log('📝 Deleting activity:', { id, date, userId });
 
-    if (updated[date]) {
-      updated[date] = updated[date].filter(a => a.id !== id);
-      if (updated[date].length === 0) {
-        delete updated[date];
+    try {
+      const updated = { ...activities };
+
+      if (updated[date]) {
+        updated[date] = updated[date].filter(a => a.id !== id);
+        if (updated[date].length === 0) {
+          delete updated[date];
+        }
       }
-    }
 
-    setActivities(updated);
-    localStorage.setItem('habika_activities_today', JSON.stringify(updated));
+      // STEP 1: Delete from localStorage FIRST (immediate, synchronous)
+      localStorage.setItem('habika_activities_today', JSON.stringify(updated));
+      console.log('✅ Activity deleted from localStorage:', { id, date });
 
-    // Emit event for local UI updates
-    window.dispatchEvent(
-      new CustomEvent('activityUpdated', {
-        detail: {
-          eventType: 'DELETE',
-          activity: { id, date },
-          timestamp: new Date().toISOString(),
-        },
-      })
-    );
+      // STEP 2: Update React state
+      setActivities(updated);
+      console.log('✅ React state updated, activity removed:', { id });
 
-    // Delete from Supabase if authenticated
-    if (userId && deviceId) {
-      console.log('📤 Deleting activity from Supabase:', { id, userId });
-      try {
-        const result = await deleteRecord('activities', id, userId, deviceId);
-        console.log('✅ Activity deleted successfully:', { recordId: result.recordId });
-      } catch (error) {
-        console.error('❌ Error deleting activity from Supabase:', error);
+      // STEP 3: Emit event for local UI updates
+      window.dispatchEvent(
+        new CustomEvent('activityUpdated', {
+          detail: {
+            eventType: 'DELETE',
+            activity: { id, date },
+            timestamp: new Date().toISOString(),
+          },
+        })
+      );
+      console.log('📢 Activity delete event emitted:', { id });
+
+      // STEP 4: Delete from Supabase if authenticated (async, non-blocking)
+      if (userId && typeof userId === 'string' && userId.trim().length > 0 && deviceId) {
+        console.log('📤 Queueing Supabase deletion for activity:', { id, userId });
+
+        deleteRecord('activities', id, userId, deviceId)
+          .then((result) => {
+            console.log('✅ Activity deleted from Supabase:', { recordId: result.recordId, success: result.success });
+          })
+          .catch((error) => {
+            console.error('❌ Error deleting activity from Supabase:', error);
+          });
+      } else {
+        console.log('ℹ️ Activity deleted from localStorage only (user not authenticated)', { userId, authenticated: !!userId });
       }
-    } else {
-      console.log('ℹ️ Activity deleted from localStorage only (not authenticated)');
-    }
 
-    notifyDataChange();
+      notifyDataChange();
+    } catch (error) {
+      console.error('❌ Critical error in deleteActivity:', error);
+      throw error;
+    }
   };
 
   const getActivitiesForDate = (date: string): Activity[] => {
