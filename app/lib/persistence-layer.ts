@@ -116,13 +116,56 @@ async function persistToSupabase(
       throw new Error('Invalid or missing userId - cannot persist to Supabase')
     }
 
-    // Ensure required fields
-    const record = {
-      ...data,
+    // Build record with proper type coercion based on table
+    let record: any = {
+      id: data.id,
       user_id: userId,
       device_id: deviceId,
       updated_at: new Date().toISOString(),
     }
+
+    // Add table-specific fields based on what we're storing
+    if (table === 'activities') {
+      record = {
+        ...record,
+        name: data.name,
+        duration: parseInt(data.duration) || 0,
+        unit: data.unit || 'min', // Ensure unit is never null
+        categoria: data.categoria,
+        color: data.color,
+        date: data.date,
+        notes: data.notes || null,
+        timestamp: data.timestamp,
+        created_at: data.createdAt || data.created_at || new Date().toISOString(),
+      }
+      console.log('📝 Preparing activity record for Supabase:', { id: record.id, unit: record.unit, duration: record.duration })
+    } else if (table === 'habits') {
+      record = {
+        ...record,
+        name: data.name,
+        icon: data.icon,
+        color: data.color,
+        type: data.type || null,
+        goal_value: data.goalValue ? parseInt(data.goalValue) : null,
+        goal_unit: data.goalUnit || null,
+        frequency: data.frequency,
+        frequency_interval: data.frequencyInterval ? parseInt(data.frequencyInterval) : null,
+        status: data.status || 'active',
+        start_time: data.startTime || null,
+        end_time: data.endTime || null,
+        days_of_week: data.daysOfWeek || null,
+        dates_of_month: data.datesOfMonth || null,
+        is_preset: data.isPreset || false,
+        minutes: data.minutes ? parseInt(data.minutes) : null,
+        created_at: data.createdAt || data.created_at || new Date().toISOString(),
+      }
+      console.log('📝 Preparing habit record for Supabase:', { id: record.id, name: record.name })
+    } else {
+      // For other tables, just spread the data
+      record = { ...record, ...data }
+    }
+
+    console.log(`📤 Upserting ${table}:`, { recordId: record.id, keys: Object.keys(record) })
 
     // Try to insert/update
     const { data: result, error } = await supabase.from(table).upsert([record], {
@@ -130,6 +173,7 @@ async function persistToSupabase(
     })
 
     if (error) {
+      console.error(`❌ Supabase error details:`, { code: error.code, message: error.message })
       // On network error, queue for later
       if (error.message.includes('fetch') || error.message.includes('network')) {
         console.warn(`⚠️ Network error for ${table}, queuing for later sync`)
