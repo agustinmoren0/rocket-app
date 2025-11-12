@@ -24,7 +24,8 @@
       "Bash(__NEW_LINE__ git push origin main)",
       "Bash(git push:*)",
       "Bash(done)",
-      "Bash(git tag:*)"
+      "Bash(git tag:*)",
+      "Bash(echo:*)"
     ],
     "deny": [],
     "ask": []

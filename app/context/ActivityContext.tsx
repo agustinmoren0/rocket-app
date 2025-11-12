@@ -64,6 +64,51 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]);
 
+  // Listen for realtime activity updates from RealtimeManager
+  useEffect(() => {
+    const handleActivityUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { eventType, activity } = customEvent.detail;
+
+      console.log(`🔄 ActivityContext received ${eventType} event for activity:`, activity.id);
+
+      setActivities((prev) => {
+        const updated = { ...prev };
+
+        if (eventType === 'DELETE') {
+          // Remove activity from all dates
+          for (const date in updated) {
+            updated[date] = updated[date].filter(a => a.id !== activity.id);
+            if (updated[date].length === 0) {
+              delete updated[date];
+            }
+          }
+        } else if (eventType === 'INSERT' || eventType === 'UPDATE') {
+          // Add or update activity
+          const activityDate = activity.date;
+          if (!updated[activityDate]) {
+            updated[activityDate] = [];
+          }
+
+          const existingIndex = updated[activityDate].findIndex(a => a.id === activity.id);
+          if (existingIndex >= 0) {
+            updated[activityDate][existingIndex] = activity;
+          } else {
+            updated[activityDate].push(activity);
+          }
+        }
+
+        // Persist to localStorage
+        localStorage.setItem('habika_activities_today', JSON.stringify(updated));
+        return updated;
+      });
+    };
+
+    // Listen for activity updates
+    window.addEventListener('activityUpdated', handleActivityUpdate);
+    return () => window.removeEventListener('activityUpdated', handleActivityUpdate);
+  }, []);
+
   const addActivity = async (activity: Omit<Activity, 'id' | 'timestamp' | 'createdAt'>) => {
     const id = generateUUID();
     const now = new Date().toISOString();

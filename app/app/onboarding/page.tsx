@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { completeOnboarding } from '@/app/lib/store';
 import { useTheme } from '@/app/context/ThemeContext';
 import { useUser } from '@/app/context/UserContext';
+import { markOnboardingComplete } from '@/app/lib/onboarding-manager';
 
 const steps = [
   {
@@ -27,10 +27,11 @@ const steps = [
 export default function OnboardingPage() {
   const router = useRouter();
   const { currentTheme } = useTheme();
-  const { setUsername } = useUser();
+  const { setUsername, user } = useUser();
   const [step, setStep] = useState(0);
   const [name, setName] = useState('');
   const [showNameInput, setShowNameInput] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const currentStep = steps[step];
   const isLastStep = step === steps.length - 1;
@@ -43,12 +44,19 @@ export default function OnboardingPage() {
     }
   }
 
-  function handleFinish() {
+  async function handleFinish() {
     if (!name.trim()) return;
 
-    completeOnboarding(name.trim());
-    setUsername(name.trim());
-    router.replace('/app');
+    setIsLoading(true);
+    try {
+      // Mark onboarding as complete in both localStorage and Supabase
+      await markOnboardingComplete(user?.id || '', name.trim());
+      setUsername(name.trim());
+      router.replace('/app');
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -93,10 +101,10 @@ export default function OnboardingPage() {
 
             <button
               onClick={handleFinish}
-              disabled={!name.trim()}
+              disabled={!name.trim() || isLoading}
               className="w-full h-12 rounded-2xl bg-gradient-to-r from-[#FF9B7B] to-[#FFB4A8] text-white font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Comenzar mi viaje
+              {isLoading ? 'Guardando...' : 'Comenzar mi viaje'}
             </button>
 
             <button

@@ -89,6 +89,44 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]);
 
+  // Listen for realtime cycle data updates from RealtimeManager
+  useEffect(() => {
+    const handleCycleUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { eventType, cycleData: updatedData } = customEvent.detail;
+
+      console.log(`🔄 CycleContext received ${eventType} event for cycle_data:`, updatedData.id);
+
+      if (eventType === 'DELETE') {
+        // Reset cycle data
+        setCycleData({
+          isActive: false,
+          lastPeriodStart: '',
+          cycleLengthDays: 28,
+          periodLengthDays: 5,
+          currentPhase: 'menstrual',
+          currentDay: 0,
+          nextPeriodDate: '',
+          fertilityWindow: { start: '', end: '' },
+          symptoms: {},
+        });
+        localStorage.removeItem('habika_cycle_data');
+      } else if (eventType === 'INSERT' || eventType === 'UPDATE') {
+        // Update cycle data
+        const newData = {
+          ...updatedData,
+          id: updatedData.id || cycleData.id,
+        };
+        setCycleData(newData);
+        localStorage.setItem('habika_cycle_data', JSON.stringify(newData));
+      }
+    };
+
+    // Listen for cycle data updates
+    window.addEventListener('cycleUpdated', handleCycleUpdate);
+    return () => window.removeEventListener('cycleUpdated', handleCycleUpdate);
+  }, [cycleData]);
+
   const calculatePhase = (dayOfCycle: number, cycleLength: number, periodLength: number): CyclePhase => {
     if (dayOfCycle <= periodLength) return 'menstrual';
     if (dayOfCycle <= Math.floor(cycleLength / 2) - 3) return 'follicular';
