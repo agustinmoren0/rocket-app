@@ -58,14 +58,22 @@ export default function ActividadesPage() {
     try {
       const today = new Date().toISOString().split('T')[0];
 
-      // CARGAR ACTIVIDADES from context
-      const todayActivities = allActivities[today] || [];
+      // CARGAR ACTIVIDADES: Try context first, fallback to localStorage if context is empty
+      // This ensures activities appear immediately even if context hasn't updated yet
+      let todayActivities = allActivities[today] || [];
+
+      if (todayActivities.length === 0) {
+        // Fallback to localStorage if context is empty (happens during navigation)
+        const stored = JSON.parse(localStorage.getItem('habika_activities_today') || '{}');
+        todayActivities = stored[today] || [];
+        console.log('📋 Context was empty, loaded from localStorage instead:', { count: todayActivities.length, today });
+      }
 
       // CARGAR HÁBITOS
       const allHabits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
       const activeHabits = allHabits.filter((h: any) => h.status === 'active');
 
-      console.log('📅 Actividades hoy:', todayActivities.length);
+      console.log('📅 Actividades hoy:', todayActivities.length, { today, source: todayActivities.length === 0 ? 'empty' : 'loaded' });
       console.log('📋 Hábitos activos:', activeHabits.length);
 
       setActivities(
