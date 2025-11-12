@@ -72,7 +72,13 @@ export default function LoginModal({ isOpen, onClose, onSignupClick }: LoginModa
       setPassword('')
       onClose()
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Login failed'
+      console.error('Login error:', err)
+      let message = 'Login failed'
+      if (err instanceof Error) {
+        message = err.message
+      } else if (typeof err === 'object' && err !== null) {
+        message = (err as any).message || (err as any).msg || JSON.stringify(err)
+      }
       setError(message)
     } finally {
       setIsLoading(false)

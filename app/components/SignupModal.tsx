@@ -78,7 +78,13 @@ export default function SignupModal({ isOpen, onClose, onLoginClick }: SignupMod
       setUsername('')
       onClose()
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Signup failed'
+      console.error('Signup error:', err)
+      let message = 'Signup failed'
+      if (err instanceof Error) {
+        message = err.message
+      } else if (typeof err === 'object' && err !== null) {
+        message = (err as any).message || (err as any).msg || JSON.stringify(err)
+      }
       setError(message)
     } finally {
       setIsLoading(false)
