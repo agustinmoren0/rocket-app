@@ -10,6 +10,8 @@ import { useTheme } from '@/app/context/ThemeContext';
 import { useUser } from '@/app/context/UserContext';
 import { useCycle } from '@/app/context/CycleContext';
 import { Heart, ChevronRight, ChevronLeft } from 'lucide-react';
+import LoginModal from '@/app/components/LoginModal';
+import SignupModal from '@/app/components/SignupModal';
 
 function ModoCicloSection({ cycleData, currentTheme }: any) {
   const { activateCycleMode, deactivateCycleMode } = useCycle();
@@ -306,12 +308,14 @@ function ModoCicloSection({ cycleData, currentTheme }: any) {
 export default function PerfilPage() {
   const router = useRouter();
   const { currentTheme, themeId, changeTheme } = useTheme();
-  const { username, setUsername } = useUser();
+  const { username, setUsername, user, logout, isOnline } = useUser();
   const { cycleData } = useCycle();
   const [data, setData] = useState(() => loadData());
   const [isEditingName, setIsEditingName] = useState(false);
   const [tempName, setTempName] = useState('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showSignupModal, setShowSignupModal] = useState(false);
 
   useEffect(() => {
     setTempName(username);
@@ -347,6 +351,18 @@ export default function PerfilPage() {
     setTimeout(() => {
       router.replace('/app/onboarding');
     }, 1200);
+  }
+
+  async function handleLogout() {
+    try {
+      await logout();
+      showToast('Sesión cerrada correctamente', 'success');
+      setShowLoginModal(false);
+      setShowSignupModal(false);
+    } catch (error) {
+      console.error('Logout error:', error);
+      showToast('Error al cerrar sesión', 'error');
+    }
   }
 
   return (
@@ -636,11 +652,73 @@ export default function PerfilPage() {
           </div>
         </motion.section>
 
-        {/* Cuenta */}
+        {/* Autenticación SUPABASE */}
         <motion.section
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35 }}
+          className="bg-white backdrop-blur-xl rounded-2xl shadow-sm border border-[#FFB4A8]/30 p-6"
+        >
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-lg">☁️</span>
+            <h3 className="text-base font-semibold text-[#3D2C28]">Cuenta SUPABASE</h3>
+          </div>
+
+          {user ? (
+            <div className="space-y-3">
+              <div className="bg-[#FFF5F0] border border-[#FFB4A8]/30 rounded-xl p-4">
+                <p className="text-xs text-[#A67B6B] mb-1">Cuenta sincronizada</p>
+                <p className="text-sm font-medium text-[#3D2C28]">{user.email}</p>
+                <div className="flex items-center gap-2 mt-2">
+                  <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                  <p className="text-xs text-[#A67B6B]">
+                    {isOnline ? 'Sincronización online' : 'Sin conexión - cola de operaciones'}
+                  </p>
+                </div>
+              </div>
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleLogout}
+                className="w-full flex items-center gap-3 p-3 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 transition-colors text-left"
+              >
+                <span className="text-xl">🔓</span>
+                <div>
+                  <p className="text-sm font-medium text-red-600">Cerrar sesión</p>
+                  <p className="text-xs text-red-500">Los datos locales se mantienen</p>
+                </div>
+              </motion.button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-xs text-[#A67B6B] mb-3">
+                Sincroniza tus datos en la nube y accede desde múltiples dispositivos
+              </p>
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowSignupModal(true)}
+                className="w-full h-10 rounded-xl bg-gradient-to-r from-[#FFC0A9] to-[#FF99AC] text-white text-sm font-medium hover:shadow-md transition-shadow"
+              >
+                Crear cuenta
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => setShowLoginModal(true)}
+                className="w-full h-10 rounded-xl border-2 border-[#FFB4A8]/30 text-[#3D2C28] text-sm font-medium hover:border-[#FFB4A8]/50 transition-colors"
+              >
+                Iniciar sesión
+              </motion.button>
+            </div>
+          )}
+        </motion.section>
+
+        {/* Cuenta */}
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
           className="bg-white backdrop-blur-xl rounded-2xl shadow-sm border border-[#FFB4A8]/30 p-6"
         >
           <h3 className="text-base font-semibold text-[#3D2C28] mb-3">Cuenta</h3>
@@ -701,6 +779,24 @@ export default function PerfilPage() {
           </Link>
         </motion.div>
       </div>
+
+      {/* Auth Modals */}
+      <LoginModal
+        isOpen={showLoginModal}
+        onClose={() => setShowLoginModal(false)}
+        onSignupClick={() => {
+          setShowLoginModal(false);
+          setShowSignupModal(true);
+        }}
+      />
+      <SignupModal
+        isOpen={showSignupModal}
+        onClose={() => setShowSignupModal(false)}
+        onLoginClick={() => {
+          setShowSignupModal(false);
+          setShowLoginModal(true);
+        }}
+      />
     </main>
   );
 }
