@@ -136,11 +136,43 @@ class OfflineManager {
   }
 
   /**
+   * Validate operation data before syncing
+   */
+  private isValidOperation(operation: OfflineOperation): boolean {
+    const { table, data } = operation
+
+    // Activities must have unit field (not null)
+    if (table === 'activities') {
+      if (!data.unit || data.unit === null || data.unit === undefined) {
+        console.warn(`🗑️ Removing invalid activity operation ${operation.id} - missing unit`)
+        return false
+      }
+    }
+
+    // Habits must have UUID id (not string like "habit_1234")
+    if (table === 'habits') {
+      if (!data.id || typeof data.id !== 'string' || data.id.startsWith('habit_')) {
+        console.warn(`🗑️ Removing invalid habit operation ${operation.id} - invalid ID format`)
+        return false
+      }
+    }
+
+    return true
+  }
+
+  /**
    * Process single operation with retry logic
    */
   private async processOperation(operation: OfflineOperation): Promise<void> {
     try {
       const { type, table, data } = operation
+
+      // Validate operation data
+      if (!this.isValidOperation(operation)) {
+        // Skip invalid operations
+        this.queue = this.queue.filter((op) => op.id !== operation.id)
+        return
+      }
 
       let error
 

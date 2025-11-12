@@ -87,15 +87,24 @@ export async function syncToSupabase(options: SyncOptions) {
     // Sync activities
     if (data.activities && data.activities.length > 0) {
       for (const activity of data.activities) {
+        // Skip activities without required fields
+        if (!activity.unit || activity.unit === null || activity.unit === undefined) {
+          console.warn(`⏭️ Skipping activity ${activity.id} - missing unit`);
+          continue;
+        }
+
         const { error } = await supabase
           .from('activities')
           .upsert({
             id: activity.id,
             user_id: userId,
             name: activity.name,
-            duration: activity.duration,
-            category: activity.category,
+            duration: parseInt(activity.duration) || 0,
+            unit: activity.unit || 'min',
+            category: activity.category || activity.categoria,
+            color: activity.color,
             date: activity.date,
+            notes: activity.notes || null,
             created_at: activity.createdAt || new Date().toISOString(),
             updated_at: new Date().toISOString(),
           })
@@ -147,20 +156,22 @@ export async function syncToSupabase(options: SyncOptions) {
       }
     }
 
-    // Sync user settings
+    // Sync user settings (use upsert to avoid duplicate key errors)
     if (data.userSettings) {
       const { error } = await supabase
         .from('user_settings')
         .upsert({
           user_id: userId,
           notifications_enabled: data.userSettings.notificationsEnabled ?? true,
-          created_at: data.userSettings.createdAt || new Date().toISOString(),
           updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id'
         })
 
       if (error) {
         console.error('Error syncing user settings:', error)
-        throw error
+        // Don't throw - user_settings failure shouldn't block other syncs
+        console.warn('⚠️ User settings sync failed but continuing...')
       }
     }
 
