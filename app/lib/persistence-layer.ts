@@ -131,14 +131,14 @@ async function persistToSupabase(
         name: data.name,
         duration: parseInt(data.duration) || 0,
         unit: data.unit || 'min', // Ensure unit is never null
-        categoria: data.categoria,
+        category: data.categoria, // Map JS 'categoria' to SQL 'category'
         color: data.color,
         date: data.date,
         notes: data.notes || null,
-        timestamp: data.timestamp,
-        created_at: data.createdAt || data.created_at || new Date().toISOString(),
+        // NOTE: 'timestamp' column doesn't exist in Supabase schema, removed
+        // NOTE: 'created_at' is server-generated, only set on initial insert if needed
       }
-      console.log('📝 Preparing activity record for Supabase:', { id: record.id, unit: record.unit, duration: record.duration })
+      console.log('📝 Preparing activity record for Supabase:', { id: record.id, unit: record.unit, duration: record.duration, category: record.category })
     } else if (table === 'habits') {
       record = {
         ...record,
@@ -157,7 +157,7 @@ async function persistToSupabase(
         dates_of_month: data.datesOfMonth || null,
         is_preset: data.isPreset || false,
         minutes: data.minutes ? parseInt(data.minutes) : null,
-        created_at: data.createdAt || data.created_at || new Date().toISOString(),
+        // NOTE: 'created_at' is server-generated, don't send on insert/update
       }
       console.log('📝 Preparing habit record for Supabase:', { id: record.id, name: record.name })
     } else {
