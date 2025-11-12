@@ -130,6 +130,17 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
     setActivities(updated);
     localStorage.setItem('habika_activities_today', JSON.stringify(updated));
 
+    // Emit event for local UI updates
+    window.dispatchEvent(
+      new CustomEvent('activityUpdated', {
+        detail: {
+          eventType: 'INSERT',
+          activity: newActivity,
+          timestamp: new Date().toISOString(),
+        },
+      })
+    );
+
     // Persist to Supabase if authenticated
     if (userId && deviceId) {
       console.log('📤 Persisting activity to Supabase:', { id: newActivity.id, userId, deviceId });
@@ -174,31 +185,42 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
 
     if (!found) return;
 
+    const updatedActivity = Object.values(updated)
+      .flat()
+      .find(a => a.id === id);
+
     setActivities(updated);
     localStorage.setItem('habika_activities_today', JSON.stringify(updated));
 
-    // Persist to Supabase if authenticated
-    if (userId && deviceId) {
-      const activity = Object.values(updated)
-        .flat()
-        .find(a => a.id === id);
+    // Emit event for local UI updates
+    if (updatedActivity) {
+      window.dispatchEvent(
+        new CustomEvent('activityUpdated', {
+          detail: {
+            eventType: 'UPDATE',
+            activity: updatedActivity,
+            timestamp: new Date().toISOString(),
+          },
+        })
+      );
+    }
 
-      if (activity) {
-        console.log('📤 Updating activity in Supabase:', { id, userId });
-        try {
-          const result = await persistData({
-            table: 'activities',
-            data: {
-              user_id: userId,
-              ...activity,
-            },
-            userId,
-            deviceId,
-          });
-          console.log('✅ Activity updated successfully:', { stored: result.stored });
-        } catch (error) {
-          console.error('❌ Error updating activity in Supabase:', error);
-        }
+    // Persist to Supabase if authenticated
+    if (userId && deviceId && updatedActivity) {
+      console.log('📤 Updating activity in Supabase:', { id, userId });
+      try {
+        const result = await persistData({
+          table: 'activities',
+          data: {
+            user_id: userId,
+            ...updatedActivity,
+          },
+          userId,
+          deviceId,
+        });
+        console.log('✅ Activity updated successfully:', { stored: result.stored });
+      } catch (error) {
+        console.error('❌ Error updating activity in Supabase:', error);
       }
     }
 
@@ -217,6 +239,17 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
 
     setActivities(updated);
     localStorage.setItem('habika_activities_today', JSON.stringify(updated));
+
+    // Emit event for local UI updates
+    window.dispatchEvent(
+      new CustomEvent('activityUpdated', {
+        detail: {
+          eventType: 'DELETE',
+          activity: { id, date },
+          timestamp: new Date().toISOString(),
+        },
+      })
+    );
 
     // Delete from Supabase if authenticated
     if (userId && deviceId) {

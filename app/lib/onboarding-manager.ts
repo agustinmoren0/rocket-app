@@ -13,24 +13,46 @@ import { supabase } from './supabase'
 export async function hasCompletedOnboarding(userId?: string): Promise<boolean> {
   // Fast check: localStorage
   const localFlag = localStorage.getItem('hasOnboarded') === 'true'
+  console.log('🔍 hasCompletedOnboarding check:', { userId, localFlag })
 
-  // If authenticated and no local flag, check Supabase
-  if (userId && !localFlag) {
+  // If local flag is already true, return immediately
+  if (localFlag) {
+    console.log('✅ Onboarding already completed (localStorage)')
+    return true
+  }
+
+  // If authenticated, check Supabase even if localStorage says false
+  if (userId && typeof userId === 'string' && userId.trim().length > 0) {
     try {
+      console.log('📡 Checking onboarding status in Supabase for user:', userId)
       const { data, error } = await supabase
         .from('user_profiles')
-        .select('onboarding_completed')
+        .select('onboarding_completed, display_name')
         .eq('user_id', userId)
         .single()
 
-      if (!error && data?.onboarding_completed) {
-        // Update localStorage cache since they completed onboarding
+      if (error) {
+        console.warn('⚠️ Supabase query error:', error.message)
+        // If no profile exists, they haven't completed onboarding
+        if (error.code === 'PGRST116') {
+          console.log('ℹ️ No user_profiles record found - onboarding required')
+          return false
+        }
+        // Other errors, fallback to localStorage
+        return localFlag
+      }
+
+      if (data && data.onboarding_completed) {
+        console.log('✅ Onboarding completed in Supabase, updating localStorage')
         localStorage.setItem('hasOnboarded', 'true')
         return true
+      } else {
+        console.log('❌ Onboarding NOT completed in Supabase')
+        return false
       }
     } catch (err) {
-      console.warn('⚠️ Error checking onboarding status in Supabase:', err)
-      // Fallback to localStorage flag if Supabase check fails
+      console.error('❌ Error checking onboarding in Supabase:', err)
+      // On error, be conservative and require onboarding
       return localFlag
     }
   }
