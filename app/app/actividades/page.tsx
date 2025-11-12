@@ -53,34 +53,7 @@ export default function ActividadesPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Partial<Activity> | null>(null);
 
-  useEffect(() => {
-    loadTodayData();
-    setupMidnightArchive();
-
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'habika_activities_today' || e.key === 'habika_custom_habits') {
-        loadTodayData();
-      }
-    };
-
-    // Realtime event listener - listen for activity changes from other devices
-    const handleActivityUpdate = (event: Event) => {
-      const customEvent = event as CustomEvent;
-      const { eventType, activity } = customEvent.detail;
-      console.log(`📋 Actividades page received realtime update: ${eventType}`, activity);
-      // Refresh data from context
-      loadTodayData();
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('activityUpdated', handleActivityUpdate);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('activityUpdated', handleActivityUpdate);
-    };
-  }, []);
-
+  // Memoized function to load today's data
   const loadTodayData = () => {
     try {
       const today = new Date().toISOString().split('T')[0];
@@ -107,6 +80,40 @@ export default function ActividadesPage() {
       setHabits([]);
     }
   };
+
+  // Load data whenever allActivities changes (immediate update)
+  useEffect(() => {
+    console.log('🔄 allActivities changed, reloading today data');
+    loadTodayData();
+  }, [allActivities]);
+
+  // Setup event listeners and midnight archive
+  useEffect(() => {
+    setupMidnightArchive();
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'habika_activities_today' || e.key === 'habika_custom_habits') {
+        console.log('💾 Storage event detected, reloading');
+        loadTodayData();
+      }
+    };
+
+    // Realtime event listener - listen for activity changes from other devices
+    const handleActivityUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { eventType, activity } = customEvent.detail;
+      console.log(`📋 Actividades page received realtime update: ${eventType}`, activity);
+      // Data will update automatically via allActivities change detection
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('activityUpdated', handleActivityUpdate);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('activityUpdated', handleActivityUpdate);
+    };
+  }, []);
 
   const setupMidnightArchive = () => {
     const now = new Date();

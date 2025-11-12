@@ -64,13 +64,23 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [user]);
 
-  // Listen for realtime activity updates from RealtimeManager
+  // Listen for realtime activity updates from RealtimeManager (other devices only)
   useEffect(() => {
     const handleActivityUpdate = (event: Event) => {
       const customEvent = event as CustomEvent;
       const { eventType, activity } = customEvent.detail;
 
       console.log(`🔄 ActivityContext received ${eventType} event for activity:`, activity.id);
+
+      // Only update state for events that come from RealtimeManager (other devices)
+      // Local updates are already handled by addActivity/updateActivity/deleteActivity
+      // Check if this event came from elsewhere by looking at the timestamp
+      const isLocalEvent = eventType === 'INSERT' && event.timeStamp && (Date.now() - event.timeStamp) < 100;
+
+      if (isLocalEvent) {
+        console.log('⏭️ Skipping local event, already handled by addActivity');
+        return;
+      }
 
       setActivities((prev) => {
         const updated = { ...prev };
