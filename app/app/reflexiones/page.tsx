@@ -45,6 +45,24 @@ export default function ReflexionesPage() {
 
     // Check if it's Sunday and no reflection created today
     checkSundayReminder();
+
+    // Realtime event listener - listen for reflection changes from other devices
+    const handleReflectionUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { eventType, reflection } = customEvent.detail;
+      console.log(`✍️ Reflexiones page received realtime update: ${eventType}`, reflection);
+      // Refresh data from localStorage
+      const updatedStored = localStorage.getItem('habika_reflections');
+      if (updatedStored) {
+        setReflections(JSON.parse(updatedStored));
+      }
+    };
+
+    window.addEventListener('reflectionUpdated', handleReflectionUpdate);
+
+    return () => {
+      window.removeEventListener('reflectionUpdated', handleReflectionUpdate);
+    };
   }, []);
 
   const checkSundayReminder = () => {

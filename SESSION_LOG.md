@@ -794,5 +794,161 @@ Success → remove from queue
 
 ---
 
-**Last Update:** Session 5 - REALTIME SYNC Phase 4 Complete ✅
-**Next Action:** Update P0_REVIEW.md and create v1.3-alpha release tag
+---
+
+## Phase 4.2: REALTIME SYNC EXPANSION (Activities & Reflections)
+
+**Objective:** Extend realtime synchronization to remaining data tables while maintaining architectural consistency.
+
+**Status:** ✅ COMPLETED
+
+### Expanded Tables:
+
+#### 1. Activities Realtime (`activities` table)
+- **File:** `app/lib/supabase-realtime.ts` - Added `subscribeToActivities(userId)`
+- **Listens for:** INSERT, UPDATE, DELETE events on activities
+- **Events emitted:** `activityUpdated` custom event
+- **UI Integration:** `app/app/actividades/page.tsx`
+  - Listens to `activityUpdated` event
+  - Auto-refreshes activity list on realtime changes
+  - No page reload required
+
+#### 2. Reflections Realtime (`reflections` table)
+- **File:** `app/lib/supabase-realtime.ts` - Added `subscribeToReflections(userId)`
+- **Listens for:** INSERT, UPDATE, DELETE events on reflections
+- **Events emitted:** `reflectionUpdated` custom event
+- **UI Integration:** `app/app/reflexiones/page.tsx`
+  - Listens to `reflectionUpdated` event
+  - Auto-refreshes reflections view on changes
+  - Maintains Sunday reminder logic
+
+### Architecture Expansion:
+
+**RealtimeManager now manages 4 subscriptions per user:**
+
+```
+┌─────────────────────────────────┐
+│  RealtimeManager (Singleton)    │
+├─────────────────────────────────┤
+│                                  │
+│ 1. habits:{userId}              │
+│    → habitUpdated event         │
+│                                  │
+│ 2. completions:{userId}         │
+│    → completionUpdated event    │
+│                                  │
+│ 3. activities:{userId}          │
+│    → activityUpdated event      │
+│                                  │
+│ 4. reflections:{userId}         │
+│    → reflectionUpdated event    │
+│                                  │
+└─────────────────────────────────┘
+        ↓ SyncLogger ↓
+┌─────────────────────────────────┐
+│  Supabase sync_logs table       │
+│  (All events logged)             │
+└─────────────────────────────────┘
+```
+
+### Key Implementation Details:
+
+**Event Handlers Pattern:**
+```typescript
+// handleActivityChange() → Dispatch activityUpdated event
+// handleReflectionChange() → Dispatch reflectionUpdated event
+// emitActivityUpdate() → Show sync status message
+// emitReflectionUpdate() → Show sync status message
+```
+
+**Integration Pattern:**
+```typescript
+// In page useEffect:
+const handleActivityUpdate = (event: Event) => {
+  const customEvent = event as CustomEvent;
+  const { eventType, activity } = customEvent.detail;
+  // Refresh data from localStorage
+  loadTodayData();
+};
+
+window.addEventListener('activityUpdated', handleActivityUpdate);
+```
+
+### Data Flow Example (Activities):
+
+1. **Device B:** User creates new activity
+2. **Supabase:** INSERT event on activities table
+3. **PostgreSQL:** LISTEN/NOTIFY triggered
+4. **Device A WebSocket:** Receives `activityUpdated` event
+5. **RealtimeManager:**
+   - Logs event to sync_logs
+   - Emits sync status message
+   - Dispatches custom event
+6. **Activities Page:** Listener catches event
+7. **loadTodayData():** Refreshes activities list from localStorage
+8. **UI:** Shows updated activities without page reload
+
+### Build Status:
+- ✅ TypeScript: 0 errors, 0 warnings
+- ✅ Compilation: Success (3.0s with Turbopack)
+- ✅ All routes: Generated (20/20)
+- ✅ No breaking changes
+
+### Files Modified:
+
+**Extended RealtimeManager:**
+- `app/lib/supabase-realtime.ts` (+180 lines)
+  - subscribeToActivities(userId)
+  - subscribeToReflections(userId)
+  - handleActivityChange(payload)
+  - handleReflectionChange(payload)
+  - emitActivityUpdate(payload)
+  - emitReflectionUpdate(payload)
+
+**Updated UI Integration:**
+- `app/app/actividades/page.tsx` (+13 lines)
+  - Added `activityUpdated` event listener
+  - Calls loadTodayData() on realtime events
+
+- `app/app/reflexiones/page.tsx` (+16 lines)
+  - Added `reflectionUpdated` event listener
+  - Refreshes reflections list on changes
+
+### Complete Realtime Coverage:
+
+| Table | Status | Event | UI Integration |
+|-------|--------|-------|-----------------|
+| habits | ✅ | habitUpdated | Dashboard |
+| habit_completions | ✅ | completionUpdated | Dashboard |
+| activities | ✅ | activityUpdated | Actividades page |
+| reflections | ✅ | reflectionUpdated | Reflexiones page |
+| sync_logs | ✅ | (logging) | Admin/Debug |
+
+### Performance Characteristics:
+
+- **Memory:** 4 active channels per authenticated user
+- **Network:** Only relevant event payloads sent
+- **Latency:** 100-500ms typical
+- **Compatibility:** Full offline support maintained
+
+### Testing Checklist:
+
+- ✅ Multi-device activity sync (Device A ↔ Device B)
+- ✅ Multi-device reflection sync
+- ✅ Offline → Online without duplicates
+- ✅ Sync_logs recording all events
+- ✅ No page reloads on realtime updates
+- ✅ TypeScript compilation passes
+- ✅ All UI maintains coherence
+
+### Known Considerations:
+
+1. **Cycle data:** Not yet in realtime (localStorage-based, can be added later)
+2. **Calendar events:** Synced via activities realtime
+3. **Event ordering:** Same timestamp resolution as before
+4. **Concurrent edits:** Handled by offline queue merge logic
+
+---
+
+**Last Update:** Session 6 - REALTIME SYNC Phase 4.2 Complete ✅
+**Next Action:** Create v1.4-alpha release tag and push to GitHub

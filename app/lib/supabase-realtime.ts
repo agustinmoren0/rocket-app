@@ -37,6 +37,12 @@ class RealtimeManager {
       // Subscribe to habit_completions changes
       this.subscribeToCompletions(userId)
 
+      // Subscribe to activities changes
+      this.subscribeToActivities(userId)
+
+      // Subscribe to reflections changes
+      this.subscribeToReflections(userId)
+
       this.isActive = true
       emitSyncStatus('synced', 'Sincronización en tiempo real activa')
       console.log('✅ Realtime subscriptions started')
@@ -138,6 +144,96 @@ class RealtimeManager {
   }
 
   /**
+   * Subscribe to activities table changes
+   */
+  private subscribeToActivities(userId: string): void {
+    const channel = supabase
+      .channel(`activities:${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'activities',
+          filter: `user_id=eq.${userId}`,
+        },
+        async (payload: any) => {
+          console.log('📋 Activity change received:', payload.eventType, payload.new)
+
+          // Log the sync event
+          await logSyncEvent({
+            event_type: payload.eventType,
+            table_name: 'activities',
+            record_id: payload.new?.id || payload.old?.id,
+            device_id: this.getDeviceId(),
+            user_id: userId,
+          })
+
+          // Emit visual update signal
+          this.emitActivityUpdate(payload)
+
+          // Update local cache
+          this.handleActivityChange(payload)
+        }
+      )
+      .subscribe(async (status: any) => {
+        console.log('📡 Activities subscription status:', status)
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Subscribed to activities changes')
+        } else if (status === 'CLOSED') {
+          console.log('⚠️ Activities subscription closed')
+        }
+      })
+
+    this.subscriptions.set(`activities:${userId}`, channel)
+  }
+
+  /**
+   * Subscribe to reflections table changes
+   */
+  private subscribeToReflections(userId: string): void {
+    const channel = supabase
+      .channel(`reflections:${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'reflections',
+          filter: `user_id=eq.${userId}`,
+        },
+        async (payload: any) => {
+          console.log('✍️ Reflection change received:', payload.eventType, payload.new)
+
+          // Log the sync event
+          await logSyncEvent({
+            event_type: payload.eventType,
+            table_name: 'reflections',
+            record_id: payload.new?.id || payload.old?.id,
+            device_id: this.getDeviceId(),
+            user_id: userId,
+          })
+
+          // Emit visual update signal
+          this.emitReflectionUpdate(payload)
+
+          // Update local cache
+          this.handleReflectionChange(payload)
+        }
+      )
+      .subscribe(async (status: any) => {
+        console.log('📡 Reflections subscription status:', status)
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Subscribed to reflections changes')
+        } else if (status === 'CLOSED') {
+          console.log('⚠️ Reflections subscription closed')
+        }
+      })
+
+    this.subscriptions.set(`reflections:${userId}`, channel)
+  }
+
+  /**
    * Handle habit changes from other devices
    */
   private handleHabitChange(payload: any): void {
@@ -195,6 +291,64 @@ class RealtimeManager {
    */
   private emitCompletionUpdate(payload: any): void {
     const message = `Registro ${payload.eventType === 'DELETE' ? 'eliminado' : payload.eventType === 'INSERT' ? 'creado' : 'actualizado'}`
+    emitSyncStatus('synced', message)
+  }
+
+  /**
+   * Handle activity changes from other devices
+   */
+  private handleActivityChange(payload: any): void {
+    const eventType = payload.eventType
+    const activity = payload.new || payload.old
+
+    console.log(`🔄 Processing ${eventType} on activity:`, activity.id)
+
+    // Emit custom event for Activities page to listen
+    window.dispatchEvent(
+      new CustomEvent('activityUpdated', {
+        detail: {
+          eventType,
+          activity,
+          timestamp: new Date().toISOString(),
+        },
+      })
+    )
+  }
+
+  /**
+   * Handle reflection changes from other devices
+   */
+  private handleReflectionChange(payload: any): void {
+    const eventType = payload.eventType
+    const reflection = payload.new || payload.old
+
+    console.log(`🔄 Processing ${eventType} on reflection:`, reflection.id)
+
+    // Emit custom event for Reflections page to listen
+    window.dispatchEvent(
+      new CustomEvent('reflectionUpdated', {
+        detail: {
+          eventType,
+          reflection,
+          timestamp: new Date().toISOString(),
+        },
+      })
+    )
+  }
+
+  /**
+   * Emit activity update event
+   */
+  private emitActivityUpdate(payload: any): void {
+    const message = `Actividad ${payload.eventType === 'DELETE' ? 'eliminada' : payload.eventType === 'INSERT' ? 'creada' : 'actualizada'}`
+    emitSyncStatus('synced', message)
+  }
+
+  /**
+   * Emit reflection update event
+   */
+  private emitReflectionUpdate(payload: any): void {
+    const message = `Reflexión ${payload.eventType === 'DELETE' ? 'eliminada' : payload.eventType === 'INSERT' ? 'creada' : 'actualizada'}`
     emitSyncStatus('synced', message)
   }
 

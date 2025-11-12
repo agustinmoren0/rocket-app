@@ -23,7 +23,8 @@
       "Bash(__NEW_LINE__ git add -A)",
       "Bash(__NEW_LINE__ git push origin main)",
       "Bash(git push:*)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(git tag:*)"
     ],
     "deny": [],
     "ask": []

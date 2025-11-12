@@ -61,8 +61,22 @@ export default function ActividadesPage() {
       }
     };
 
+    // Realtime event listener - listen for activity changes from other devices
+    const handleActivityUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { eventType, activity } = customEvent.detail;
+      console.log(`📋 Actividades page received realtime update: ${eventType}`, activity);
+      // Refresh data from localStorage
+      loadTodayData();
+    };
+
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener('activityUpdated', handleActivityUpdate);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('activityUpdated', handleActivityUpdate);
+    };
   }, []);
 
   const loadTodayData = () => {
