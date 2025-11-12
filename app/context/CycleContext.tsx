@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { notifyDataChange } from '../lib/storage-utils';
 import { persistData, deleteRecord } from '../lib/persistence-layer';
+import { useUser } from './UserContext';
 
 type CyclePhase = 'menstrual' | 'follicular' | 'ovulatory' | 'luteal';
 
@@ -44,6 +45,7 @@ interface CycleContextType {
 const CycleContext = createContext<CycleContextType | null>(null);
 
 export const CycleProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useUser();
   const [cycleData, setCycleData] = useState<CycleData>({
     isActive: false,
     lastPeriodStart: '',
@@ -59,9 +61,8 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
   const [deviceId, setDeviceId] = useState<string>('');
 
   useEffect(() => {
-    // Get userId from context (if available)
-    const userIdFromStorage = localStorage.getItem('supabase.auth.token') ? 'authenticated' : null;
-    setUserId(userIdFromStorage);
+    // Get actual user ID from auth session
+    setUserId(user?.id ?? null);
 
     // Get or create device ID
     let dId = localStorage.getItem('device_id');
@@ -80,7 +81,7 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
         updateCycleCalculations(data);
       }
     }
-  }, []);
+  }, [user]);
 
   const calculatePhase = (dayOfCycle: number, cycleLength: number, periodLength: number): CyclePhase => {
     if (dayOfCycle <= periodLength) return 'menstrual';

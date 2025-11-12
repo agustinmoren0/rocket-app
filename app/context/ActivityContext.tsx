@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { notifyDataChange } from '../lib/storage-utils';
 import { persistData, deleteRecord } from '../lib/persistence-layer';
+import { useUser } from './UserContext';
 
 export interface Activity {
   id: string;
@@ -33,14 +34,15 @@ interface ActivityContextType {
 const ActivityContext = createContext<ActivityContextType | null>(null);
 
 export const ActivityProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useUser();
   const [activities, setActivities] = useState<ActivityData>({});
   const [userId, setUserId] = useState<string | null>(null);
   const [deviceId, setDeviceId] = useState<string>('');
 
-  // Initialize user and device IDs
+  // Initialize device ID and get userId from UserContext
   useEffect(() => {
-    const userIdFromStorage = localStorage.getItem('supabase.auth.token') ? 'authenticated' : null;
-    setUserId(userIdFromStorage);
+    // Get actual user ID from auth session
+    setUserId(user?.id ?? null);
 
     let dId = localStorage.getItem('device_id');
     if (!dId) {
@@ -59,7 +61,7 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
         console.error('Error parsing activities:', e);
       }
     }
-  }, []);
+  }, [user]);
 
   const addActivity = async (activity: Omit<Activity, 'id' | 'timestamp' | 'createdAt'>) => {
     const id = `activity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
