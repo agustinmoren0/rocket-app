@@ -199,7 +199,9 @@ export default function ActividadesPage() {
         });
       }
 
-      syncToCalendar(today, allActivities[today] || []);
+      // Read fresh data from localStorage instead of relying on stale context state
+      const storedActivities = JSON.parse(localStorage.getItem('habika_activities_today') || '{}');
+      syncToCalendar(today, storedActivities[today] || []);
 
       loadTodayData();
       setShowModal(false);
@@ -217,7 +219,9 @@ export default function ActividadesPage() {
       // Delete via context (handles dual-layer persistence)
       await deleteActivity(activityId, today);
 
-      syncToCalendar(today, allActivities[today] || []);
+      // Read fresh data from localStorage instead of relying on stale context state
+      const storedActivities = JSON.parse(localStorage.getItem('habika_activities_today') || '{}');
+      syncToCalendar(today, storedActivities[today] || []);
 
       loadTodayData();
     } catch (error) {
