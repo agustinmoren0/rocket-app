@@ -73,7 +73,8 @@ export async function persistData(options: PersistenceOptions): Promise<Persiste
  */
 async function persistToLocal(table: string, data: any): Promise<boolean> {
   try {
-    const key = `habika_${table}`
+    // Use correct localStorage key for habits table
+    const key = table === 'habits' ? 'habika_custom_habits' : `habika_${table}`
     const existing = JSON.parse(localStorage.getItem(key) || '[]')
 
     // Handle both single items and arrays
@@ -166,10 +167,19 @@ async function persistToSupabase(
 
     console.log(`📤 Upserting ${table}:`, { recordId: record.id, keys: Object.keys(record) })
 
+    // Determine onConflict strategy based on table's unique constraints
+    let conflictConfig: any = { onConflict: 'id' } // Default: conflict on primary key
+
+    if (table === 'habits') {
+      conflictConfig = { onConflict: 'user_id,name' } // UNIQUE(user_id, name) constraint
+    } else if (table === 'cycle_data') {
+      conflictConfig = { onConflict: 'user_id' } // UNIQUE(user_id) constraint
+    } else if (table === 'user_settings') {
+      conflictConfig = { onConflict: 'user_id' } // UNIQUE(user_id) constraint
+    }
+
     // Try to insert/update
-    const { data: result, error } = await supabase.from(table).upsert([record], {
-      onConflict: 'id',
-    })
+    const { data: result, error } = await supabase.from(table).upsert([record], conflictConfig)
 
     if (error) {
       console.error(`❌ Supabase error details:`, { code: error.code, message: error.message })
@@ -222,8 +232,8 @@ export async function deleteRecord(
   deviceId?: string
 ): Promise<PersistenceResult> {
   try {
-    // Delete from localStorage
-    const key = `habika_${table}`
+    // Delete from localStorage (use correct key for habits)
+    const key = table === 'habits' ? 'habika_custom_habits' : `habika_${table}`
     const existing = JSON.parse(localStorage.getItem(key) || '[]')
 
     let updated: any
@@ -281,7 +291,7 @@ export async function loadRecords(
 ): Promise<any[]> {
   try {
     // Load from localStorage (always available, fastest)
-    const key = `habika_${table}`
+    const key = table === 'habits' ? 'habika_custom_habits' : `habika_${table}`
     const local = JSON.parse(localStorage.getItem(key) || '[]')
 
     // If not authenticated, return local only
