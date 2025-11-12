@@ -100,15 +100,26 @@ export default function LandingPage() {
         >
           Habika
         </motion.h1>
-        <motion.button
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          onClick={() => router.push('/app/onboarding')}
-          className="px-6 py-2 text-sm font-medium text-[#3D2C28] hover:text-[#FF8C66] transition-colors"
-        >
-          Entrar
-        </motion.button>
+        <div className="flex gap-3">
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            onClick={() => router.push('/auth/signin')}
+            className="px-6 py-2 text-sm font-medium text-[#FF8C66] hover:text-[#FF6B4A] transition-colors"
+          >
+            Login
+          </motion.button>
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            onClick={() => router.push('/app/onboarding')}
+            className="px-6 py-2 text-sm font-medium text-[#3D2C28] hover:text-[#FF8C66] transition-colors"
+          >
+            Entrar
+          </motion.button>
+        </div>
       </nav>
 
       {/* Hero Section */}

@@ -92,8 +92,10 @@ self.addEventListener('fetch', (event) => {
           response ||
           fetch(request).then((response) => {
             if (response?.status === 200) {
+              // Clone BEFORE using the response
+              const clonedResponse = response.clone();
               const cache = caches.open(CACHE_NAMES.ASSETS);
-              cache.then(c => c.put(request, response.clone()));
+              cache.then(c => c.put(request, clonedResponse));
             }
             return response;
           }).catch(() => null)
@@ -112,8 +114,10 @@ self.addEventListener('fetch', (event) => {
         .then((response) => {
           // Only cache successful responses for navigation requests
           if (response?.status === 200 && request.mode === 'navigate') {
+            // Clone BEFORE using the response
+            const clonedResponse = response.clone();
             const cache = caches.open(CACHE_NAMES.PAGES);
-            cache.then(c => c.put(request, response.clone()));
+            cache.then(c => c.put(request, clonedResponse));
           }
           return response;
         })
