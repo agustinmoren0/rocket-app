@@ -9,6 +9,7 @@ import { emitSyncStatus } from './supabase-sync'
 import { logSyncEvent } from './sync-logger'
 import { duplicateDetector } from './duplicate-detector'
 import { realtimeOptimizer } from './realtime-optimizer'
+import { realtimeMetrics } from './realtime-metrics'
 
 export interface RealtimeSubscription {
   channel: string
@@ -94,6 +95,11 @@ class RealtimeManager {
           console.log('📝 Habit change received:', payload.eventType, payload.new)
 
           const recordId = payload.new?.id || payload.old?.id
+          const eventId = `habits:${recordId}:${Date.now()}`
+          const payloadSize = JSON.stringify(payload).length
+
+          // Record event start for latency measurement
+          realtimeMetrics.recordEventStart(eventId)
 
           // Check for duplicates before processing
           const isDuplicate = await duplicateDetector.checkForDuplicate(
@@ -105,6 +111,7 @@ class RealtimeManager {
 
           if (isDuplicate) {
             console.log('⚠️ Skipping duplicate habit event:', recordId)
+            realtimeMetrics.recordFailedSync('INSERT', 'habits', this.getDeviceId(), userId, payloadSize)
             return
           }
 
@@ -122,6 +129,19 @@ class RealtimeManager {
 
           // Update local cache if needed
           this.handleHabitChange(payload)
+
+          // Record successful sync with latency
+          realtimeMetrics.recordSuccessfulSync(
+            payload.eventType,
+            'habits',
+            this.getDeviceId(),
+            userId,
+            payloadSize,
+            eventId
+          )
+
+          // Track activity for performance optimization
+          realtimeOptimizer.recordActivity(`habits:${userId}`, payloadSize)
         }
       )
       .subscribe(async (status: any) => {
@@ -623,7 +643,40 @@ class RealtimeManager {
       bandwidth_hourly_estimate_mb: bandwidth.hourly_estimate_mb,
       bandwidth_daily_estimate_mb: bandwidth.daily_estimate_mb,
       subscriptions: report.subscriptions,
+      pending_metrics: realtimeMetrics.getPendingMetricsCount(),
     }
+  }
+
+  /**
+   * Get metrics report for time period
+   */
+  public async getMetricsReport(startTime: Date, endTime: Date): Promise<any> {
+    if (!this.userId) {
+      console.warn('⚠️ No active user for metrics report')
+      return null
+    }
+
+    return realtimeMetrics.getMetricsReport(this.userId, startTime, endTime)
+  }
+
+  /**
+   * Get system health score (0-100)
+   */
+  public async getHealthScore(): Promise<number> {
+    if (!this.userId) {
+      console.warn('⚠️ No active user for health score')
+      return 0
+    }
+
+    return realtimeMetrics.getHealthScore(this.userId)
+  }
+
+  /**
+   * Force flush all pending metrics
+   */
+  public async flushMetrics(): Promise<void> {
+    await realtimeMetrics.forceFlush()
+    console.log('✅ Metrics flushed')
   }
 
   /**
