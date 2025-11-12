@@ -1,13 +1,19 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || ''
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase environment variables')
-}
-
+// Create client with fallback for build time (will fail gracefully at runtime if env vars missing)
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+// Validate at runtime when actually needed (not during build)
+export function validateSupabaseConfig(): boolean {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn('⚠️ Supabase environment variables are not configured. Cloud sync features will not work.')
+    return false
+  }
+  return true
+}
 
 // Type definitions for database
 export type Database = {

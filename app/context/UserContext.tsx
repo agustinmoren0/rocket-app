@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { notifyDataChange } from '../lib/storage-utils';
-import { supabase } from '../lib/supabase';
+import { supabase, validateSupabaseConfig } from '../lib/supabase';
 import { offlineManager } from '../lib/offline-manager';
 import type { User } from '@supabase/supabase-js';
 
@@ -49,12 +49,21 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
 
   // Initialize auth state and listen for changes
   useEffect(() => {
     const initializeAuth = async () => {
       try {
+        // Validate Supabase is configured
+        const isConfigured = validateSupabaseConfig();
+
+        if (!isConfigured) {
+          console.warn('⚠️ Supabase not configured - app will work in offline-only mode');
+          setIsLoading(false);
+          return;
+        }
+
         // Get current session
         const { data: { session: currentSession } } = await supabase.auth.getSession();
         setSession(currentSession);
