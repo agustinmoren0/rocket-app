@@ -100,13 +100,23 @@ class OfflineManager {
     this.isProcessing = true
 
     try {
+      // First, clear any operations that have failed too many times
+      const beforeCount = this.queue.length
+      this.queue = this.queue.filter((op) => op.retries < MAX_RETRIES)
+      const clearedCount = beforeCount - this.queue.length
+
+      if (clearedCount > 0) {
+        console.log(`🗑️ Removed ${clearedCount} operations that failed ${MAX_RETRIES} times`)
+        this.saveQueue()
+      }
+
       const operations = [...this.queue]
 
       for (const operation of operations) {
         await this.processOperation(operation)
       }
 
-      // Clear successful operations
+      // Clear successful operations (marked for deletion after processing)
       this.queue = this.queue.filter((op) => op.retries < MAX_RETRIES)
       this.saveQueue()
 

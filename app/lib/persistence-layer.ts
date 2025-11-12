@@ -141,25 +141,22 @@ async function persistToSupabase(
       }
       console.log('📝 Preparing activity record for Supabase:', { id: record.id, unit: record.unit, duration: record.duration, category: record.category })
     } else if (table === 'habits') {
+      // Map to actual habits table columns
       record = {
         ...record,
-        name: data.name,
-        icon: data.icon,
-        color: data.color,
-        type: data.type || null,
-        goal_value: data.goalValue ? parseInt(data.goalValue) : null,
-        goal_unit: data.goalUnit || null,
-        frequency: data.frequency,
-        frequency_interval: data.frequencyInterval ? parseInt(data.frequencyInterval) : null,
-        status: data.status || 'active',
-        start_time: data.startTime || null,
-        end_time: data.endTime || null,
+        name: data.name || null,
+        description: data.description || null,
+        frequency: data.frequency || 'diario',
         days_of_week: data.daysOfWeek || null,
-        dates_of_month: data.datesOfMonth || null,
-        is_preset: data.isPreset || false,
-        minutes: data.minutes ? parseInt(data.minutes) : null,
-        // NOTE: 'created_at' is server-generated, don't send on insert/update
-        // NOTE: 'device_id' doesn't exist in habits table schema, removed
+        status: data.status || 'active',
+        color: data.color || '#6366f1',
+        icon: data.icon || 'Heart',
+        goal: data.goal || data.goalValue || null,
+        unit: data.unit || data.goalUnit || null,
+        category: data.category || null,
+        streak: data.streak || 0,
+        // NOTE: 'created_at' is server-generated
+        // NOTE: These columns don't exist in habits schema: type, goal_value, goal_unit, frequency_interval, start_time, end_time, dates_of_month, is_preset, minutes
       }
       console.log('📝 Preparing habit record for Supabase:', { id: record.id, name: record.name })
     } else {
