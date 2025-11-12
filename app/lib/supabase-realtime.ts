@@ -7,6 +7,7 @@
 import { supabase } from './supabase'
 import { emitSyncStatus } from './supabase-sync'
 import { logSyncEvent } from './sync-logger'
+import { duplicateDetector } from './duplicate-detector'
 
 export interface RealtimeSubscription {
   channel: string
@@ -76,11 +77,26 @@ class RealtimeManager {
         async (payload: any) => {
           console.log('📝 Habit change received:', payload.eventType, payload.new)
 
+          const recordId = payload.new?.id || payload.old?.id
+
+          // Check for duplicates before processing
+          const isDuplicate = await duplicateDetector.checkForDuplicate(
+            'habits',
+            recordId,
+            this.getDeviceId(),
+            new Date().toISOString()
+          )
+
+          if (isDuplicate) {
+            console.log('⚠️ Skipping duplicate habit event:', recordId)
+            return
+          }
+
           // Log the sync event
           await logSyncEvent({
             event_type: payload.eventType,
             table_name: 'habits',
-            record_id: payload.new?.id || payload.old?.id,
+            record_id: recordId,
             device_id: this.getDeviceId(),
             user_id: userId,
           })
@@ -543,6 +559,34 @@ class RealtimeManager {
       localStorage.setItem('device_id', deviceId)
     }
     return deviceId
+  }
+
+  /**
+   * Validate data consistency across all tables
+   */
+  public async validateDataConsistency(userId: string): Promise<any> {
+    console.log('🔍 Starting data consistency validation...')
+
+    const tables = ['habits', 'habit_completions', 'activities', 'reflections', 'cycle_data', 'calendar_events']
+    const results: any[] = []
+
+    for (const table of tables) {
+      const validation = await duplicateDetector.validateDataConsistency(userId, table)
+      results.push({
+        table,
+        ...validation,
+      })
+    }
+
+    console.log('✅ Data consistency validation complete')
+    return results
+  }
+
+  /**
+   * Get duplicate statistics
+   */
+  public async getDuplicateStats(userId: string): Promise<any> {
+    return duplicateDetector.getDuplicateStats(userId)
   }
 }
 
