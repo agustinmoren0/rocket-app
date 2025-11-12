@@ -8,6 +8,7 @@ import PageTransition from '@/app/components/PageTransition';
 import { ThemeProvider } from '@/app/context/ThemeContext';
 import { UserProvider } from '@/app/context/UserContext';
 import { CycleProvider } from '@/app/context/CycleContext';
+import { ActivityProvider } from '@/app/context/ActivityContext';
 import OfflineIndicator from '@/app/components/OfflineIndicator';
 import QuickPeriodTracker from '@/app/components/QuickPeriodTracker';
 import TopBar from '@/app/components/TopBar';
@@ -42,6 +43,7 @@ export default function AppLayout({
     <ThemeProvider>
       <UserProvider>
         <CycleProvider>
+          <ActivityProvider>
           {/* Only show app components if NOT onboarding */}
           {!isOnboarding && (
             <>
@@ -69,6 +71,7 @@ export default function AppLayout({
               {process.env.NODE_ENV === 'development' && <LogViewer />}
             </>
           )}
+          </ActivityProvider>
         </CycleProvider>
       </UserProvider>
     </ThemeProvider>

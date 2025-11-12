@@ -3,13 +3,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useTheme } from '@/app/context/ThemeContext';
+import { useActivity } from '@/app/context/ActivityContext';
 import { Save, X } from 'lucide-react';
-import { notifyDataChange } from '@/app/lib/storage-utils';
 
 export default function EditarActividadPage() {
   const router = useRouter();
   const params = useParams();
   const { currentTheme } = useTheme();
+  const { activities, updateActivity } = useActivity();
   const [formData, setFormData] = useState({
     name: '',
     minutes: 20,
@@ -18,20 +19,32 @@ export default function EditarActividadPage() {
     date: '',
     notes: '',
   });
+  const [originalDate, setOriginalDate] = useState('');
 
   useEffect(() => {
-    const activities = JSON.parse(localStorage.getItem('habika_activities') || '[]');
-    const activity = activities.find((a: any) => a.id === params.id);
-    if (activity) setFormData(activity);
-  }, [params.id]);
+    // Find activity from context
+    const allActivityValues = Object.values(activities).flat();
+    const activity = allActivityValues.find((a: any) => a.id === params.id);
+    if (activity) {
+      setFormData({
+        name: activity.name,
+        minutes: activity.duration,
+        unit: activity.unit,
+        category: activity.categoria,
+        date: activity.date,
+        notes: activity.notes || '',
+      });
+      setOriginalDate(activity.date);
+    }
+  }, [params.id, activities]);
 
-  const handleSave = () => {
-    const activities = JSON.parse(localStorage.getItem('habika_activities') || '[]');
-    const updated = activities.map((a: any) =>
-      a.id === params.id ? { ...formData, id: params.id } : a
-    );
-    localStorage.setItem('habika_activities', JSON.stringify(updated));
-    notifyDataChange();
+  const handleSave = async () => {
+    // Update via context (handles dual-layer persistence)
+    await updateActivity(params.id as string, {
+      ...formData,
+      unit: formData.unit as 'min' | 'hs',
+    } as any);
+
     router.push('/app/actividades');
   };
 

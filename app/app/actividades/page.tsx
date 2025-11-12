@@ -6,6 +6,7 @@ import { motion, useMotionValue, PanInfo } from 'framer-motion';
 import { Plus, Clock, Edit2, Trash2, Sparkles, Calendar as CalendarIcon, Check } from 'lucide-react';
 import { LUCIDE_ICONS } from '@/app/utils/icons';
 import { setStorageItem, notifyDataChange } from '@/app/lib/storage-utils';
+import { useActivity } from '@/app/context/ActivityContext';
 import { Activity, Habit, CalendarData, CalendarActivity } from '@/app/types';
 
 const CATEGORIAS = [
@@ -45,6 +46,7 @@ function ModalOpener({ setShowModal }: ModalOpenerProps) {
 
 export default function ActividadesPage() {
   const router = useRouter();
+  const { activities: allActivities, addActivity, updateActivity, deleteActivity } = useActivity();
   const [activeTab, setActiveTab] = useState<'actividades' | 'habitos' | 'timeline'>('actividades');
   const [activities, setActivities] = useState<Activity[]>([]);
   const [habits, setHabits] = useState<Habit[]>([]);
@@ -66,7 +68,7 @@ export default function ActividadesPage() {
       const customEvent = event as CustomEvent;
       const { eventType, activity } = customEvent.detail;
       console.log(`📋 Actividades page received realtime update: ${eventType}`, activity);
-      // Refresh data from localStorage
+      // Refresh data from context
       loadTodayData();
     };
 
@@ -83,8 +85,7 @@ export default function ActividadesPage() {
     try {
       const today = new Date().toISOString().split('T')[0];
 
-      // CARGAR ACTIVIDADES
-      const allActivities = JSON.parse(localStorage.getItem('habika_activities_today') || '{}');
+      // CARGAR ACTIVIDADES from context
       const todayActivities = allActivities[today] || [];
 
       // CARGAR HÁBITOS
@@ -166,42 +167,30 @@ export default function ActividadesPage() {
     }
   };
 
-  const saveActivity = (activityData: Partial<Activity>): void => {
+  const saveActivity = async (activityData: Partial<Activity>): Promise<void> => {
     try {
       const today = new Date().toISOString().split('T')[0];
-      const allActivities: { [key: string]: Activity[] } = JSON.parse(localStorage.getItem('habika_activities_today') || '{}');
-
-      if (!allActivities[today]) {
-        allActivities[today] = [];
-      }
 
       if (editingActivity && editingActivity.id) {
-        const index = allActivities[today].findIndex((a: Activity) => a.id === editingActivity.id);
-        if (index !== -1) {
-          allActivities[today][index] = {
-            ...activityData,
-            id: editingActivity.id,
-            timestamp: editingActivity.timestamp || new Date().toISOString()
-          } as Activity;
-        }
+        // Update existing activity
+        await updateActivity(editingActivity.id, {
+          ...activityData,
+          timestamp: new Date().toISOString()
+        } as Activity);
       } else {
-        const newActivity: Activity = {
-          id: `activity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          timestamp: new Date().toISOString(),
-          date: today,
-          createdAt: new Date().toISOString(),
+        // Add new activity via context (handles dual-layer persistence)
+        await addActivity({
           name: activityData.name || 'Sin nombre',
           duration: activityData.duration || 0,
-          unit: activityData.unit || 'min',
+          unit: (activityData.unit || 'min') as 'min' | 'hs',
           categoria: activityData.categoria || 'otro',
           color: activityData.color || '#6B9B9E',
-          notes: activityData.notes || ''
-        };
-        allActivities[today].push(newActivity);
+          date: today,
+          notes: activityData.notes || '',
+        });
       }
 
-      setStorageItem('habika_activities_today', JSON.stringify(allActivities));
-      syncToCalendar(today, allActivities[today]);
+      syncToCalendar(today, allActivities[today] || []);
 
       loadTodayData();
       setShowModal(false);
@@ -212,16 +201,14 @@ export default function ActividadesPage() {
     }
   };
 
-  const deleteActivity = (activityId: string) => {
+  const deleteActivityHandler = async (activityId: string) => {
     try {
       const today = new Date().toISOString().split('T')[0];
-      const allActivities = JSON.parse(localStorage.getItem('habika_activities_today') || '{}');
 
-      const filtered = (allActivities[today] || []).filter((a: any) => a.id !== activityId);
-      allActivities[today] = filtered;
+      // Delete via context (handles dual-layer persistence)
+      await deleteActivity(activityId, today);
 
-      setStorageItem('habika_activities_today', JSON.stringify(allActivities));
-      syncToCalendar(today, filtered);
+      syncToCalendar(today, allActivities[today] || []);
 
       loadTodayData();
     } catch (error) {
@@ -393,7 +380,7 @@ export default function ActividadesPage() {
                       }}
                       onDelete={() => {
                         if (confirm('¿Eliminar esta actividad?')) {
-                          deleteActivity(activity.id);
+                          deleteActivityHandler(activity.id);
                         }
                       }}
                     />

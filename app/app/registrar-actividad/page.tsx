@@ -4,12 +4,13 @@ import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 
 import { Activity, Clock, Calendar, Save, X, AlertCircle } from 'lucide-react';
-import { notifyDataChange } from '@/app/lib/storage-utils';
+import { useActivity } from '@/app/context/ActivityContext';
 import { validateName, validateDuration, validateDateNotFuture, ValidationError } from '@/app/lib/validation';
 import { useFocusOnError } from '@/app/lib/useFocusManagement';
 
 export default function RegistrarActividadPage() {
   const router = useRouter();
+  const { addActivity } = useActivity();
   const [formData, setFormData] = useState({
     name: '',
     minutes: 20,
@@ -29,7 +30,7 @@ export default function RegistrarActividadPage() {
     { value: 'bienestar', label: 'Bienestar', color: 'bg-blue-100 text-blue-700' },
   ];
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const newErrors: ValidationError[] = [];
 
     // Validate all fields
@@ -48,17 +49,16 @@ export default function RegistrarActividadPage() {
       return;
     }
 
-    const activities = JSON.parse(localStorage.getItem('habika_activities') || '[]');
-    const newActivity = {
-      id: Date.now().toString(),
-      ...formData,
-      minutes: parseInt(formData.minutes.toString()),
-      createdAt: new Date().toISOString(),
-    };
-
-    activities.push(newActivity);
-    localStorage.setItem('habika_activities', JSON.stringify(activities));
-    notifyDataChange();
+    // Use ActivityContext to save with dual-layer persistence
+    await addActivity({
+      name: formData.name,
+      duration: parseInt(formData.minutes.toString()),
+      unit: formData.unit as 'min' | 'hs',
+      categoria: formData.category,
+      color: '#6366f1', // Default indigo color
+      date: formData.date,
+      notes: formData.notes,
+    });
 
     router.push('/app/actividades');
   };
