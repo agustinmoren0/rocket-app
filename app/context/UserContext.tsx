@@ -77,6 +77,14 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         // Start realtime if user is authenticated
         if (currentSession?.user?.id) {
           try {
+            // Clean up stale offline queue operations from before login
+            // This prevents old invalid data from causing sync errors
+            const queueSize = offlineManager.getQueueSize();
+            if (queueSize > 0) {
+              console.log(`📋 Found ${queueSize} stale operations in offline queue, clearing...`);
+              offlineManager.clearQueue();
+            }
+
             await realtimeManager.startRealtime(currentSession.user.id);
             setIsRealtimeActive(true);
             console.log('✅ Realtime sync activated');
@@ -95,6 +103,13 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
             // Handle realtime lifecycle on auth state change
             if (newSession?.user?.id) {
               try {
+                // Clean up stale offline queue operations on every login
+                const queueSize = offlineManager.getQueueSize();
+                if (queueSize > 0) {
+                  console.log(`📋 Found ${queueSize} stale operations in offline queue, clearing...`);
+                  offlineManager.clearQueue();
+                }
+
                 await realtimeManager.startRealtime(newSession.user.id);
                 setIsRealtimeActive(true);
                 console.log('✅ Realtime sync activated');
