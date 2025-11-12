@@ -171,6 +171,8 @@ async function migrateHabits(userId: string, habits: any[]): Promise<number> {
         streak: habit.streak || 0,
         created_at: habit.createdAt || new Date().toISOString(),
         updated_at: new Date().toISOString(),
+      }, {
+        onConflict: 'user_id,name'  // ← Handle UNIQUE(user_id, name) constraint
       })
 
       if (!error) migratedCount++
@@ -252,6 +254,8 @@ async function migrateCycleData(userId: string, cycleData: any): Promise<boolean
       period_length_days: cycleData.periodLengthDays || null,
       created_at: cycleData.createdAt || new Date().toISOString(),
       updated_at: new Date().toISOString(),
+    }, {
+      onConflict: 'user_id'  // ← Handle UNIQUE(user_id) constraint
     })
 
     return !error

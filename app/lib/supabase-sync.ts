@@ -54,6 +54,8 @@ export async function syncToSupabase(options: SyncOptions) {
             streak: habit.streak || 0,
             created_at: habit.createdAt || new Date().toISOString(),
             updated_at: new Date().toISOString(),
+          }, {
+            onConflict: 'user_id,name'  // ← Handle UNIQUE(user_id, name) constraint
           })
 
         if (error) {
@@ -126,6 +128,8 @@ export async function syncToSupabase(options: SyncOptions) {
           last_period_start: data.cycleData.lastPeriodStart,
           created_at: data.cycleData.createdAt || new Date().toISOString(),
           updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'user_id'  // ← Handle UNIQUE(user_id) constraint
         })
 
       if (error) {
