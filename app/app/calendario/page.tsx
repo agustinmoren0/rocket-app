@@ -132,8 +132,18 @@ export default function CalendarioPage() {
       }
     };
 
+    // Listen for realtime calendar updates from other devices
+    const handleCalendarUpdate = (event: any) => {
+      console.log('🔄 Calendario actualizado desde otro dispositivo:', event.detail);
+      loadEventsFromCalendar();
+    };
+
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener('calendarUpdated', handleCalendarUpdate as EventListener);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('calendarUpdated', handleCalendarUpdate);
+    };
   }, [loadEventsFromCalendar]);
 
   const daysInMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();

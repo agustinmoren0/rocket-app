@@ -43,6 +43,12 @@ class RealtimeManager {
       // Subscribe to reflections changes
       this.subscribeToReflections(userId)
 
+      // Subscribe to cycle_data changes
+      this.subscribeToCycleData(userId)
+
+      // Subscribe to calendar changes
+      this.subscribeToCalendar(userId)
+
       this.isActive = true
       emitSyncStatus('synced', 'Sincronización en tiempo real activa')
       console.log('✅ Realtime subscriptions started')
@@ -349,6 +355,154 @@ class RealtimeManager {
    */
   private emitReflectionUpdate(payload: any): void {
     const message = `Reflexión ${payload.eventType === 'DELETE' ? 'eliminada' : payload.eventType === 'INSERT' ? 'creada' : 'actualizada'}`
+    emitSyncStatus('synced', message)
+  }
+
+  /**
+   * Subscribe to cycle_data table changes
+   */
+  private subscribeToCycleData(userId: string): void {
+    const channel = supabase
+      .channel(`cycle_data:${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'cycle_data',
+          filter: `user_id=eq.${userId}`,
+        },
+        async (payload: any) => {
+          console.log('🔴 Cycle data change received:', payload.eventType, payload.new)
+
+          // Log the sync event
+          await logSyncEvent({
+            event_type: payload.eventType,
+            table_name: 'cycle_data',
+            record_id: payload.new?.id || payload.old?.id,
+            device_id: this.getDeviceId(),
+            user_id: userId,
+          })
+
+          // Emit visual update signal
+          this.emitCycleUpdate(payload)
+
+          // Update local cache
+          this.handleCycleChange(payload)
+        }
+      )
+      .subscribe(async (status: any) => {
+        console.log('📡 Cycle data subscription status:', status)
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Subscribed to cycle data changes')
+        } else if (status === 'CLOSED') {
+          console.log('⚠️ Cycle data subscription closed')
+        }
+      })
+
+    this.subscriptions.set(`cycle_data:${userId}`, channel)
+  }
+
+  /**
+   * Subscribe to calendar events table changes
+   */
+  private subscribeToCalendar(userId: string): void {
+    const channel = supabase
+      .channel(`calendar:${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'calendar_events',
+          filter: `user_id=eq.${userId}`,
+        },
+        async (payload: any) => {
+          console.log('📅 Calendar event change received:', payload.eventType, payload.new)
+
+          // Log the sync event
+          await logSyncEvent({
+            event_type: payload.eventType,
+            table_name: 'calendar_events',
+            record_id: payload.new?.id || payload.old?.id,
+            device_id: this.getDeviceId(),
+            user_id: userId,
+          })
+
+          // Emit visual update signal
+          this.emitCalendarUpdate(payload)
+
+          // Update local cache
+          this.handleCalendarChange(payload)
+        }
+      )
+      .subscribe(async (status: any) => {
+        console.log('📡 Calendar subscription status:', status)
+        if (status === 'SUBSCRIBED') {
+          console.log('✅ Subscribed to calendar changes')
+        } else if (status === 'CLOSED') {
+          console.log('⚠️ Calendar subscription closed')
+        }
+      })
+
+    this.subscriptions.set(`calendar:${userId}`, channel)
+  }
+
+  /**
+   * Handle cycle data changes from other devices
+   */
+  private handleCycleChange(payload: any): void {
+    const eventType = payload.eventType
+    const cycleData = payload.new || payload.old
+
+    console.log(`🔄 Processing ${eventType} on cycle_data:`, cycleData.id)
+
+    // Emit custom event for Modo Ciclo page to listen
+    window.dispatchEvent(
+      new CustomEvent('cycleUpdated', {
+        detail: {
+          eventType,
+          cycleData,
+          timestamp: new Date().toISOString(),
+        },
+      })
+    )
+  }
+
+  /**
+   * Handle calendar changes from other devices
+   */
+  private handleCalendarChange(payload: any): void {
+    const eventType = payload.eventType
+    const calendarEvent = payload.new || payload.old
+
+    console.log(`🔄 Processing ${eventType} on calendar:`, calendarEvent.id)
+
+    // Emit custom event for Calendario page to listen
+    window.dispatchEvent(
+      new CustomEvent('calendarUpdated', {
+        detail: {
+          eventType,
+          calendarEvent,
+          timestamp: new Date().toISOString(),
+        },
+      })
+    )
+  }
+
+  /**
+   * Emit cycle update event
+   */
+  private emitCycleUpdate(payload: any): void {
+    const message = `Ciclo ${payload.eventType === 'DELETE' ? 'eliminado' : payload.eventType === 'INSERT' ? 'registrado' : 'actualizado'}`
+    emitSyncStatus('synced', message)
+  }
+
+  /**
+   * Emit calendar update event
+   */
+  private emitCalendarUpdate(payload: any): void {
+    const message = `Evento ${payload.eventType === 'DELETE' ? 'eliminado' : payload.eventType === 'INSERT' ? 'creado' : 'actualizado'}`
     emitSyncStatus('synced', message)
   }
 

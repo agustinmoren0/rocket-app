@@ -26,6 +26,18 @@ export default function ModoCicloPage() {
     setTodaySymptoms(cycleData.symptoms[today] || []);
   }, [cycleData.symptoms, today]);
 
+  // Listen for realtime cycle data updates from other devices
+  useEffect(() => {
+    const handleCycleUpdate = (event: any) => {
+      console.log('🔄 Ciclo actualizado desde otro dispositivo:', event.detail);
+      // Component will automatically re-render due to cycleData context update
+      // triggered by RealtimeManager dispatching the event
+    };
+
+    window.addEventListener('cycleUpdated', handleCycleUpdate as EventListener);
+    return () => window.removeEventListener('cycleUpdated', handleCycleUpdate);
+  }, []);
+
   const allSymptoms = [
     { id: 'cramps', label: 'Cólicos', emoji: '😣', category: 'pain' },
     { id: 'headache', label: 'Dolor de cabeza', emoji: '🤕', category: 'pain' },
