@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, useState, useEffect } from 'react';
+import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, useMotionValue, PanInfo } from 'framer-motion';
 import { Plus, Clock, Edit2, Trash2, Sparkles, Calendar as CalendarIcon, Check } from 'lucide-react';
@@ -54,7 +54,7 @@ export default function ActividadesPage() {
   const [editingActivity, setEditingActivity] = useState<Partial<Activity> | null>(null);
 
   // Memoized function to load today's data
-  const loadTodayData = () => {
+  const loadTodayData = useCallback(() => {
     try {
       const today = new Date().toISOString().split('T')[0];
 
@@ -79,13 +79,13 @@ export default function ActividadesPage() {
       setActivities([]);
       setHabits([]);
     }
-  };
+  }, [allActivities]);
 
   // Load data whenever allActivities changes (immediate update)
   useEffect(() => {
-    console.log('🔄 allActivities changed, reloading today data');
+    console.log('🔄 allActivities changed, reloading today data', Object.keys(allActivities));
     loadTodayData();
-  }, [allActivities]);
+  }, [allActivities, loadTodayData]);
 
   // Setup event listeners and midnight archive
   useEffect(() => {
@@ -94,6 +94,7 @@ export default function ActividadesPage() {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'habika_activities_today' || e.key === 'habika_custom_habits') {
         console.log('💾 Storage event detected, reloading');
+        // Call the context's activities directly or reload from context
         loadTodayData();
       }
     };
@@ -103,7 +104,8 @@ export default function ActividadesPage() {
       const customEvent = event as CustomEvent;
       const { eventType, activity } = customEvent.detail;
       console.log(`📋 Actividades page received realtime update: ${eventType}`, activity);
-      // Data will update automatically via allActivities change detection
+      // Reload immediately for realtime updates
+      setTimeout(() => loadTodayData(), 0);
     };
 
     window.addEventListener('storage', handleStorageChange);
@@ -113,7 +115,7 @@ export default function ActividadesPage() {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('activityUpdated', handleActivityUpdate);
     };
-  }, []);
+  }, [loadTodayData]);
 
   const setupMidnightArchive = () => {
     const now = new Date();
