@@ -1,75 +1,57 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useUser } from '@/app/context/UserContext'
-import styles from '@/app/styles/sync-status.module.css'
+import { useEffect, useState } from 'react'
+import { useInitialSync } from '../hooks/useInitialSync'
+import { useUser } from '../context/UserContext'
 
-export type SyncState = 'synced' | 'pending' | 'error' | 'syncing'
+/**
+ * UI Component that displays sync status
+ * Shows loading spinner during initial sync after login
+ * Shows success/error messages
+ */
+export function SyncStatus() {
+  const { isSyncing, isComplete, syncedTables, error } = useInitialSync()
+  const { isLoading: isAuthLoading } = useUser()
+  const [visible, setVisible] = useState(false)
 
-interface SyncStatusProps {
-  className?: string
-}
-
-export default function SyncStatus({ className = '' }: SyncStatusProps) {
-  const [syncState, setSyncState] = useState<SyncState>('synced')
-  const [message, setMessage] = useState('')
-  const { isPremium } = useUser()
-
+  // Show sync status for 3 seconds after complete
   useEffect(() => {
-    if (!isPremium) return
-
-    // Listen for sync status events
-    const handleSyncStatus = (event: CustomEvent<{ state: SyncState; message?: string }>) => {
-      setSyncState(event.detail.state)
-      setMessage(event.detail.message || '')
+    if (isComplete && !error) {
+      setVisible(true)
+      const timer = setTimeout(() => setVisible(false), 3000)
+      return () => clearTimeout(timer)
     }
+  }, [isComplete, error])
 
-    window.addEventListener('sync-status', handleSyncStatus as EventListener)
-
-    return () => {
-      window.removeEventListener('sync-status', handleSyncStatus as EventListener)
-    }
-  }, [isPremium])
-
-  if (!isPremium) {
-    return null
+  // Always show if there's an error
+  if (error) {
+    return (
+      <div className="fixed bottom-4 left-4 bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded z-50">
+        <p className="font-semibold">❌ Error de sincronización</p>
+        <p className="text-sm">{error}</p>
+      </div>
+    )
   }
 
-  const statusConfig = {
-    synced: {
-      icon: '🟢',
-      label: 'Sincronizado',
-      title: 'Todos los cambios están sincronizados',
-    },
-    syncing: {
-      icon: '🔄',
-      label: 'Sincronizando...',
-      title: 'Sincronizando cambios con el servidor',
-    },
-    pending: {
-      icon: '🟡',
-      label: 'Pendiente',
-      title: 'Esperando sincronizar cambios',
-    },
-    error: {
-      icon: '🔴',
-      label: 'Error',
-      title: message || 'Error al sincronizar',
-    },
+  // Show spinner during sync
+  if (isSyncing && !isAuthLoading) {
+    return (
+      <div className="fixed bottom-4 left-4 bg-blue-100 border border-blue-400 text-blue-700 px-4 py-2 rounded z-50 flex items-center gap-2">
+        <div className="animate-spin">⏳</div>
+        <span>Sincronizando datos...</span>
+      </div>
+    )
   }
 
-  const config = statusConfig[syncState]
+  // Show success message briefly
+  if (visible && isComplete && !error) {
+    return (
+      <div className="fixed bottom-4 left-4 bg-green-100 border border-green-400 text-green-700 px-4 py-2 rounded z-50 animate-fade-out">
+        <p className="font-semibold">✅ Sincronización completa</p>
+        <p className="text-sm">{syncedTables.length} tablas actualizadas</p>
+      </div>
+    )
+  }
 
-  return (
-    <div
-      className={`${styles.syncStatus} ${styles[syncState]} ${className}`}
-      title={config.title}
-      role="status"
-      aria-live="polite"
-      aria-label={`Estado de sincronización: ${config.label}`}
-    >
-      <span className={styles.icon}>{config.icon}</span>
-      <span className={styles.label}>{config.label}</span>
-    </div>
-  )
+  return null
 }

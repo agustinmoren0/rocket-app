@@ -14,6 +14,7 @@ import QuickPeriodTracker from '@/app/components/QuickPeriodTracker';
 import TopBar from '@/app/components/TopBar';
 import DesktopLayout from '@/app/components/DesktopLayout';
 import LogViewer from '@/app/components/LogViewer';
+import { SyncStatus } from '@/app/components/SyncStatus';
 
 export default function AppLayout({
   children,
@@ -65,6 +66,7 @@ export default function AppLayout({
 
           {!isOnboarding && (
             <>
+              <SyncStatus />
               <ToastContainer />
               <RegisterSW />
               {/* Only show LogViewer in development mode */}

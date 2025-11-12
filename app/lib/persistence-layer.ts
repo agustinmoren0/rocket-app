@@ -111,6 +111,11 @@ async function persistToSupabase(
   deviceId: string
 ): Promise<boolean> {
   try {
+    // SECURITY: Validate userId is present and valid
+    if (!userId || typeof userId !== 'string' || userId.trim().length === 0) {
+      throw new Error('Invalid or missing userId - cannot persist to Supabase')
+    }
+
     // Ensure required fields
     const record = {
       ...data,
