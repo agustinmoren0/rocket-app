@@ -8,6 +8,7 @@ import { supabase } from './supabase'
 import { emitSyncStatus } from './supabase-sync'
 import { logSyncEvent } from './sync-logger'
 import { duplicateDetector } from './duplicate-detector'
+import { realtimeOptimizer } from './realtime-optimizer'
 
 export interface RealtimeSubscription {
   channel: string
@@ -32,27 +33,42 @@ class RealtimeManager {
     console.log('📡 Starting Realtime subscriptions for user:', userId)
 
     try {
+      // Configure optimizer
+      realtimeOptimizer.configure({
+        autoUnsubscribeTimeout: 5 * 60 * 1000, // 5 minutes
+        compressionEnabled: true,
+        batchUpdates: true,
+        batchWindow: 100,
+      })
+
       // Subscribe to habits changes
       this.subscribeToHabits(userId)
+      realtimeOptimizer.trackSubscription(`habits:${userId}`)
 
       // Subscribe to habit_completions changes
       this.subscribeToCompletions(userId)
+      realtimeOptimizer.trackSubscription(`completions:${userId}`)
 
       // Subscribe to activities changes
       this.subscribeToActivities(userId)
+      realtimeOptimizer.trackSubscription(`activities:${userId}`)
 
       // Subscribe to reflections changes
       this.subscribeToReflections(userId)
+      realtimeOptimizer.trackSubscription(`reflections:${userId}`)
 
       // Subscribe to cycle_data changes
       this.subscribeToCycleData(userId)
+      realtimeOptimizer.trackSubscription(`cycle_data:${userId}`)
 
       // Subscribe to calendar changes
       this.subscribeToCalendar(userId)
+      realtimeOptimizer.trackSubscription(`calendar:${userId}`)
 
       this.isActive = true
       emitSyncStatus('synced', 'Sincronización en tiempo real activa')
       console.log('✅ Realtime subscriptions started')
+      this.logPerformanceMetrics()
     } catch (error) {
       console.error('❌ Failed to start realtime:', error)
       emitSyncStatus('error', 'Error al iniciar sincronización en tiempo real')
@@ -531,6 +547,7 @@ class RealtimeManager {
     for (const [key, channel] of this.subscriptions.entries()) {
       try {
         await supabase.removeChannel(channel)
+        realtimeOptimizer.unsubscribeChannel(key)
         console.log(`✅ Unsubscribed from ${key}`)
       } catch (error) {
         console.error(`❌ Failed to unsubscribe from ${key}:`, error)
@@ -587,6 +604,34 @@ class RealtimeManager {
    */
   public async getDuplicateStats(userId: string): Promise<any> {
     return duplicateDetector.getDuplicateStats(userId)
+  }
+
+  /**
+   * Get performance metrics and optimization status
+   */
+  public getPerformanceMetrics(): any {
+    const report = realtimeOptimizer.getPerformanceReport()
+    const bandwidth = realtimeOptimizer.getEstimatedBandwidth()
+
+    return {
+      status: this.isActive ? 'active' : 'inactive',
+      active_subscriptions: report.active_subscriptions,
+      total_messages: report.total_messages,
+      total_bytes_received: report.total_bytes,
+      average_payload_size: report.average_payload_size,
+      bandwidth_current_mb: bandwidth.current_mb,
+      bandwidth_hourly_estimate_mb: bandwidth.hourly_estimate_mb,
+      bandwidth_daily_estimate_mb: bandwidth.daily_estimate_mb,
+      subscriptions: report.subscriptions,
+    }
+  }
+
+  /**
+   * Log performance metrics (internal use)
+   */
+  private logPerformanceMetrics(): void {
+    const metrics = this.getPerformanceMetrics()
+    console.log('📊 Realtime Performance Metrics:', metrics)
   }
 }
 
