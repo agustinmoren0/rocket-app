@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { notifyDataChange } from '../lib/storage-utils';
+import { persistData, deleteRecord } from '../lib/persistence-layer';
 
 type CyclePhase = 'menstrual' | 'follicular' | 'ovulatory' | 'luteal';
 
@@ -54,8 +55,23 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
     fertilityWindow: { start: '', end: '' },
     symptoms: {},
   });
+  const [userId, setUserId] = useState<string | null>(null);
+  const [deviceId, setDeviceId] = useState<string>('');
 
   useEffect(() => {
+    // Get userId from context (if available)
+    const userIdFromStorage = localStorage.getItem('supabase.auth.token') ? 'authenticated' : null;
+    setUserId(userIdFromStorage);
+
+    // Get or create device ID
+    let dId = localStorage.getItem('device_id');
+    if (!dId) {
+      dId = `device_${Math.random().toString(36).substr(2, 9)}`;
+      localStorage.setItem('device_id', dId);
+    }
+    setDeviceId(dId);
+
+    // Load cycle data
     const stored = localStorage.getItem('habika_cycle_data');
     if (stored) {
       const data = JSON.parse(stored);
@@ -73,7 +89,7 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
     return 'luteal';
   };
 
-  const updateCycleCalculations = (data: CycleData) => {
+  const updateCycleCalculations = async (data: CycleData) => {
     const lastPeriod = new Date(data.lastPeriodStart);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -109,10 +125,24 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
 
     setCycleData(updated);
     localStorage.setItem('habika_cycle_data', JSON.stringify(updated));
+
+    // Persist to Supabase if authenticated
+    if (userId && deviceId) {
+      await persistData({
+        table: 'cycle_data',
+        data: {
+          id: `cycle_${userId}`, // Single record per user
+          ...updated,
+        },
+        userId,
+        deviceId,
+      });
+    }
+
     notifyDataChange();
   };
 
-  const activateCycleMode = (lastPeriod: string, cycleLength: number, periodLength: number) => {
+  const activateCycleMode = async (lastPeriod: string, cycleLength: number, periodLength: number) => {
     const newData: CycleData = {
       isActive: true,
       lastPeriodStart: new Date(lastPeriod).toISOString(),
@@ -125,17 +155,31 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
       symptoms: {},
     };
 
-    updateCycleCalculations(newData);
+    await updateCycleCalculations(newData);
   };
 
-  const deactivateCycleMode = () => {
+  const deactivateCycleMode = async () => {
     const updated = { ...cycleData, isActive: false };
     setCycleData(updated);
     localStorage.setItem('habika_cycle_data', JSON.stringify(updated));
+
+    // Persist to Supabase if authenticated
+    if (userId && deviceId) {
+      await persistData({
+        table: 'cycle_data',
+        data: {
+          id: `cycle_${userId}`,
+          ...updated,
+        },
+        userId,
+        deviceId,
+      });
+    }
+
     notifyDataChange();
   };
 
-  const addSymptom = (date: string, symptom: string) => {
+  const addSymptom = async (date: string, symptom: string) => {
     const symptoms = { ...cycleData.symptoms };
     if (!symptoms[date]) symptoms[date] = [];
     if (!symptoms[date].includes(symptom)) {
@@ -145,6 +189,20 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
     const updated = { ...cycleData, symptoms };
     setCycleData(updated);
     localStorage.setItem('habika_cycle_data', JSON.stringify(updated));
+
+    // Persist to Supabase if authenticated
+    if (userId && deviceId) {
+      await persistData({
+        table: 'cycle_data',
+        data: {
+          id: `cycle_${userId}`,
+          ...updated,
+        },
+        userId,
+        deviceId,
+      });
+    }
+
     notifyDataChange();
   };
 
@@ -229,23 +287,23 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
     return phases[phase];
   };
 
-  const updateCycleSettings = (cycleLength: number, periodLength: number) => {
+  const updateCycleSettings = async (cycleLength: number, periodLength: number) => {
     const updated = {
       ...cycleData,
       cycleLengthDays: cycleLength,
       periodLengthDays: periodLength,
     };
 
-    updateCycleCalculations(updated);
+    await updateCycleCalculations(updated);
   };
 
-  const registerNewPeriod = (date: string) => {
+  const registerNewPeriod = async (date: string) => {
     const updated = {
       ...cycleData,
       lastPeriodStart: new Date(date).toISOString(),
     };
 
-    updateCycleCalculations(updated);
+    await updateCycleCalculations(updated);
 
     // Save period to history
     const history = JSON.parse(localStorage.getItem('habika_period_history') || '[]');
@@ -254,10 +312,26 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
       timestamp: new Date().toISOString(),
     });
     localStorage.setItem('habika_period_history', JSON.stringify(history));
+
+    // Persist period history to Supabase if authenticated
+    if (userId && deviceId) {
+      await persistData({
+        table: 'period_history',
+        data: {
+          id: `period_${userId}_${date}`,
+          user_id: userId,
+          date,
+          timestamp: new Date().toISOString(),
+        },
+        userId,
+        deviceId,
+      });
+    }
+
     notifyDataChange();
   };
 
-  const resetCycleData = () => {
+  const resetCycleData = async () => {
     const confirmed = confirm(
       '¿Reiniciar Modo Ciclo?\n\n' +
       'Se mantendrá el historial pero resetearás la configuración actual.'
@@ -277,7 +351,7 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
       symptoms: {},
     };
 
-    updateCycleCalculations(newData);
+    await updateCycleCalculations(newData);
   };
 
   return (
