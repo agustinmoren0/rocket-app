@@ -84,15 +84,23 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
 
     // Persist to Supabase if authenticated
     if (userId && deviceId) {
-      await persistData({
-        table: 'activities',
-        data: {
-          user_id: userId,
-          ...newActivity,
-        },
-        userId,
-        deviceId,
-      });
+      console.log('📤 Persisting activity to Supabase:', { id: newActivity.id, userId, deviceId });
+      try {
+        const result = await persistData({
+          table: 'activities',
+          data: {
+            user_id: userId,
+            ...newActivity,
+          },
+          userId,
+          deviceId,
+        });
+        console.log('✅ Activity persisted successfully:', { stored: result.stored, recordId: result.recordId });
+      } catch (error) {
+        console.error('❌ Error persisting activity to Supabase:', error);
+      }
+    } else {
+      console.log('ℹ️ Activity saved to localStorage only (not authenticated)', { userId, deviceId });
     }
 
     notifyDataChange();
@@ -128,15 +136,21 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
         .find(a => a.id === id);
 
       if (activity) {
-        await persistData({
-          table: 'activities',
-          data: {
-            user_id: userId,
-            ...activity,
-          },
-          userId,
-          deviceId,
-        });
+        console.log('📤 Updating activity in Supabase:', { id, userId });
+        try {
+          const result = await persistData({
+            table: 'activities',
+            data: {
+              user_id: userId,
+              ...activity,
+            },
+            userId,
+            deviceId,
+          });
+          console.log('✅ Activity updated successfully:', { stored: result.stored });
+        } catch (error) {
+          console.error('❌ Error updating activity in Supabase:', error);
+        }
       }
     }
 
@@ -158,7 +172,15 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
 
     // Delete from Supabase if authenticated
     if (userId && deviceId) {
-      await deleteRecord('activities', id, userId, deviceId);
+      console.log('📤 Deleting activity from Supabase:', { id, userId });
+      try {
+        const result = await deleteRecord('activities', id, userId, deviceId);
+        console.log('✅ Activity deleted successfully:', { recordId: result.recordId });
+      } catch (error) {
+        console.error('❌ Error deleting activity from Supabase:', error);
+      }
+    } else {
+      console.log('ℹ️ Activity deleted from localStorage only (not authenticated)');
     }
 
     notifyDataChange();
