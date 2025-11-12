@@ -76,6 +76,13 @@ export const supabase = {
     }
     return client.from(table)
   },
+  channel: (name: string) => {
+    const client = getSupabaseClient()
+    if (!client) {
+      throw new Error('Supabase not configured - realtime subscriptions unavailable')
+    }
+    return client.channel(name)
+  },
 } as any
 
 // Validate at runtime when actually needed (not during build)
