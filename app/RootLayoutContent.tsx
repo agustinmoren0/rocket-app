@@ -7,6 +7,7 @@ import DebugPanel from './components/DebugPanel';
 import InstallPrompt from './components/InstallPrompt';
 import { UserProvider } from './context/UserContext';
 import { useSyncData } from './hooks/useSyncData';
+import './lib/storage-cleanup'; // Make cleanup available in browser console
 
 // Wrapper component to use the sync hook inside UserProvider
 function RootLayoutWithSync({

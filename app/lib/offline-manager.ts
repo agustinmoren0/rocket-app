@@ -263,6 +263,20 @@ class OfflineManager {
   }
 
   /**
+   * Clear invalid operations (those with null unit for activities, wrong ID format for habits)
+   */
+  public clearInvalidOperations(): number {
+    const beforeCount = this.queue.length
+    this.queue = this.queue.filter((op) => this.isValidOperation(op))
+    this.saveQueue()
+    const clearedCount = beforeCount - this.queue.length
+    if (clearedCount > 0) {
+      console.log(`🗑️ Cleared ${clearedCount} invalid operations from queue`)
+    }
+    return clearedCount
+  }
+
+  /**
    * Save queue to localStorage
    */
   private saveQueue(): void {
