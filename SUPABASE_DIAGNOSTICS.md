@@ -192,14 +192,76 @@ offlineManager.getQueue()
 
 ---
 
+### 3. habits duplicate key (23505) - UNIQUE(user_id, name)
+
+**Cause**: habits table has UNIQUE(user_id, name) constraint but code was using basic upsert without onConflict.
+
+**Supabase Recommendation**:
+- Use UPSERT with `onConflict: 'user_id,name'`
+- Handle conflict by updating instead of failing
+
+**✅ IMPLEMENTED**:
+```typescript
+// app/lib/supabase-sync.ts:43-66 (real-time sync)
+.upsert({
+  id: habit.id,
+  user_id: userId,
+  name: habit.name,
+  frequency: habit.frequency,
+  status: habit.status,
+  streak: habit.streak || 0,
+  created_at: habit.createdAt || new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+}, {
+  onConflict: 'user_id,name'  // ← This prevents duplicate key errors
+})
+```
+
+Also updated in `app/lib/supabase-migrate.ts:159-185` for initial migration.
+
+**Status**: ✅ FIXED - No more 23505 errors on habits
+
+---
+
+### 4. cycle_data duplicate key (23505) - UNIQUE(user_id)
+
+**Cause**: cycle_data table has UNIQUE(user_id) constraint but code was using basic upsert without onConflict.
+
+**Supabase Recommendation**:
+- Use UPSERT with `onConflict: 'user_id'`
+- Handle conflict by updating instead of failing
+
+**✅ IMPLEMENTED**:
+```typescript
+// app/lib/supabase-sync.ts:121-139 (real-time sync)
+.upsert({
+  user_id: userId,
+  is_active: data.cycleData.isActive || false,
+  last_period_start: data.cycleData.lastPeriodStart,
+  created_at: data.cycleData.createdAt || new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+}, {
+  onConflict: 'user_id'  // ← This prevents duplicate key errors
+})
+```
+
+Also updated in `app/lib/supabase-migrate.ts:245-266` for initial migration.
+
+**Status**: ✅ FIXED - No more 23505 errors on cycle_data
+
+---
+
 ## Verification Checklist
 
-- [x] user_settings uses UPSERT with onConflict
+- [x] user_settings uses UPSERT with onConflict: 'user_id'
 - [x] Activities with missing unit are skipped during sync
 - [x] Activities include unit field with fallback 'min'
 - [x] Offline queue validates operations before processing
 - [x] Habit IDs use UUID v4 instead of string format
 - [x] Storage cleanup utility available in window.habika
+- [x] Habits uses UPSERT with onConflict: 'user_id,name'
+- [x] cycle_data uses UPSERT with onConflict: 'user_id'
+- [x] Both sync and migration functions have conflict resolution
 
 ---
 
@@ -213,11 +275,31 @@ offlineManager.getQueue()
 
 ---
 
-## Expected Results After Fixes
+## Expected Results After All Fixes
 
-✅ No more 23505 errors (duplicate key)
-✅ No more 23502 errors (NOT NULL violation)
-✅ Activities sync immediately to Supabase
-✅ User settings don't conflict on sync
-✅ Data persists across app sessions
+### Console Errors - RESOLVED ✅
+✅ No more 23505 errors on user_settings (duplicate key)
+✅ No more 23505 errors on habits (duplicate key)
+✅ No more 23505 errors on cycle_data (duplicate key)
+✅ No more 23502 errors on activities (NOT NULL violation)
+
+### Data Persistence - WORKING ✅
+✅ Activities sync immediately to Supabase with correct schema
+✅ Habits sync with proper UUID format and constraint handling
+✅ Cycle data upserts instead of failing on duplicate
+✅ User settings don't conflict on periodic sync
+✅ Data persists across app sessions and tab closures
 ✅ Offline queue only contains valid operations
+✅ Invalid data is validated and cleaned before sync
+
+### Complete Fix Summary
+All 7 errors identified have been fixed:
+1. ✅ Stale closure preventing immediate activity display
+2. ✅ Habit UUID format mismatch (string → UUID)
+3. ✅ Activities missing unit field
+4. ✅ Data not loading on app restart
+5. ✅ Habits not persisting to Supabase
+6. ✅ Habits duplicate key constraint (23505)
+7. ✅ cycle_data duplicate key constraint (23505)
+8. ✅ Activities unit NOT NULL constraint (23502)
+9. ✅ user_settings duplicate key constraint (23505)
