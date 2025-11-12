@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { notifyDataChange } from '../lib/storage-utils';
 import { supabase, validateSupabaseConfig } from '../lib/supabase';
 import { offlineManager } from '../lib/offline-manager';
+import { realtimeManager } from '../lib/supabase-realtime';
 import type { User } from '@supabase/supabase-js';
 
 interface UserContextType {
@@ -16,6 +17,8 @@ interface UserContextType {
   isLoading: boolean;
   authError: string | null;
   isOnline: boolean;
+  // Realtime sync
+  isRealtimeActive: boolean;
   // Auth methods
   login: (email: string, password: string) => Promise<void>;
   signup: (email: string, password: string, username: string) => Promise<void>;
@@ -35,6 +38,7 @@ const UserContext = createContext<UserContextType>({
   isLoading: true,
   authError: null,
   isOnline: true,
+  isRealtimeActive: false,
   login: async () => {},
   signup: async () => {},
   logout: async () => {},
@@ -50,6 +54,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isOnline, setIsOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [isRealtimeActive, setIsRealtimeActive] = useState(false);
 
   // Initialize auth state and listen for changes
   useEffect(() => {
@@ -69,11 +74,39 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         setSession(currentSession);
         setUser(currentSession?.user ?? null);
 
+        // Start realtime if user is authenticated
+        if (currentSession?.user?.id) {
+          try {
+            await realtimeManager.startRealtime(currentSession.user.id);
+            setIsRealtimeActive(true);
+            console.log('✅ Realtime sync activated');
+          } catch (error) {
+            console.error('⚠️ Failed to start realtime:', error);
+            setIsRealtimeActive(false);
+          }
+        }
+
         // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(
-          (_event: string, newSession: any) => {
+          async (_event: string, newSession: any) => {
             setSession(newSession);
             setUser(newSession?.user ?? null);
+
+            // Handle realtime lifecycle on auth state change
+            if (newSession?.user?.id) {
+              try {
+                await realtimeManager.startRealtime(newSession.user.id);
+                setIsRealtimeActive(true);
+                console.log('✅ Realtime sync activated');
+              } catch (error) {
+                console.error('⚠️ Failed to start realtime:', error);
+                setIsRealtimeActive(false);
+              }
+            } else {
+              // Stop realtime when user logs out
+              realtimeManager.stopRealtime();
+              setIsRealtimeActive(false);
+            }
           }
         );
 
@@ -169,6 +202,9 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       if (error) throw error;
       setUser(null);
       setSession(null);
+      // Stop realtime subscriptions on logout
+      realtimeManager.stopRealtime();
+      setIsRealtimeActive(false);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Logout failed';
       setAuthError(message);
@@ -203,6 +239,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
         isLoading,
         authError,
         isOnline,
+        isRealtimeActive,
         login,
         signup,
         logout,

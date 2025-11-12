@@ -7,10 +7,11 @@ import { useCycle } from '@/app/context/CycleContext';
 import { motion } from 'framer-motion';
 import { Clock, Flame, Edit3, Calendar, CheckSquare, Wind } from 'lucide-react';
 import InsightsIcon from '@mui/icons-material/Insights';
+import { emitSyncStatus } from '@/app/lib/supabase-sync';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { username } = useUser();
+  const { username, isRealtimeActive } = useUser();
   const { cycleData } = useCycle();
 
   const [stats, setStats] = useState({
@@ -18,6 +19,7 @@ export default function DashboardPage() {
     activityTime: 0,
     streak: 0,
   });
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
 
   // Debounce timer and cache management for performance optimization
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -64,14 +66,42 @@ export default function DashboardPage() {
 
     window.addEventListener('habika-data-changed', handleDataChange as EventListener);
 
+    // Realtime event listeners - listen for changes from other devices
+    const handleHabitUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { eventType, habit } = customEvent.detail;
+      console.log(`📝 Dashboard received realtime habit update: ${eventType}`, habit);
+      setSyncMessage(`Hábito ${eventType === 'DELETE' ? 'eliminado' : eventType === 'INSERT' ? 'creado' : 'actualizado'}`);
+      calculateStatsDebounced();
+      // Auto-clear message after 3 seconds
+      setTimeout(() => setSyncMessage(null), 3000);
+    };
+
+    const handleCompletionUpdate = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      const { eventType, completion } = customEvent.detail;
+      console.log(`✅ Dashboard received realtime completion update: ${eventType}`, completion);
+      setSyncMessage(`Registro ${eventType === 'DELETE' ? 'eliminado' : eventType === 'INSERT' ? 'creado' : 'actualizado'}`);
+      calculateStatsDebounced();
+      // Auto-clear message after 3 seconds
+      setTimeout(() => setSyncMessage(null), 3000);
+    };
+
+    if (isRealtimeActive) {
+      window.addEventListener('habitUpdated', handleHabitUpdate);
+      window.addEventListener('completionUpdated', handleCompletionUpdate);
+    }
+
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('habika-data-changed', handleDataChange as EventListener);
+      window.removeEventListener('habitUpdated', handleHabitUpdate);
+      window.removeEventListener('completionUpdated', handleCompletionUpdate);
       // Cleanup timers on unmount
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
       if (statsTimerRef.current) clearTimeout(statsTimerRef.current);
     };
-  }, [calculateStatsDebounced]);
+  }, [calculateStatsDebounced, isRealtimeActive]);
 
   const calculateStats = () => {
     const habits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
@@ -185,7 +215,15 @@ export default function DashboardPage() {
       <header className="fixed top-0 left-0 right-0 flex items-center justify-between px-6 py-4 z-20 bg-gradient-to-b from-[#FFF5F0] via-[#FFF5F0] to-[#FFF5F0]/80 pt-safe lg:hidden">
         <div className="flex flex-col">
           <p className="text-[#A67B6B] text-sm leading-none">Hola, {username}</p>
-          <p className="text-[#3D2C28] text-xl font-bold tracking-tight">{getGreeting()}</p>
+          <div className="flex items-center gap-2">
+            <p className="text-[#3D2C28] text-xl font-bold tracking-tight">{getGreeting()}</p>
+            {isRealtimeActive && (
+              <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-green-100/50 text-xs font-medium text-green-700">
+                <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                Sincronizado
+              </span>
+            )}
+          </div>
         </div>
         <button
           onClick={() => router.push('/app/estadisticas')}
@@ -196,6 +234,18 @@ export default function DashboardPage() {
       </header>
 
       <main className="relative flex-grow p-6 pt-28 lg:pt-4 space-y-6 z-10 lg:z-10">
+        {/* Sync notification */}
+        {syncMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="rounded-lg p-3 bg-blue-100/80 border border-blue-300/50 backdrop-blur-sm"
+          >
+            <p className="text-sm font-medium text-blue-700">📡 {syncMessage}</p>
+          </motion.div>
+        )}
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

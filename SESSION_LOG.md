@@ -572,5 +572,227 @@ Success → remove from queue
 
 ---
 
-**Last Update:** Session 4 - SUPABASE Phase 2 Complete
-**Next Action:** Begin Phase 3 (Habits Module Migration) when ready
+## Phase 4: REALTIME SYNC (Supabase Integration Phase 4)
+
+**Objective:** Enable real-time synchronization between devices using Supabase Realtime Subscriptions while maintaining offline-first (localStorage-based) architecture.
+
+**Status:** ✅ COMPLETED
+
+### Completed Tasks:
+
+#### 1. Created Supabase Realtime Manager
+**File:** `app/lib/supabase-realtime.ts`
+- Singleton RealtimeManager class
+- Manages subscriptions to `habits` and `habit_completions` tables
+- Listens for INSERT, UPDATE, DELETE events filtered by user_id
+- Emits custom window events for reactive UI updates
+- Logs all sync events to sync_logs table via sync-logger
+- Device ID tracking for multi-device logging
+
+**Key Features:**
+- ✅ Lazy initialization (only when user authenticated)
+- ✅ Graceful error handling
+- ✅ Channel cleanup on logout
+- ✅ Event filtering by user_id for privacy
+
+#### 2. Created Sync Logger Utility
+**File:** `app/lib/sync-logger.ts`
+- Centralized logging to sync_logs table
+- Records: event_type, table_name, record_id, device_id, user_id, timestamp
+- Functions:
+  - `logSyncEvent(data)`: Log individual sync events
+  - `getSyncLogs(userId, limit)`: Retrieve event history
+  - `clearOldSyncLogs(userId, daysOld)`: Cleanup old logs
+
+#### 3. Integrated UserContext Lifecycle
+**File:** `app/context/UserContext.tsx`
+- Added `isRealtimeActive: boolean` flag to context
+- Starts realtime subscriptions on user login
+- Stops subscriptions on logout
+- Handles auth state changes with proper lifecycle management
+- Error handling for subscription failures
+
+#### 4. Integrated Dashboard Listener
+**File:** `app/app/page.tsx`
+- Listens to `habitUpdated` and `completionUpdated` events
+- Triggers debounced stats recalculation on realtime events
+- Displays sync messages (Hábito creado/actualizado/eliminado)
+- Auto-clears notifications after 3 seconds
+- Shows "Sincronizado" indicator in header when realtime active
+- Animated sync status badge with pulse effect
+
+### Architecture:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│ User Device (Device A)                                       │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│  Dashboard Component                                          │
+│  ├─ Listens: habitUpdated, completionUpdated                │
+│  └─ Updates stats on realtime events                         │
+│                                                               │
+│  UserContext                                                  │
+│  ├─ isRealtimeActive flag                                    │
+│  ├─ Starts realtime on login                                │
+│  └─ Stops realtime on logout                                │
+│                                                               │
+│  RealtimeManager (Singleton)                                 │
+│  ├─ Subscribes to habits:{userId}                           │
+│  ├─ Subscribes to completions:{userId}                      │
+│  ├─ Listens for INSERT/UPDATE/DELETE                        │
+│  ├─ Emits custom events (habitUpdated, completionUpdated)   │
+│  └─ Logs events to sync_logs table                          │
+│                                                               │
+│  SyncLogger                                                   │
+│  └─ Records all sync events to Supabase                     │
+│                                                               │
+│  LocalStorage (Offline-first base)                           │
+│  ├─ habits, completions cached                              │
+│  └─ Source of truth for offline mode                         │
+│                                                               │
+└─────────────────────────────────────────────────────────────┘
+        ↓ WebSocket ↓
+        ↓ PostgreSQL LISTEN/NOTIFY ↓
+┌─────────────────────────────────────────────────────────────┐
+│ Supabase Realtime (PostgreSQL)                               │
+├─────────────────────────────────────────────────────────────┤
+│                                                               │
+│  Database Tables:                                             │
+│  ├─ habits (user_id indexed)                                │
+│  ├─ habit_completions (user_id indexed)                     │
+│  └─ sync_logs (user_id, timestamp indexed)                  │
+│                                                               │
+│  Realtime Channels:                                           │
+│  ├─ habits:{userId} → watches INSERT/UPDATE/DELETE          │
+│  └─ completions:{userId} → watches INSERT/UPDATE/DELETE     │
+│                                                               │
+└─────────────────────────────────────────────────────────────┘
+        ↑ WebSocket ↑
+        ↑ Event propagation ↑
+┌─────────────────────────────────────────────────────────────┐
+│ User Device (Device B) - OTHER DEVICE                        │
+├─────────────────────────────────────────────────────────────┤
+│ (User makes changes here)                                    │
+│ → Saves to Supabase                                          │
+│ → Triggers PostgreSQL event                                  │
+│ → Device A receives update via WebSocket                     │
+│ → RealtimeManager processes event                            │
+│ → Custom event dispatched to Dashboard                       │
+│ → Stats recalculate with latest data                         │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Data Flow:
+
+1. **User Action (Device B):**
+   - User completes a habit on Device B
+   - Saved to Supabase `habit_completions` table
+
+2. **PostgreSQL Event:**
+   - INSERT event triggered on PostgreSQL
+   - LISTEN channel `completions:{userId}` notified
+
+3. **Realtime Delivery (Device A):**
+   - WebSocket receives event
+   - RealtimeManager.subscribeToCompletions() callback fires
+   - logSyncEvent() records to sync_logs
+
+4. **UI Update (Device A):**
+   - Custom event `completionUpdated` dispatched
+   - Dashboard listener catches event
+   - calculateStatsDebounced() triggered
+   - Stats refresh from localStorage
+   - Sync message displayed: "Registro creado"
+   - Badge shows "Sincronizado"
+
+5. **Offline Compatibility:**
+   - If Device A is offline: WebSocket connection fails silently
+   - Dashboard continues with localStorage data
+   - When Device A comes online: localStorage will eventually sync via offline queue
+   - No duplicate entries (device_id prevents duplicates)
+
+### Testing Scenarios:
+
+#### Scenario 1: Multi-Device Real-time Sync
+```
+1. Login on Device A (browser window 1)
+2. Login on Device B (browser window 2, same user)
+3. On Device B: Create a new habit
+4. On Device A: Watch Dashboard update instantly with realtime badge
+5. Check sync_logs table for both devices' entries
+```
+
+#### Scenario 2: Offline → Online Transition
+```
+1. Open app on Device A (logged in)
+2. Disconnect internet (DevTools → Network → Offline)
+3. Create a habit (saved to localStorage queue)
+4. Reconnect internet
+5. App should sync queued habit to Supabase
+6. No duplicates should appear
+```
+
+#### Scenario 3: Verify Logging
+```
+1. Create/Update/Delete habits on multiple devices
+2. Check Supabase → sync_logs table
+3. Verify:
+   - event_type: INSERT, UPDATE, DELETE
+   - device_id: unique per device
+   - timestamp: accurate
+   - user_id: matches current user
+```
+
+### Files Created/Modified:
+
+**Created:**
+- ✅ `app/lib/supabase-realtime.ts` (RealtimeManager - 242 lines)
+- ✅ `app/lib/sync-logger.ts` (SyncLogger - 90 lines)
+
+**Modified:**
+- ✅ `app/context/UserContext.tsx` (Added isRealtimeActive, lifecycle)
+- ✅ `app/app/page.tsx` (Dashboard integration, realtime listeners)
+
+### Build Status:
+- ✅ TypeScript: 0 errors, 0 warnings
+- ✅ Next.js compilation: Success
+- ✅ All routes: Generated successfully
+- ✅ No breaking changes
+
+### Performance Characteristics:
+
+**Realtime Subscriptions:**
+- 2 active channels per authenticated user (habits + completions)
+- WebSocket connections managed by Supabase client
+- Minimal bandwidth (only event payloads sent)
+- Automatic reconnection on network loss
+
+**Event Processing:**
+- Debounced stats calculation (1 second debounce)
+- 30-second cache to prevent excessive recalculation
+- Event listeners cleaned up on logout
+
+**Logging:**
+- Async logging (doesn't block UI)
+- Graceful error handling (logs to console if sync_logs unavailable)
+- Cleanup function to remove logs older than 30 days
+
+### Known Limitations:
+
+1. **Realtime only for authenticated users** - Anonymous/offline users rely on localStorage polling
+2. **WebSocket latency** - Events may take 100-500ms to propagate depending on network
+3. **Event ordering** - Concurrent edits on same habit may arrive out of order (use timestamps)
+4. **Connection stability** - Poor network = delayed sync (fallback to offline queue)
+
+### Next Steps:
+
+- Monitor sync_logs for unusual patterns
+- Add SyncIndicator component for visual sync status
+- Implement conflict resolution for concurrent edits
+- Consider delta sync for large data changes
+
+---
+
+**Last Update:** Session 5 - REALTIME SYNC Phase 4 Complete ✅
+**Next Action:** Update P0_REVIEW.md and create v1.3-alpha release tag
