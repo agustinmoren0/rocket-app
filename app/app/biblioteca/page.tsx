@@ -9,6 +9,8 @@ import { syncHabitToCalendar, removeHabitFromCalendar } from '@/app/lib/store';
 import { notifyDataChange } from '@/app/lib/storage-utils';
 import { validateName, validateGoalValue, ValidationError } from '@/app/lib/validation';
 import { Habit, ModalProps } from '@/app/types';
+import { persistData } from '@/app/lib/persistence-layer';
+import { useUser } from '@/app/context/UserContext';
 
 const HABIT_LIBRARY_FORMAR = {
   fisica: {
@@ -249,6 +251,7 @@ interface CreateHabitModalProps extends ModalProps {
 }
 
 function CreateHabitModal({ editingHabit, onClose, onSuccess }: CreateHabitModalProps) {
+  const { user } = useUser();
   const [formData, setFormData] = useState({
     name: editingHabit?.name || '',
     icon: editingHabit?.icon || 'Star',
@@ -323,7 +326,7 @@ function CreateHabitModal({ editingHabit, onClose, onSuccess }: CreateHabitModal
       } else {
         // Crear nuevo hábito
         const newHabit = {
-          id: `habit_${Date.now()}`,
+          id: crypto.randomUUID(),
           ...formData,
           status: 'active',
           createdAt: new Date().toISOString(),
@@ -331,6 +334,22 @@ function CreateHabitModal({ editingHabit, onClose, onSuccess }: CreateHabitModal
         };
         habits.push(newHabit);
         console.log('✅ Habit created:', newHabit);
+
+        // Persist to both localStorage and Supabase (if authenticated)
+        if (user?.id) {
+          const deviceId = localStorage.getItem('device_id') || `device_${Math.random().toString(36).substr(2, 9)}`;
+          try {
+            await persistData({
+              table: 'habits',
+              data: newHabit,
+              userId: user.id,
+              deviceId,
+            });
+          } catch (persistError) {
+            console.warn('⚠️ Persistence warning (habit will still be saved locally):', persistError);
+          }
+        }
+
         // Sincronizar nuevo hábito al calendario
         try {
           syncHabitToCalendar(newHabit);

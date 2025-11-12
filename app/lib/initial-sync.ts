@@ -128,8 +128,8 @@ async function syncTable(options: {
   const { table, userId, deviceId, conflicts } = options
 
   try {
-    // Get local data
-    const localKey = `habika_${table}`
+    // Get local data (handle special keys for habits)
+    const localKey = table === 'habits' ? 'habika_custom_habits' : `habika_${table}`
     const localDataStr = localStorage.getItem(localKey)
     const localData = localDataStr ? JSON.parse(localDataStr) : []
     const localArray = Array.isArray(localData) ? localData : [localData].filter(Boolean)

@@ -577,7 +577,7 @@ function EditHabitModal({ habit, onSave, onClose }: EditHabitModalProps) {
     const updated: Habit = {
       ...habit,
       ...formData,
-      id: habit.id || `habit_${Date.now()}`,
+      id: habit.id || crypto.randomUUID(),
       name: formData.name,
       icon: formData.icon,
       color: formData.color,
