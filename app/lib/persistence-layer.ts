@@ -120,23 +120,24 @@ async function persistToSupabase(
     let record: any = {
       id: data.id,
       user_id: userId,
-      device_id: deviceId,
       updated_at: new Date().toISOString(),
     }
 
     // Add table-specific fields based on what we're storing
     if (table === 'activities') {
+      const unit = data.unit || 'min'
       record = {
         ...record,
         name: data.name,
         duration: parseInt(data.duration) || 0,
-        unit: data.unit || 'min', // Ensure unit is never null
+        unit: unit, // Ensure unit is never null
         category: data.categoria, // Map JS 'categoria' to SQL 'category'
         color: data.color,
         date: data.date,
         notes: data.notes || null,
         // NOTE: 'timestamp' column doesn't exist in Supabase schema, removed
         // NOTE: 'created_at' is server-generated, only set on initial insert if needed
+        // NOTE: 'device_id' doesn't exist in activities table schema, removed
       }
       console.log('📝 Preparing activity record for Supabase:', { id: record.id, unit: record.unit, duration: record.duration, category: record.category })
     } else if (table === 'habits') {
@@ -158,6 +159,7 @@ async function persistToSupabase(
         is_preset: data.isPreset || false,
         minutes: data.minutes ? parseInt(data.minutes) : null,
         // NOTE: 'created_at' is server-generated, don't send on insert/update
+        // NOTE: 'device_id' doesn't exist in habits table schema, removed
       }
       console.log('📝 Preparing habit record for Supabase:', { id: record.id, name: record.name })
     } else {
