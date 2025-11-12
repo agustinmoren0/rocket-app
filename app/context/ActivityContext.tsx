@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { notifyDataChange } from '../lib/storage-utils';
 import { persistData, deleteRecord } from '../lib/persistence-layer';
 import { useUser } from './UserContext';
+import { generateUUID } from '../lib/uuid';
 
 export interface Activity {
   id: string;
@@ -64,7 +65,7 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
   }, [user]);
 
   const addActivity = async (activity: Omit<Activity, 'id' | 'timestamp' | 'createdAt'>) => {
-    const id = `activity_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const id = generateUUID();
     const now = new Date().toISOString();
 
     const newActivity: Activity = {

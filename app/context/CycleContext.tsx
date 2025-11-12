@@ -4,10 +4,12 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 import { notifyDataChange } from '../lib/storage-utils';
 import { persistData, deleteRecord } from '../lib/persistence-layer';
 import { useUser } from './UserContext';
+import { generateUUID } from '../lib/uuid';
 
 type CyclePhase = 'menstrual' | 'follicular' | 'ovulatory' | 'luteal';
 
 interface CycleData {
+  id?: string; // UUID for database storage
   isActive: boolean;
   lastPeriodStart: string;
   cycleLengthDays: number;
@@ -76,6 +78,10 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
     const stored = localStorage.getItem('habika_cycle_data');
     if (stored) {
       const data = JSON.parse(stored);
+      // Ensure cycle data has a UUID for database operations
+      if (!data.id) {
+        data.id = generateUUID();
+      }
       setCycleData(data);
       if (data.isActive) {
         updateCycleCalculations(data);
@@ -132,7 +138,7 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
       await persistData({
         table: 'cycle_data',
         data: {
-          id: `cycle_${userId}`, // Single record per user
+          id: updated.id || generateUUID(), // Use existing ID or generate new one
           ...updated,
         },
         userId,
@@ -145,6 +151,7 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
 
   const activateCycleMode = async (lastPeriod: string, cycleLength: number, periodLength: number) => {
     const newData: CycleData = {
+      id: generateUUID(),
       isActive: true,
       lastPeriodStart: new Date(lastPeriod).toISOString(),
       cycleLengthDays: cycleLength,
@@ -169,7 +176,7 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
       await persistData({
         table: 'cycle_data',
         data: {
-          id: `cycle_${userId}`,
+          id: updated.id || generateUUID(),
           ...updated,
         },
         userId,
@@ -196,7 +203,7 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
       await persistData({
         table: 'cycle_data',
         data: {
-          id: `cycle_${userId}`,
+          id: updated.id || generateUUID(),
           ...updated,
         },
         userId,
@@ -308,10 +315,13 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
 
     // Save period to history
     const history = JSON.parse(localStorage.getItem('habika_period_history') || '[]');
-    history.push({
+    const timestamp = new Date().toISOString();
+    const periodEntry = {
+      id: generateUUID(),
       date,
-      timestamp: new Date().toISOString(),
-    });
+      timestamp,
+    };
+    history.push(periodEntry);
     localStorage.setItem('habika_period_history', JSON.stringify(history));
 
     // Persist period history to Supabase if authenticated
@@ -319,10 +329,10 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
       await persistData({
         table: 'period_history',
         data: {
-          id: `period_${userId}_${date}`,
+          id: periodEntry.id,
           user_id: userId,
           date,
-          timestamp: new Date().toISOString(),
+          timestamp,
         },
         userId,
         deviceId,
@@ -341,6 +351,7 @@ export const CycleProvider = ({ children }: { children: ReactNode }) => {
     if (!confirmed) return;
 
     const newData: CycleData = {
+      id: generateUUID(),
       isActive: true,
       lastPeriodStart: new Date().toISOString().split('T')[0],
       cycleLengthDays: 28,
