@@ -34,9 +34,36 @@ export default function LoginModal({ isOpen, onClose, onSignupClick }: LoginModa
 
   if (!isOpen) return null
 
+  const validateForm = () => {
+    if (!email.trim()) {
+      setError('El email es requerido')
+      return false
+    }
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      setError('Por favor ingresa un email válido')
+      return false
+    }
+    if (!password.trim()) {
+      setError('La contraseña es requerida')
+      return false
+    }
+    if (password.length < 6) {
+      setError('La contraseña debe tener al menos 6 caracteres')
+      return false
+    }
+    return true
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+
+    if (!validateForm()) {
+      return
+    }
+
     setIsLoading(true)
 
     try {

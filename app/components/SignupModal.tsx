@@ -36,6 +36,16 @@ export default function SignupModal({ isOpen, onClose, onLoginClick }: SignupMod
   if (!isOpen) return null
 
   const validateForm = () => {
+    if (!email.trim()) {
+      setError('El email es requerido')
+      return false
+    }
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      setError('Por favor ingresa un email válido')
+      return false
+    }
     if (username.length < 2) {
       setError('El nombre debe tener al menos 2 caracteres')
       return false
