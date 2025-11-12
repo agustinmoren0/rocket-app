@@ -193,13 +193,31 @@ class OfflineManager {
   }
 
   /**
-   * Clear queue (useful for testing)
+   * Clear queue (useful for testing or recovering from stale data)
    */
   public clearQueue(): void {
+    const count = this.queue.length
     this.queue = []
     this.saveQueue()
     this.retryTimers.forEach((timer) => clearTimeout(timer))
     this.retryTimers.clear()
+    if (count > 0) {
+      console.log(`🗑️ Cleared ${count} stale operations from queue`)
+      emitSyncStatus('synced', 'Cola limpiada')
+    }
+  }
+
+  /**
+   * Clear only failed operations (those with retries)
+   */
+  public clearFailedOperations(): void {
+    const beforeCount = this.queue.length
+    this.queue = this.queue.filter((op) => op.retries === 0)
+    this.saveQueue()
+    const clearedCount = beforeCount - this.queue.length
+    if (clearedCount > 0) {
+      console.log(`🗑️ Cleared ${clearedCount} failed operations from queue`)
+    }
   }
 
   /**

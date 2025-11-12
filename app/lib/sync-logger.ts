@@ -9,7 +9,7 @@ export interface SyncLogEntry {
   event_type: string
   table_name: string
   record_id: string
-  device_id: string
+  device_id?: string // Optional, doesn't exist in actual schema
   user_id: string
   timestamp?: string
 }
@@ -19,11 +19,11 @@ export interface SyncLogEntry {
  */
 export async function logSyncEvent(data: SyncLogEntry): Promise<void> {
   try {
+    // NOTE: device_id doesn't exist in sync_logs table schema, removed from insert
     const { error } = await supabase.from('sync_logs').insert({
       event_type: data.event_type,
       table_name: data.table_name,
       record_id: data.record_id,
-      device_id: data.device_id,
       user_id: data.user_id,
       timestamp: data.timestamp || new Date().toISOString(),
     })
