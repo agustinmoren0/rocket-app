@@ -172,8 +172,18 @@ async function syncTable(options: {
     // Merge local and remote data
     const merged = mergeData(localArray, remoteData, { table, userId, conflicts })
 
+    // Normalize field names for habits (convert snake_case to camelCase)
+    const normalized = table === 'habits'
+      ? merged.map((h: any) => ({
+          ...h,
+          startTime: h.startTime || h.start_time || null,
+          endTime: h.endTime || h.end_time || null,
+        }))
+      : merged
+
     // Update localStorage with merged data
-    localStorage.setItem(localKey, JSON.stringify(merged))
+    localStorage.setItem(localKey, JSON.stringify(normalized))
+    console.log(`✅ Synced ${table}: normalized ${normalized.length} records`)
 
     console.log(`✅ Synced ${table}: ${merged.length} records (${localArray.length} local + ${remoteData.length} remote)`)
 

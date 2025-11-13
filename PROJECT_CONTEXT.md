@@ -231,6 +231,57 @@ Resultado verificado: Columnas creadas (type="time without time zone")
 
 ### Commits Asociados
 - `dd93aea` (2025-11-12): "feat: P5 - Map habit times to Supabase columns"
+- `01cabbe` (2025-11-12): "fix: P5.1 - Map habit startTime/endTime from Supabase when syncing" (NUEVO - Fix logout/re-login issue)
+
+---
+
+## ✅ P5.1 - FIX LOGOUT/RE-LOGIN (COMPLETADO 2025-11-12)
+
+### Problema Descubierto
+- Después de logout y re-login, los hábitos volvían a aparecer a 6:00 AM
+- Los campos `startTime` y `endTime` se perdían durante la sincronización
+
+### Raíz del Problema
+En el archivo `initial-sync.ts`, cuando se traían datos desde Supabase:
+1. Supabase devuelve campos con nombres snake_case: `start_time`, `end_time`
+2. El código guardaba esto directamente en localStorage
+3. El calendario esperaba `startTime` y `endTime` (camelCase)
+4. Como no encontraba los campos, usaba el default de 6:00 AM
+
+### Solución Implementada
+**Paso 1: Agregar función de mapeo** ✅ COMPLETADO
+- Archivo: `app/lib/initial-sync.ts` (líneas 187-202)
+- Nueva función `mapRemoteToLocal()` que convierte:
+  - `start_time` → `startTime`
+  - `end_time` → `endTime`
+
+**Paso 2: Aplicar mapeo en sync inicial** ✅ COMPLETADO
+- Archivo: `app/lib/initial-sync.ts` (línea 218)
+- En `mergeData()`: mapear datos remotos antes de hacer merge
+- Ahora: `const mappedRemote = remote.map(record => mapRemoteToLocal(table, record))`
+
+**Paso 3: Aplicar mapeo en reset from cloud** ✅ COMPLETADO
+- Archivo: `app/lib/initial-sync.ts` (línea 289)
+- En `resetLocalToRemote()`: mapear datos antes de guardar a localStorage
+- Ahora: `const mappedData = (data || []).map((record: any) => mapRemoteToLocal(table, record))`
+
+### Cambios Clave
+```typescript
+// NUEVO: Función de mapeo para convertir snake_case a camelCase
+function mapRemoteToLocal(table: string, record: any): any {
+  if (table === 'habits') {
+    return {
+      ...record,
+      startTime: record.start_time || null,  // ← Mapeo clave
+      endTime: record.end_time || null,      // ← Mapeo clave
+    }
+  }
+  return record
+}
+```
+
+### Commits Asociados
+- `01cabbe` (2025-11-12): "fix: P5.1 - Map habit startTime/endTime from Supabase when syncing"
 
 ---
 
