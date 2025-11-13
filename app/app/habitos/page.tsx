@@ -28,7 +28,32 @@ export default function HabitosPage() {
   const loadHabits = () => {
     const savedHabits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
     setHabits(savedHabits);
+    console.log(`📋 Loaded ${savedHabits.length} habits`);
   };
+
+  // Listen for habit changes from other parts of the app (new habit created, etc)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'habika_custom_habits') {
+        console.log('💾 Habit storage changed, reloading...');
+        loadHabits();
+      }
+    };
+
+    // Listen for data change notifications from notifyDataChange()
+    const handleDataChange = () => {
+      console.log('🔔 Data change notification received, reloading habits');
+      loadHabits();
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('habika-data-changed', handleDataChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('habika-data-changed', handleDataChange);
+    };
+  }, []);
 
   const filteredHabits = habits.filter(h => {
     if (activeTab === 'pausados') return h.status === 'paused';

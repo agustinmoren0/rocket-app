@@ -45,7 +45,21 @@ export async function performInitialSync(options: InitialSyncOptions): Promise<{
       deviceId,
       conflicts,
     })
-    if (activitiesResult) syncedTables.push('activities')
+    if (activitiesResult) {
+      syncedTables.push('activities')
+      // Convert habika_activities (flat list) to habika_activities_today (by date)
+      const activities = JSON.parse(localStorage.getItem('habika_activities') || '[]')
+      const activitiesByDate: { [date: string]: any[] } = {}
+      activities.forEach((act: any) => {
+        const date = act.date || new Date().toISOString().split('T')[0]
+        if (!activitiesByDate[date]) {
+          activitiesByDate[date] = []
+        }
+        activitiesByDate[date].push(act)
+      })
+      localStorage.setItem('habika_activities_today', JSON.stringify(activitiesByDate))
+      console.log(`📅 Converted activities to by-date format: ${Object.keys(activitiesByDate).length} dates`)
+    }
 
     // Sync cycle data
     const cycleResult = await syncTable({
