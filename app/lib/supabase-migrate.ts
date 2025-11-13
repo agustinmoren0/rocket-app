@@ -170,8 +170,9 @@ async function migrateHabits(userId: string, habits: any[]): Promise<number> {
         status: habit.status || 'active',
         streak: habit.streak || 0,
         // P5 Fix: Map startTime/endTime to start_time/end_time
-        start_time: habit.startTime || null,
-        end_time: habit.endTime || null,
+        // P5.3 Fix: Format time strings as HH:MM:SS for PostgreSQL TIME type
+        start_time: habit.startTime ? `${habit.startTime}:00` : null,
+        end_time: habit.endTime ? `${habit.endTime}:00` : null,
         created_at: habit.createdAt || new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }, {

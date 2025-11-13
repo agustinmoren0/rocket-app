@@ -157,8 +157,9 @@ async function persistToSupabase(
         category: data.category || null,
         streak: data.streak || 0,
         // P5 Fix: Map startTime/endTime (camelCase JS) to start_time/end_time (snake_case SQL)
-        start_time: data.startTime || null,
-        end_time: data.endTime || null,
+        // P5.3 Fix: Format time strings as HH:MM:SS for PostgreSQL TIME type
+        start_time: data.startTime ? `${data.startTime}:00` : null,
+        end_time: data.endTime ? `${data.endTime}:00` : null,
         // NOTE: 'created_at' is server-generated
         // NOTE: These columns don't exist in habits schema: type, goal_value, goal_unit, frequency_interval, dates_of_month, is_preset, minutes
       }
