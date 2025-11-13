@@ -231,7 +231,8 @@ Resultado verificado: Columnas creadas (type="time without time zone")
 
 ### Commits Asociados
 - `dd93aea` (2025-11-12): "feat: P5 - Map habit times to Supabase columns"
-- `01cabbe` (2025-11-12): "fix: P5.1 - Map habit startTime/endTime from Supabase when syncing" (NUEVO - Fix logout/re-login issue)
+- `01cabbe` (2025-11-12): "fix: P5.1 - Map habit startTime/endTime from Supabase when syncing"
+- `9714c99` (2025-11-12): "fix: P5.2 - Normalize habit field names after sync from Supabase" (NUEVO - Defensive normalization)
 
 ---
 
@@ -282,6 +283,55 @@ function mapRemoteToLocal(table: string, record: any): any {
 
 ### Commits Asociados
 - `01cabbe` (2025-11-12): "fix: P5.1 - Map habit startTime/endTime from Supabase when syncing"
+
+---
+
+## ✅ P5.2 - DEFENSIVE FIELD NORMALIZATION (COMPLETADO 2025-11-12)
+
+### Problema Detectado en Testing
+- Al hacer logout/re-login, localStorage tenía `startTime: undefined` (no `startTime: "23:11"`)
+- P5.1 mapping en `mergeData()` no fue suficiente
+- Calendario no encontraba `startTime` y usaba default 06:00 AM
+
+### Raíz del Problema (Mejorado)
+El mapeo en `mapRemoteToLocal()` ocurría dentro de `mergeData()`, pero después del merge,
+el resultado podía tener una mezcla de nombres:
+- Si el dato venía de Supabase (remote): tenía `start_time` pero no `startTime`
+- Si el dato era local: tenía `startTime` pero no `start_time`
+- El merge no garantizaba una normalización consistente
+
+### Solución Implementada (P5.2)
+**Normalización defensiva DESPUÉS del merge** ✅ COMPLETADO
+- Archivo: `app/lib/initial-sync.ts` (líneas 175-182)
+- Paso adicional después de `mergeData()`:
+  - Itera todos los hábitos
+  - Asegura que `startTime` siempre tenga un valor (local `startTime` O remoto `start_time`)
+  - Asegura que `endTime` siempre tenga un valor (local `endTime` O remoto `end_time`)
+  - Resultado: localStorage siempre tiene objetos con camelCase puro
+
+### Código Implementado
+```typescript
+// En syncTable(), DESPUÉS del merge:
+const normalized = table === 'habits'
+  ? merged.map((h: any) => ({
+      ...h,
+      startTime: h.startTime || h.start_time || null,
+      endTime: h.endTime || h.end_time || null,
+    }))
+  : merged
+
+localStorage.setItem(localKey, JSON.stringify(normalized))
+```
+
+### Por qué funciona
+- Es un enfoque "defensivo": no importa el origen del dato
+- Usa `||` (operador OR) para elegir el primer valor no-null
+- Garantiza que el objeto final SIEMPRE tiene `startTime` y `endTime`
+- Si viene de Supabase con `start_time`, lo convierte a `startTime`
+- Si viene del merge ya con `startTime`, lo mantiene
+
+### Commits Asociados
+- `9714c99` (2025-11-12): "fix: P5.2 - Normalize habit field names after sync from Supabase"
 
 ---
 
