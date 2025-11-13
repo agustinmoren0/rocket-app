@@ -20,16 +20,23 @@ export default function HabitosPage() {
   const [confirmAction, setConfirmAction] = useState<{ type: string; habitId: string; message?: string; confirmText?: string } | null>(null);
   const [editingHabit, setEditingHabit] = useState<Partial<Habit> | null>(null);
 
-  // P1.1 Fix: Reload habits when user changes (after login/logout)
-  useEffect(() => {
-    loadHabits();
-  }, [user?.id]);
-
   const loadHabits = () => {
     const savedHabits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
     setHabits(savedHabits);
     console.log(`📋 Loaded ${savedHabits.length} habits`);
   };
+
+  // Load habits immediately when component mounts
+  useEffect(() => {
+    console.log('🎯 Habitos page mounted, loading habits immediately');
+    loadHabits();
+  }, []);
+
+  // P1.1 Fix: Reload habits when user changes (after login/logout)
+  useEffect(() => {
+    console.log('🔄 User ID changed, reloading habits');
+    loadHabits();
+  }, [user?.id]);
 
   // Listen for habit changes from other parts of the app (new habit created, etc)
   useEffect(() => {
