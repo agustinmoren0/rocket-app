@@ -132,12 +132,21 @@ export default function ActividadesPage() {
       setTimeout(() => loadTodayData(), 0);
     };
 
+    // P2 Fix: Listen for initial sync completion (fixes race condition with activities)
+    const handleSyncComplete = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      console.log('🔄 Initial sync complete, reloading activities after sync');
+      loadTodayData();
+    };
+
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('activityUpdated', handleActivityUpdate);
+    window.addEventListener('habika-initial-sync-complete', handleSyncComplete);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('activityUpdated', handleActivityUpdate);
+      window.removeEventListener('habika-initial-sync-complete', handleSyncComplete);
     };
   }, [loadTodayData]);
 

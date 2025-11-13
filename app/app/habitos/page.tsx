@@ -53,12 +53,21 @@ export default function HabitosPage() {
       loadHabits();
     };
 
+    // P2 Fix: Listen for initial sync completion (fixes race condition)
+    const handleSyncComplete = (event: Event) => {
+      const customEvent = event as CustomEvent;
+      console.log('🔄 Initial sync complete, reloading habits after sync');
+      loadHabits();
+    };
+
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('habika-data-changed', handleDataChange);
+    window.addEventListener('habika-initial-sync-complete', handleSyncComplete);
 
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('habika-data-changed', handleDataChange);
+      window.removeEventListener('habika-initial-sync-complete', handleSyncComplete);
     };
   }, []);
 

@@ -70,6 +70,11 @@ export function useInitialSync() {
 
         console.log('✅ Initial sync completed successfully')
 
+        // Emit event so components can reload data (fixes race condition)
+        window.dispatchEvent(new CustomEvent('habika-initial-sync-complete', {
+          detail: { syncedTables: result.syncedTables }
+        }))
+
         // Mark this user as synced
         setLastSyncedUserId(userId)
       } else {
