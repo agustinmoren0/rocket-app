@@ -194,34 +194,43 @@ RLS: auth.uid() = user_id (múltiples políticas duplicadas)
 
 ---
 
-## 🚀 FIX EN PROGRESO: P5 - Habit Times en Calendario
+## ✅ P5 - HABIT TIMES EN CALENDARIO (COMPLETADO 2025-11-12)
 
-### Problema
+### Problema (RESUELTO)
 - Calendario mostraba todos los hábitos a 6:00 AM
 - Raíz: No existía columna `start_time` en tabla `habits`
 
-### Solución
+### Solución Implementada
 **Paso 1: Agregar columnas a DB** ✅ COMPLETADO
 ```sql
 ALTER TABLE habits
 ADD COLUMN start_time TIME DEFAULT '06:00:00',
 ADD COLUMN end_time TIME DEFAULT '07:00:00';
 ```
-Resultado: Columnas creadas exitosamente
+Resultado verificado: Columnas creadas (type="time without time zone")
 
-**Paso 2: Mapeo en Persistence Layer** 🔄 EN PROGRESO
-- Archivo: `app/lib/persistence-layer.ts` (líneas ~144-165)
-- Qué hacer: En la sección de 'habits', mapear:
-  - `data.startTime` → `record.start_time`
-  - `data.endTime` → `record.end_time`
+**Paso 2: Mapeo en Persistence Layer** ✅ COMPLETADO
+- Archivo: `app/lib/persistence-layer.ts` (línea 160-161)
+- Cambio: Agregados mapeos en sección habits:
+  - `start_time: data.startTime || null`
+  - `end_time: data.endTime || null`
 
-**Paso 3: Mapeo en Sync**
-- Archivo: `app/lib/supabase-sync.ts` (líneas ~45-59)
-- Qué hacer: Agregar start_time, end_time al upsert
+**Paso 3: Mapeo en Sync** ✅ COMPLETADO
+- Archivo: `app/lib/supabase-sync.ts` (línea 56-57)
+- Cambio: Agregados campos al upsert de habits
+  - `start_time: habit.startTime || null`
+  - `end_time: habit.endTime || null`
 
-**Paso 4: Lectura en Calendario**
-- Archivo: `app/app/calendario/page.tsx` (líneas ~143-168)
-- Qué hacer: Usar start_time en lugar de hardcoded 6
+**Paso 4: Mapeo en Migration** ✅ COMPLETADO
+- Archivo: `app/lib/supabase-migrate.ts` (línea 173-174)
+- Cambio: Agregados campos al migration de habits para usuarios existentes
+
+**Paso 5: Lectura en Calendario** ✅ VERIFICADO
+- Archivo: `app/app/calendario/page.tsx` (línea 152-154)
+- Status: Ya lee correctamente `hab.startTime` de localStorage e interpreta la hora
+
+### Commits Asociados
+- `dd93aea` (2025-11-12): "feat: P5 - Map habit times to Supabase columns"
 
 ---
 
@@ -264,10 +273,10 @@ Resultado: Columnas creadas exitosamente
 
 | Archivo | Líneas | Qué hacer |
 |---------|--------|-----------|
-| [app/lib/persistence-layer.ts](app/lib/persistence-layer.ts) | 144-165 | Agregar mapeo start_time/end_time en sección habits |
-| [app/lib/supabase-sync.ts](app/lib/supabase-sync.ts) | 45-59 | Agregar start_time, end_time a upsert |
-| [app/lib/supabase-migrate.ts](app/lib/supabase-migrate.ts) | 160-174 | Agregar start_time, end_time a migration |
-| [app/app/calendario/page.tsx](app/app/calendario/page.tsx) | 143-168 | Usar start_time en lugar de hardcoded 6 |
+| [app/lib/persistence-layer.ts](app/lib/persistence-layer.ts) | 160-161 | ✅ Mapeo start_time/end_time en sección habits |
+| [app/lib/supabase-sync.ts](app/lib/supabase-sync.ts) | 56-57 | ✅ Agregados start_time, end_time a upsert |
+| [app/lib/supabase-migrate.ts](app/lib/supabase-migrate.ts) | 173-174 | ✅ Agregados start_time, end_time a migration |
+| [app/app/calendario/page.tsx](app/app/calendario/page.tsx) | 152-154 | ✅ Lee startTime correctamente, interpreta hora |
 
 ---
 
@@ -282,7 +291,7 @@ Resultado: Columnas creadas exitosamente
 | a94d1ed | - | feat: implement ActivityContext with dual-layer persistence for activities |
 | (P0) | 2025-11-12 | Logout handler: clear localStorage on logout |
 | (P1-P4) | 2025-11-12 | Race condition fixes: initial sync event system |
-| (P5 en progreso) | 2025-11-12 | Add start_time/end_time columns & map to calendar |
+| dd93aea | 2025-11-12 | ✅ feat: P5 - Map habit times to Supabase columns + PROJECT_CONTEXT.md |
 
 ---
 
