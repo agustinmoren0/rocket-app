@@ -144,12 +144,19 @@ export default function CalendarioPage() {
         const allHabits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
         const activeHabits = allHabits.filter((h: any) => h.status === 'active');
         activeHabits.forEach((hab: any) => {
-          // Each habit appears once per day at hour 6 (morning)
+          // Each habit appears once per day at the time specified in startTime
           const isDuplicate = allEvents.some(e => e.id === hab.id && e.day === new Date(todayDate).getDate());
           if (!isDuplicate) {
+            // Parse startTime (format: "HH:MM") or default to 6 AM if not set
+            let habitHour = 6;
+            if (hab.startTime) {
+              const [hourStr] = hab.startTime.split(':');
+              habitHour = parseInt(hourStr, 10) || 6;
+            }
+
             allEvents.push({
               id: hab.id,
-              hour: 6, // Habits show at 6 AM
+              hour: habitHour, // Use habit's start time, default to 6 AM
               day: new Date(todayDate).getDate(),
               title: hab.name,
               duration: hab.duration || 20,
