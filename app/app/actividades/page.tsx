@@ -7,6 +7,7 @@ import { Plus, Clock, Edit2, Trash2, Sparkles, Calendar as CalendarIcon, Check }
 import { LUCIDE_ICONS } from '@/app/utils/icons';
 import { setStorageItem, notifyDataChange } from '@/app/lib/storage-utils';
 import { useActivity } from '@/app/context/ActivityContext';
+import { useUser } from '@/app/context/UserContext';
 import { Activity, Habit, CalendarData, CalendarActivity } from '@/app/types';
 
 const CATEGORIAS = [
@@ -46,12 +47,27 @@ function ModalOpener({ setShowModal }: ModalOpenerProps) {
 
 export default function ActividadesPage() {
   const router = useRouter();
+  const { user } = useUser();
   const { activities: allActivities, addActivity, updateActivity, deleteActivity } = useActivity();
   const [activeTab, setActiveTab] = useState<'actividades' | 'habitos' | 'timeline'>('actividades');
   const [activities, setActivities] = useState<Activity[]>([]);
   const [habits, setHabits] = useState<Habit[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingActivity, setEditingActivity] = useState<Partial<Activity> | null>(null);
+
+  // P1.3 Fix: Detect user changes and clear data when user logs out/in
+  useEffect(() => {
+    if (!user) {
+      // User logged out - clear activities and habits from state
+      console.log('🔄 User logged out, clearing activities');
+      setActivities([]);
+      setHabits([]);
+    } else {
+      // User logged in - reload data
+      console.log('🔄 User logged in, reloading activities');
+      loadTodayData();
+    }
+  }, [user?.id]);
 
   // Memoized function to load today's data
   const loadTodayData = useCallback(() => {

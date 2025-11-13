@@ -46,10 +46,12 @@ export default function CalendarioPage() {
   }, [cycleData, currentDate]);
 
   // Función optimizada para cargar eventos de toda la semana/mes
+  // P1.2 Fix: Load from both habika_calendar AND habika_activities_today for today's activities
   const loadEventsFromCalendar = useCallback(() => {
     try {
       const calendar = JSON.parse(localStorage.getItem('habika_calendar') || '{}');
       const allEvents: Event[] = [];
+      const today = new Date().toISOString().split('T')[0];
 
       // Determinar qué fechas cargar según la vista
       let datesToLoad: Date[] = [];
@@ -113,6 +115,31 @@ export default function CalendarioPage() {
           }
         }
       });
+
+      // P1.2 Fix: Also load today's activities from habika_activities (not archived to calendar yet)
+      // This ensures today's activities show immediately without waiting for midnight archival
+      const todayDate = new Date().toISOString().split('T')[0];
+      if (datesToLoad.some(date => date.toISOString().split('T')[0] === todayDate)) {
+        const activitiesToday = JSON.parse(localStorage.getItem('habika_activities') || '[]');
+        activitiesToday.forEach((act: any) => {
+          if (act.date === todayDate) {
+            // Check if not already added from calendar
+            const isDuplicate = allEvents.some(e => e.id === act.id);
+            if (!isDuplicate) {
+              allEvents.push({
+                id: act.id,
+                hour: 12, // Default hour if not specified
+                day: new Date(todayDate).getDate(),
+                title: act.name,
+                duration: act.unit === 'hora(s)' ? act.duration * 60 : act.duration,
+                color: act.color || '#FF99AC',
+                type: 'activity' as const
+              });
+            }
+          }
+        });
+        console.log(`📅 Cargadas ${activitiesToday.length} actividades de hoy desde habika_activities`);
+      }
 
       setEvents(allEvents);
     } catch (error) {

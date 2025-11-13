@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { setStorageItem, notifyDataChange } from '@/app/lib/storage-utils';
 import { useRouter } from 'next/navigation';
+import { useUser } from '@/app/context/UserContext';
 import { motion, useMotionValue, PanInfo } from 'framer-motion';
 import { Plus, Play, Pause, Edit2, Trash2, AlertCircle } from 'lucide-react';
 import { LUCIDE_ICONS } from '@/app/utils/icons';
@@ -11,6 +12,7 @@ import { Habit, StreakData } from '@/app/types';
 
 export default function HabitosPage() {
   const router = useRouter();
+  const { user } = useUser();
   const [activeTab, setActiveTab] = useState<'formar' | 'dejar' | 'pausados'>('formar');
   const [habits, setHabits] = useState<Habit[]>([]);
   const [showAlert, setShowAlert] = useState(false);
@@ -18,9 +20,10 @@ export default function HabitosPage() {
   const [confirmAction, setConfirmAction] = useState<{ type: string; habitId: string; message?: string; confirmText?: string } | null>(null);
   const [editingHabit, setEditingHabit] = useState<Partial<Habit> | null>(null);
 
+  // P1.1 Fix: Reload habits when user changes (after login/logout)
   useEffect(() => {
     loadHabits();
-  }, []);
+  }, [user?.id]);
 
   const loadHabits = () => {
     const savedHabits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');

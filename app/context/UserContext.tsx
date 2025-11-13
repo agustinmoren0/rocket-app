@@ -220,6 +220,25 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
       // Stop realtime subscriptions on logout
       realtimeManager.stopRealtime();
       setIsRealtimeActive(false);
+
+      // CRITICAL: Clear all user data from localStorage on logout (P0 Security Fix)
+      // Prevents User B from seeing User A's data after re-login
+      const keysToClean = [
+        'habika_custom_habits',
+        'habika_activities',
+        'habika_activities_today',
+        'habika_cycle_data',
+        'habika_completions',
+        'habika_reflections',
+        'habika_user_settings',
+        'habika_calendar',
+      ];
+      keysToClean.forEach((key) => {
+        localStorage.removeItem(key);
+        console.log(`🗑️ Cleared localStorage key: ${key}`);
+      });
+
+      console.log('✅ Logout complete - all user data cleared from localStorage');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Logout failed';
       setAuthError(message);
