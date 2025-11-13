@@ -53,15 +53,45 @@ export const ActivityProvider = ({ children }: { children: ReactNode }) => {
     setDeviceId(dId);
 
     // Load activities from localStorage
-    const stored = localStorage.getItem('habika_activities_today');
-    if (stored) {
-      try {
-        const data = JSON.parse(stored);
-        setActivities(data);
-      } catch (e) {
-        console.error('Error parsing activities:', e);
+    const loadActivitiesFromStorage = () => {
+      const stored = localStorage.getItem('habika_activities_today');
+      if (stored) {
+        try {
+          const data = JSON.parse(stored);
+          setActivities(data);
+          console.log('📊 ActivityContext loaded activities from localStorage:', Object.keys(data).length, 'dates');
+        } catch (e) {
+          console.error('Error parsing activities:', e);
+        }
+      } else {
+        setActivities({});
+        console.log('📊 ActivityContext: No activities found in localStorage');
       }
-    }
+    };
+
+    loadActivitiesFromStorage();
+
+    // P3 Fix: Listen for initial sync completion to reload activities after sync populates localStorage
+    const handleSyncComplete = (event: Event) => {
+      console.log('🔄 ActivityContext: Initial sync complete, reloading activities');
+      loadActivitiesFromStorage();
+    };
+
+    // Also listen for localStorage changes (in case activities updated from elsewhere)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'habika_activities_today') {
+        console.log('💾 ActivityContext: Storage changed, reloading activities');
+        loadActivitiesFromStorage();
+      }
+    };
+
+    window.addEventListener('habika-initial-sync-complete', handleSyncComplete);
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('habika-initial-sync-complete', handleSyncComplete);
+      window.removeEventListener('storage', handleStorageChange);
+    };
   }, [user]);
 
   // Listen for realtime activity updates from RealtimeManager (other devices only)
