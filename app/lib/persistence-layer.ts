@@ -182,8 +182,11 @@ async function persistToSupabase(
       conflictConfig = { onConflict: 'user_id' } // UNIQUE(user_id) constraint
     }
 
-    // Try to insert/update
-    const { data: result, error } = await supabase.from(table).upsert([record], conflictConfig)
+    // Try to insert/update and get the response data back
+    const { data: result, error } = await supabase
+      .from(table)
+      .upsert([record], conflictConfig)
+      .select() // Request return data from Supabase
 
     if (table === 'habits') {
       console.log(`📊 Upsert response for habits:`, {
