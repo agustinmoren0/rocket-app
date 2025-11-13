@@ -184,6 +184,15 @@ async function persistToSupabase(
     // Try to insert/update
     const { data: result, error } = await supabase.from(table).upsert([record], conflictConfig)
 
+    if (table === 'habits') {
+      console.log(`📊 Upsert response for habits:`, {
+        sent_start_time: record.start_time,
+        sent_end_time: record.end_time,
+        response_data: result,
+        error: error,
+      })
+    }
+
     if (error) {
       console.error(`❌ Supabase error details:`, { code: error.code, message: error.message })
       // On network error, queue for later
