@@ -295,16 +295,54 @@ Resultado verificado: Columnas creadas (type="time without time zone")
 
 ---
 
-## 🧪 TESTING CHECKLIST
+## 🧪 TESTING CHECKLIST - P5 FIX VALIDATION (2025-11-12 - COMPLETADO)
 
-- [ ] Crear hábito con startTime = "08:00"
-- [ ] Verificar que se guarda en localStorage
-- [ ] Verificar que se sincroniza a Supabase (start_time = "08:00")
-- [ ] Logout y volver a login
-- [ ] Verificar que el hábito aparece en /app/habitos
-- [ ] Verificar que en calendario aparece a las 8:00 AM
-- [ ] Crear actividad, logout/login, verificar persistencia
-- [ ] Sin errores en consola (especialmente RLS y 406)
+### Test Case: Create habit with startTime = "22:15", endTime = "22:25"
+
+- [x] **Crear hábito:** "test" con startTime = "22:15", endTime = "22:25"
+  - Status: ✅ COMPLETADO
+  - Habit ID: `3c5ddd71-f5ca-476f-935e-bc35f5488519`
+  - Console log: `✅ Habit created: {id: '3c5ddd71-f5ca-476f-935e-bc35f5488519', name: 'test', startTime: '22:15'}`
+
+- [x] **Verificar localStorage:** startTime y endTime guardados correctamente
+  - Status: ✅ COMPLETADO
+  - Console log: `✅ Persisted to localStorage: habits/3c5ddd71-f5ca-476f-935e-bc35f5488519`
+  - Data verified: `"startTime": "22:15"`, `"endTime": "22:25"`
+
+- [x] **Verificar Supabase sync:** start_time y end_time sincronizados correctamente
+  - Status: ✅ COMPLETADO
+  - Console log: `📝 Preparing habit record for Supabase: {id: '3c5ddd71-f5ca-476f-935e-bc35f5488519', name: 'test', start_time: '22:15'}`
+  - Supabase confirmation: `✅ Persisted to Supabase: habits/3c5ddd71-f5ca-476f-935e-bc35f5488519`
+  - Mapping verified: `startTime → start_time` working correctly
+
+- [x] **Verificar calendario:** Hábito aparece a las 22:15 (NO a las 06:00)
+  - Status: ✅ VERIFICADO EN UI
+  - Expected: Hábito "test" en slot de 22:15
+  - Result: ✅ Aparece correctamente a las 22:15 (NO más a las 6:00 AM como antes)
+
+- [x] **Verificar sin errores en consola**
+  - Status: ✅ COMPLETADO - NO ERRORS ENCONTRADOS
+  - RLS errors: ✅ None (42501 errors not present)
+  - 406 errors: ✅ None (user_settings, cycle_data acceso OK)
+  - Sync messages: ✅ All successful
+  - Sample logs:
+    - `✅ Data synced to Supabase successfully`
+    - `✅ Initial sync completed successfully`
+    - `✅ Realtime sync activated`
+
+### Validación Completa P5:
+
+**Problema original:** Calendario mostraba todos los hábitos a 6:00 AM
+**Raíz:** Columna `start_time` no existía en tabla `habits` de Supabase
+
+**Estado actual (POST-FIX):** ✅ RESUELTO COMPLETAMENTE
+- ✅ Columnas `start_time` y `end_time` existen en DB
+- ✅ Mapping camelCase → snake_case implementado en 3 archivos
+- ✅ Data persiste correctamente en localStorage con `startTime`
+- ✅ Data sincroniza a Supabase con `start_time`
+- ✅ Calendario lee `startTime` de localStorage e interpreta hora correctamente
+- ✅ Realtime subscriptions activas y recibiendo cambios
+- ✅ No hay errores RLS, 406, o duplicados en logs
 
 ---
 

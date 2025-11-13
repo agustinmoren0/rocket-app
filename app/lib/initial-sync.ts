@@ -185,6 +185,23 @@ async function syncTable(options: {
 }
 
 /**
+ * Map Supabase field names (snake_case) to localStorage format (camelCase)
+ * This ensures remote data matches local schema expectations
+ */
+function mapRemoteToLocal(table: string, record: any): any {
+  if (table === 'habits') {
+    // Map snake_case from Supabase to camelCase for JS
+    return {
+      ...record,
+      startTime: record.start_time || null,  // Map start_time → startTime
+      endTime: record.end_time || null,      // Map end_time → endTime
+    }
+  }
+  // For other tables, return as-is
+  return record
+}
+
+/**
  * Smart merge strategy:
  * 1. Keep all local records not on remote (local-only)
  * 2. Keep all remote records not on local (remote-only)
@@ -197,9 +214,12 @@ function mergeData(
 ): any[] {
   const { table, conflicts } = options
 
+  // Map remote data to local format (convert snake_case to camelCase)
+  const mappedRemote = remote.map(record => mapRemoteToLocal(table, record))
+
   // Create maps for O(1) lookup
   const localMap = new Map(local.map((item) => [item.id, item]))
-  const remoteMap = new Map(remote.map((item) => [item.id, item]))
+  const remoteMap = new Map(mappedRemote.map((item) => [item.id, item]))
 
   const merged = new Map<string, any>()
 
@@ -265,10 +285,13 @@ export async function resetLocalToRemote(userId: string, table: string): Promise
       return false
     }
 
-    const localKey = `habika_${table}`
-    localStorage.setItem(localKey, JSON.stringify(data || []))
+    // Map remote data to local format (convert snake_case to camelCase)
+    const mappedData = (data || []).map((record: any) => mapRemoteToLocal(table, record))
 
-    console.log(`✅ Reset ${table} from cloud`)
+    const localKey = table === 'habits' ? 'habika_custom_habits' : `habika_${table}`
+    localStorage.setItem(localKey, JSON.stringify(mappedData))
+
+    console.log(`✅ Reset ${table} from cloud (mapped ${mappedData.length} records)`)
     return true
   } catch (error) {
     console.error(`Error resetting ${table}:`, error)
