@@ -133,10 +133,26 @@ export default function ActividadesPage() {
     };
 
     // P2 Fix: Listen for initial sync completion (fixes race condition with activities)
+    // P4 Fix: After sync, reload directly from localStorage to avoid context timing issues
     const handleSyncComplete = (event: Event) => {
       const customEvent = event as CustomEvent;
       console.log('🔄 Initial sync complete, reloading activities after sync');
-      loadTodayData();
+
+      // Force reload from localStorage, don't wait for context to update
+      const today = new Date().toISOString().split('T')[0];
+      const stored = JSON.parse(localStorage.getItem('habika_activities_today') || '{}');
+      const todayActivities = stored[today] || [];
+      const allHabits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
+      const activeHabits = allHabits.filter((h: any) => h.status === 'active');
+
+      setActivities(
+        todayActivities.sort((a: any, b: any) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        )
+      );
+      setHabits(activeHabits);
+
+      console.log('📅 Actividades después del sync:', todayActivities.length, activeHabits.length, 'habits');
     };
 
     window.addEventListener('storage', handleStorageChange);
