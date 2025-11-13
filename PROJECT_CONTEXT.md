@@ -1,0 +1,324 @@
+# 🎯 HABIKA PROJECT CONTEXT - Registro Único Central
+
+**Fecha de creación:** 2025-11-12
+**Última actualización:** 2025-11-12
+**Estado del proyecto:** En desarrollo - Fixes en progreso
+
+---
+
+## 📌 INFORMACIÓN DEL USUARIO
+
+- **User ID:** `d8dec836-4928-4dac-92ca-342fee1a5647`
+- **Proyecto Supabase:** Habika (habit tracking app)
+- **Tech Stack:** Next.js, React, TypeScript, Supabase, localStorage, TailwindCSS
+- **Arquitectura:** Offline-first (localStorage primary, Supabase sync secondary)
+
+---
+
+## 🏗️ ESTRUCTURA DE FORMULARIOS & ENTRADA DE DATOS
+
+### Crear Hábito - `/app/habitos/page.tsx`
+**Componente modal:** `CreateHabitModal` (líneas ~200-800)
+**Campos del formulario:**
+- `name` (text) - Nombre del hábito
+- `type` (select) - "formar" o "dejar"
+- `frequency` (select) - "diario", "semanal", etc
+- `startTime` (input type="time") - **FORMATO: HH:MM (ej: "06:30")**
+- `endTime` (input type="time") - **FORMATO: HH:MM (ej: "07:00")**
+- `description` (textarea)
+- `color` (color picker)
+- `icon` (select from LUCIDE_ICONS)
+- `status` (default "active")
+
+**Dónde se guarda:**
+1. localStorage con clave: `habika_custom_habits`
+2. Supabase tabla: `habits` (si usuario autenticado)
+
+---
+
+## 🗄️ ESQUEMA DE BASE DE DATOS
+
+### Tabla: `habits`
+```
+Columnas existentes:
+- id (uuid) - PK
+- user_id (uuid) - FK, NOT NULL
+- name (text) - NOT NULL
+- description (text)
+- frequency (text) - NOT NULL
+- days_of_week (ARRAY)
+- status (text) - default "active"
+- color (text)
+- icon (text)
+- goal (integer)
+- unit (text)
+- category (text)
+- streak (integer)
+- created_at (timestamp)
+- updated_at (timestamp)
+
+COLUMNAS NUEVAS AGREGADAS (2025-11-12):
+- start_time (time) - Hora de inicio del hábito (ej: 06:30)
+- end_time (time) - Hora de fin del hábito (ej: 07:00)
+
+CONSTRAINT:
+- UNIQUE(user_id, name)
+- RLS habilitado con políticas user_id = auth.uid()
+```
+
+### Tabla: `user_settings`
+```
+Columnas:
+- id (uuid) - PK
+- user_id (uuid) - FK, NOT NULL, UNIQUE
+- notifications_enabled (boolean)
+- notification_time (time) - Posible uso futuro
+- reminder_frequency (text)
+- data_synced_at (timestamp)
+- last_backup_at (timestamp)
+- created_at (timestamp)
+- updated_at (timestamp)
+```
+
+### Tabla: `cycle_data`
+```
+Columnas:
+- id (uuid) - PK
+- user_id (uuid) - FK, NOT NULL, UNIQUE
+- is_active (boolean)
+- last_period_start (date)
+- cycle_length_days (integer)
+- period_length_days (integer)
+- current_phase (text)
+- notes (text)
+- created_at (timestamp)
+- updated_at (timestamp)
+```
+
+### Tabla: `activities`
+```
+Columnas clave:
+- id (uuid) - PK
+- user_id (uuid) - FK, NOT NULL
+- name (text)
+- duration (integer)
+- unit (text) - NOT NULL (ej: "min", "horas")
+- category (text) - Mapeado desde "categoria" en JS
+- color (text)
+- date (text) - Formato YYYY-MM-DD
+- notes (text)
+- created_at (timestamp)
+- updated_at (timestamp)
+
+RLS: auth.uid() = user_id (múltiples políticas duplicadas)
+```
+
+---
+
+## 🔄 FLUJO DE PERSISTENCIA ACTUAL
+
+### Crear un Hábito
+```
+1. Usuario llena formulario en CreateHabitModal (/app/habitos/page.tsx)
+2. Al hacer click "Crear":
+   - Generar: id = crypto.randomUUID()
+   - Generar: createdAt = new Date().toISOString()
+   - Generar: startTime, endTime = valores del input
+
+3. Guardar en localStorage:
+   - Clave: 'habika_custom_habits'
+   - persistData({ table: 'habits', data: habitObject, userId })
+
+4. Si usuario autenticado:
+   - persistToSupabase() en persistence-layer.ts
+   - UPSERT a Supabase con onConflict: 'user_id,name'
+   - Incluir: start_time = habitObject.startTime (mapeo!)
+   - Incluir: end_time = habitObject.endTime (mapeo!)
+```
+
+### Leer Hábitos en Calendario
+```
+1. /app/app/calendario/page.tsx mounted
+2. Leer: localStorage['habika_custom_habits']
+3. Filtrar: status === 'active'
+4. Para cada hábito:
+   - Leer start_time
+   - Calcular hour = parseInt(start_time.split(':')[0])
+   - Mostrar en calendario a esa hora
+```
+
+---
+
+## ✅ FIXES COMPLETADOS (P0-P4)
+
+### P0: Logout - Limpiar localStorage
+- **Archivo:** `app/context/UserContext.tsx`
+- **Qué hace:** Al logout, elimina todas las claves `habika_*`
+- **Líneas:** ~65-85
+- **Status:** ✅ COMPLETADO
+
+### P1.1: Reload Habitos on User Change
+- **Archivo:** `app/app/habitos/page.tsx`
+- **Qué hace:** useEffect([user?.id]) → loadHabits()
+- **Líneas:** 35-39
+- **Status:** ✅ COMPLETADO
+
+### P1.2: Reload Actividades on User Change
+- **Archivo:** `app/app/actividades/page.tsx`
+- **Qué hace:** Similar a P1.1 para actividades
+- **Status:** ✅ COMPLETADO
+
+### P1.3: Calendario Load from habika_activities_today
+- **Archivo:** `app/lib/initial-sync.ts`
+- **Qué hace:** Convierte flat activities a formato by-date
+- **Líneas:** 50-62
+- **Status:** ✅ COMPLETADO
+
+### P2: Initial Sync Event Emitter
+- **Archivo:** `app/hooks/useInitialSync.ts`
+- **Qué hace:** Emite 'habika-initial-sync-complete' event tras sync
+- **Líneas:** 73-76
+- **Status:** ✅ COMPLETADO
+- **Listeners:** habitos/page.tsx (línea 65), actividades/page.tsx (línea 140)
+
+### P3: ActivityContext Listener
+- **Archivo:** `app/context/ActivityContext.tsx`
+- **Qué hace:** Escucha 'habika-initial-sync-complete', recarga actividades
+- **Status:** ✅ COMPLETADO
+
+### P4: Actividades Direct Reload
+- **Archivo:** `app/app/actividades/page.tsx`
+- **Qué hace:** Lee directo de localStorage al sync, evita timing issues
+- **Líneas:** ~136-156
+- **Status:** ✅ COMPLETADO
+
+---
+
+## 🚀 FIX EN PROGRESO: P5 - Habit Times en Calendario
+
+### Problema
+- Calendario mostraba todos los hábitos a 6:00 AM
+- Raíz: No existía columna `start_time` en tabla `habits`
+
+### Solución
+**Paso 1: Agregar columnas a DB** ✅ COMPLETADO
+```sql
+ALTER TABLE habits
+ADD COLUMN start_time TIME DEFAULT '06:00:00',
+ADD COLUMN end_time TIME DEFAULT '07:00:00';
+```
+Resultado: Columnas creadas exitosamente
+
+**Paso 2: Mapeo en Persistence Layer** 🔄 EN PROGRESO
+- Archivo: `app/lib/persistence-layer.ts` (líneas ~144-165)
+- Qué hacer: En la sección de 'habits', mapear:
+  - `data.startTime` → `record.start_time`
+  - `data.endTime` → `record.end_time`
+
+**Paso 3: Mapeo en Sync**
+- Archivo: `app/lib/supabase-sync.ts` (líneas ~45-59)
+- Qué hacer: Agregar start_time, end_time al upsert
+
+**Paso 4: Lectura en Calendario**
+- Archivo: `app/app/calendario/page.tsx` (líneas ~143-168)
+- Qué hacer: Usar start_time en lugar de hardcoded 6
+
+---
+
+## 📊 CAMBIOS EN PERSISTENCIA (Antes vs Después)
+
+### ANTES - Hábito en localStorage
+```javascript
+{
+  "id": "uuid",
+  "name": "Correr",
+  "type": "formar",
+  "startTime": "06:30",  // ← De input type="time"
+  "endTime": "07:00",    // ← De input type="time"
+  "status": "active",
+  // ... otros campos
+}
+```
+
+### DESPUÉS - Hábito en Supabase
+```javascript
+{
+  "id": "uuid",
+  "user_id": "uuid",
+  "name": "Correr",
+  "start_time": "06:30",  // ← MAPEO: startTime → start_time
+  "end_time": "07:00",    // ← MAPEO: endTime → end_time
+  "status": "active",
+  // ... otros campos
+  "updated_at": "2025-11-12T..."
+}
+```
+
+**Mapeo necesario:**
+- `startTime` (camelCase JS) → `start_time` (snake_case SQL)
+- `endTime` (camelCase JS) → `end_time` (snake_case SQL)
+
+---
+
+## 🔗 ARCHIVOS CLAVE A MODIFICAR
+
+| Archivo | Líneas | Qué hacer |
+|---------|--------|-----------|
+| [app/lib/persistence-layer.ts](app/lib/persistence-layer.ts) | 144-165 | Agregar mapeo start_time/end_time en sección habits |
+| [app/lib/supabase-sync.ts](app/lib/supabase-sync.ts) | 45-59 | Agregar start_time, end_time a upsert |
+| [app/lib/supabase-migrate.ts](app/lib/supabase-migrate.ts) | 160-174 | Agregar start_time, end_time a migration |
+| [app/app/calendario/page.tsx](app/app/calendario/page.tsx) | 143-168 | Usar start_time en lugar de hardcoded 6 |
+
+---
+
+## 📋 COMMITS REALIZADOS
+
+| Commit | Fecha | Descripción |
+|--------|-------|-------------|
+| 1162080 | - | fix: use proper UUID generation for cycle data and period history |
+| 3eeeaad | - | fix: use UserContext for real user ID in ActivityContext and CycleContext |
+| 9657f6b | - | fix: expose supabase.channel() method for realtime subscriptions |
+| 97d59f1 | - | chore: add detailed logging to ActivityContext for debugging sync |
+| a94d1ed | - | feat: implement ActivityContext with dual-layer persistence for activities |
+| (P0) | 2025-11-12 | Logout handler: clear localStorage on logout |
+| (P1-P4) | 2025-11-12 | Race condition fixes: initial sync event system |
+| (P5 en progreso) | 2025-11-12 | Add start_time/end_time columns & map to calendar |
+
+---
+
+## 🧪 TESTING CHECKLIST
+
+- [ ] Crear hábito con startTime = "08:00"
+- [ ] Verificar que se guarda en localStorage
+- [ ] Verificar que se sincroniza a Supabase (start_time = "08:00")
+- [ ] Logout y volver a login
+- [ ] Verificar que el hábito aparece en /app/habitos
+- [ ] Verificar que en calendario aparece a las 8:00 AM
+- [ ] Crear actividad, logout/login, verificar persistencia
+- [ ] Sin errores en consola (especialmente RLS y 406)
+
+---
+
+## 🚨 ERRORES CONOCIDOS (RESUELTOS)
+
+### Error: 42501 RLS violation on activities
+**Causa:** RLS policies bien configuradas, error por otra razón
+**Status:** ✅ RLS OK en DB (verificado con Query 2)
+
+### Error: 406 Not Acceptable on user_settings, cycle_data
+**Causa:** Tablas existían, posible API header issue
+**Status:** ✅ Tablas existen (Query 3 y 4 confirmó)
+
+### Problema: startTime no persistía
+**Causa:** Columna no existía en tabla habits
+**Status:** ✅ RESUELTO - Columnas agregadas
+
+---
+
+## 📝 NOTAS FUTURAS
+
+- Si hay nuevos campos a agregar a habits, seguir patrón de mapeo (camelCase JS → snake_case SQL)
+- Mantener este archivo actualizado con cada cambio significativo
+- Los fixes P0-P4 son reutilizables en otros futuros problemas de persistencia
+- Considerar automatizar el mapeo camelCase→snake_case en una función helper
+

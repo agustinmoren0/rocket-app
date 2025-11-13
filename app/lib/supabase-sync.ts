@@ -52,6 +52,9 @@ export async function syncToSupabase(options: SyncOptions) {
             frequency: habit.frequency,
             status: habit.status,
             streak: habit.streak || 0,
+            // P5 Fix: Map startTime/endTime to start_time/end_time
+            start_time: habit.startTime || null,
+            end_time: habit.endTime || null,
             created_at: habit.createdAt || new Date().toISOString(),
             updated_at: new Date().toISOString(),
           }, {

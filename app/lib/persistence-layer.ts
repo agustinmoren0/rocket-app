@@ -156,10 +156,13 @@ async function persistToSupabase(
         unit: data.unit || data.goalUnit || null,
         category: data.category || null,
         streak: data.streak || 0,
+        // P5 Fix: Map startTime/endTime (camelCase JS) to start_time/end_time (snake_case SQL)
+        start_time: data.startTime || null,
+        end_time: data.endTime || null,
         // NOTE: 'created_at' is server-generated
-        // NOTE: These columns don't exist in habits schema: type, goal_value, goal_unit, frequency_interval, start_time, end_time, dates_of_month, is_preset, minutes
+        // NOTE: These columns don't exist in habits schema: type, goal_value, goal_unit, frequency_interval, dates_of_month, is_preset, minutes
       }
-      console.log('📝 Preparing habit record for Supabase:', { id: record.id, name: record.name })
+      console.log('📝 Preparing habit record for Supabase:', { id: record.id, name: record.name, start_time: record.start_time })
     } else {
       // For other tables, just spread the data
       record = { ...record, ...data }
