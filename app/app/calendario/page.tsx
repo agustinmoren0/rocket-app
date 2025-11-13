@@ -139,6 +139,26 @@ export default function CalendarioPage() {
           }
         });
         console.log(`📅 Cargadas ${activitiesToday.length} actividades de hoy desde habika_activities`);
+
+        // ALSO load active habits for today (they appear in calendar every day)
+        const allHabits = JSON.parse(localStorage.getItem('habika_custom_habits') || '[]');
+        const activeHabits = allHabits.filter((h: any) => h.status === 'active');
+        activeHabits.forEach((hab: any) => {
+          // Each habit appears once per day at hour 6 (morning)
+          const isDuplicate = allEvents.some(e => e.id === hab.id && e.day === new Date(todayDate).getDate());
+          if (!isDuplicate) {
+            allEvents.push({
+              id: hab.id,
+              hour: 6, // Habits show at 6 AM
+              day: new Date(todayDate).getDate(),
+              title: hab.name,
+              duration: hab.duration || 20,
+              color: hab.color || '#FFC0A9',
+              type: 'habit' as const
+            });
+          }
+        });
+        console.log(`📅 Cargados ${activeHabits.length} hábitos activos para hoy`);
       }
 
       setEvents(allEvents);
